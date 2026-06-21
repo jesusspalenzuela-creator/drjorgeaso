@@ -4,13 +4,14 @@ const N8N_POST_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/cre
 const USUARIOS_VALIDOS = { "drjorgeaso": "1234", "inovixe": "admin" };
 let clienteLogueado = "";
 
-// NAVEGACIÓN (SPA)
-function showView(viewId) {
-    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-    document.getElementById(viewId).classList.remove('hidden');
-}
+// UI Logic
+const modal = document.getElementById('modal-cita');
+document.getElementById('btn-abrir-modal').onclick = () => modal.classList.remove('hidden');
+document.getElementById('btn-cerrar-modal').onclick = () => modal.classList.add('hidden');
+document.getElementById('btn-cerrar-sesion').onclick = () => location.reload();
+document.getElementById('btn-refrescar').onclick = cargarCitasDelServidor;
 
-// LOGIN
+// Login Logic
 document.getElementById('form-login').addEventListener('submit', (e) => {
     e.preventDefault();
     const u = document.getElementById('login-usuario').value.trim().toLowerCase();
@@ -19,36 +20,41 @@ document.getElementById('form-login').addEventListener('submit', (e) => {
         clienteLogueado = u;
         document.getElementById('seccion-login').classList.add('hidden');
         document.getElementById('seccion-panel').classList.remove('hidden');
+        document.getElementById('nombre-cliente-titulo').innerText = u;
         document.getElementById('form-profesional').value = u;
         cargarCitasDelServidor();
     }
 });
 
-// CARGA DE DATOS
+// Data Fetching
 async function cargarCitasDelServidor() {
     try {
         const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
         const data = await res.json();
         const citas = data.citas ? data.citas : (Array.isArray(data) ? data : []);
         
-        // Stats
+        // Actualizar Stats
         document.getElementById('stat-total').innerText = citas.length;
         document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado === 'confirmó').length;
-        document.getElementById('stat-pendientes').innerText = citas.filter(c => c.estado !== 'confirmó').length;
 
-        // Tabla
+        // Render Table
         const cuerpo = document.getElementById('tabla-cuerpo');
         cuerpo.innerHTML = citas.map(c => `
-            <tr class="hover:bg-slate-50">
-                <td class="p-4 font-semibold">${c.nombres || ''} ${c.apellidos || ''}</td>
-                <td class="p-4 text-slate-500">${c.fecha_cita ? c.fecha_cita.split('T')[0] : ''}</td>
-                <td class="p-4"><span class="px-2 py-1 rounded-full text-xs bg-slate-100">${c.estado || 'pendiente'}</span></td>
+            <tr class="hover:bg-slate-50 transition">
+                <td class="p-6 font-semibold text-slate-800">${c.nombres || ''} ${c.apellidos || ''}</td>
+                <td class="p-6 text-slate-500">${c.telefono || '-'}</td>
+                <td class="p-6 text-slate-500">${c.fecha_cita ? c.fecha_cita.split('T')[0] : ''}</td>
+                <td class="p-6">
+                    <span class="px-3 py-1 rounded-full text-[10px] font-bold ${c.estado === 'confirmó' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'} uppercase">
+                        ${c.estado || 'pendiente'}
+                    </span>
+                </td>
             </tr>
         `).join('');
     } catch (e) { console.error(e); }
 }
 
-// ENVÍO
+// Form Submission
 document.getElementById('form-cita').addEventListener('submit', async (e) => {
     e.preventDefault();
     const payload = {
@@ -60,10 +66,7 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
         estado: 'esperando respuesta'
     };
     await fetch(N8N_POST_URL, { method: 'POST', body: JSON.stringify(payload) });
-    alert("¡Cita registrada!");
+    modal.classList.add('hidden');
     document.getElementById('form-cita').reset();
-    showView('view-dashboard');
     cargarCitasDelServidor();
 });
-
-document.getElementById('btn-cerrar-sesion').onclick = () => location.reload();
