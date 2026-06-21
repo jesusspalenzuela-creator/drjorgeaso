@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finovixe | Gestión Clínica</title>
+    <title>Finovixe | Panel de Gestión</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 min-h-screen p-4 md:p-8">
@@ -36,9 +36,21 @@
         </div>
 
         <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-x-auto">
-            <table class="w-full text-left text-[11px] md:text-xs">
+            <table class="w-full text-left text-[10px] md:text-[11px]">
                 <thead class="bg-slate-50 text-slate-400 uppercase tracking-widest font-bold">
-                    <tr><th class="p-4">ID</th><th class="p-4">Identificación</th><th class="p-4">Paciente</th><th class="p-4">Edad</th><th class="p-4">Teléfono</th><th class="p-4">F. Cita</th><th class="p-4">H. Cita</th><th class="p-4">Profesional</th><th class="p-4">Motivo</th><th class="p-4">Estado</th></tr>
+                    <tr>
+                        <th class="p-4">ID</th>
+                        <th class="p-4">Identificación</th>
+                        <th class="p-4">Paciente</th>
+                        <th class="p-4">Edad</th>
+                        <th class="p-4">Teléfono</th>
+                        <th class="p-4">F. Cita</th>
+                        <th class="p-4">H. Cita</th>
+                        <th class="p-4">Profesional</th>
+                        <th class="p-4">Motivo</th>
+                        <th class="p-4">Procesado</th>
+                        <th class="p-4">Estado</th>
+                    </tr>
                 </thead>
                 <tbody id="tabla-cuerpo" class="divide-y divide-slate-50"></tbody>
             </table>
