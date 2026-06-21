@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finovixe | Gestión Clínica</title>
+    <title>Finovixe | Panel de Gestión</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 min-h-screen p-4 md:p-8">
@@ -17,25 +17,28 @@
         </form>
     </div>
 
-    <div id="seccion-panel" class="max-w-6xl mx-auto hidden">
+    <div id="seccion-panel" class="max-w-7xl mx-auto hidden">
         <header class="flex justify-between items-center mb-10">
             <div>
-                <p class="text-slate-400 text-sm">Panel de Gestión</p>
+                <p class="text-slate-400 text-sm uppercase tracking-wider font-bold">Gestión Clínica</p>
                 <h1 class="text-3xl font-bold text-slate-900" id="nombre-cliente-titulo"></h1>
             </div>
-            <button id="btn-cerrar-sesion" class="text-slate-400 hover:text-red-600 transition text-sm font-semibold">Cerrar Sesión</button>
+            <div class="flex gap-4">
+                <button id="btn-refrescar" class="bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50">Refrescar</button>
+                <button id="btn-cerrar-sesion" class="text-slate-400 hover:text-red-600 text-sm font-semibold">Salir</button>
+            </div>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm"><p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Citas</p><h3 id="stat-total" class="text-3xl font-bold mt-2">0</h3></div>
-            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm"><p class="text-green-500 text-xs font-bold uppercase tracking-wider">Confirmadas</p><h3 id="stat-confirmadas" class="text-3xl font-bold mt-2">0</h3></div>
-            <button id="btn-abrir-modal" class="bg-blue-600 text-white rounded-2xl font-semibold hover:bg-blue-700 transition">+ Nueva Cita</button>
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm"><p class="text-slate-400 text-xs font-bold uppercase">Total Citas</p><h3 id="stat-total" class="text-2xl font-bold mt-1">0</h3></div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm"><p class="text-green-500 text-xs font-bold uppercase">Confirmadas</p><h3 id="stat-confirmadas" class="text-2xl font-bold mt-1">0</h3></div>
+            <button id="btn-abrir-modal" class="bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">+ Nueva Cita</button>
         </div>
 
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-slate-50 text-slate-400 uppercase text-xs font-bold">
-                    <tr><th class="p-6">Identificación</th><th class="p-6">Paciente</th><th class="p-6">Detalles</th><th class="p-6">Profesional</th><th class="p-6">Estado</th></tr>
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-400 uppercase tracking-widest font-bold">
+                    <tr><th class="p-4">ID</th><th class="p-4">Identificación</th><th class="p-4">Paciente</th><th class="p-4">Edad</th><th class="p-4">Teléfono</th><th class="p-4">F. Cita</th><th class="p-4">H. Cita</th><th class="p-4">Profesional</th><th class="p-4">Motivo</th><th class="p-4">Estado</th></tr>
                 </thead>
                 <tbody id="tabla-cuerpo" class="divide-y divide-slate-50"></tbody>
             </table>
@@ -43,24 +46,24 @@
     </div>
 
     <div id="modal-cita" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-white p-8 rounded-3xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
             <h2 class="text-xl font-bold mb-6">Programar Nueva Cita</h2>
             <form id="form-cita" class="space-y-4">
-                <input type="text" id="form-identificacion" placeholder="Identificación" required class="bg-slate-50 p-4 rounded-xl border w-full">
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="form-nombres" placeholder="Nombres" required class="bg-slate-50 p-4 rounded-xl border w-full">
-                    <input type="text" id="form-apellidos" placeholder="Apellidos" required class="bg-slate-50 p-4 rounded-xl border w-full">
+                <div class="grid grid-cols-3 gap-4">
+                    <input type="text" id="form-identificacion" placeholder="Identificación" required class="bg-slate-50 p-3 rounded-xl border w-full">
+                    <input type="number" id="form-edad" placeholder="Edad" required class="bg-slate-50 p-3 rounded-xl border w-full">
+                    <input type="text" id="form-telefono" placeholder="Teléfono" required class="bg-slate-50 p-3 rounded-xl border w-full">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="form-edad" placeholder="Edad" required class="bg-slate-50 p-4 rounded-xl border w-full">
-                    <input type="text" id="form-telefono" placeholder="Teléfono" required class="bg-slate-50 p-4 rounded-xl border w-full">
+                    <input type="text" id="form-nombres" placeholder="Nombres" required class="bg-slate-50 p-3 rounded-xl border w-full">
+                    <input type="text" id="form-apellidos" placeholder="Apellidos" required class="bg-slate-50 p-3 rounded-xl border w-full">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="date" id="form-fecha" required class="bg-slate-50 p-4 rounded-xl border w-full">
-                    <input type="time" id="form-hora" required class="bg-slate-50 p-4 rounded-xl border w-full">
+                <div class="grid grid-cols-3 gap-4">
+                    <input type="date" id="form-fecha" required class="bg-slate-50 p-3 rounded-xl border w-full">
+                    <input type="time" id="form-hora" required class="bg-slate-50 p-3 rounded-xl border w-full">
+                    <input type="text" id="form-profesional" placeholder="Profesional" required class="bg-blue-50 p-3 rounded-xl border border-blue-200 w-full font-bold text-blue-900">
                 </div>
-                <input type="text" id="form-profesional" placeholder="Profesional encargado" required class="bg-blue-50 p-4 rounded-xl border border-blue-200 w-full">
-                <textarea id="form-motivo" placeholder="Motivo" class="bg-slate-50 p-4 rounded-xl border w-full"></textarea>
+                <textarea id="form-motivo" placeholder="Motivo de la consulta" class="bg-slate-50 p-3 rounded-xl border w-full"></textarea>
                 <div class="flex gap-4 pt-4">
                     <button type="button" id="btn-cerrar-modal" class="w-full text-slate-400">Cancelar</button>
                     <button type="submit" class="w-full bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-slate-800">Guardar</button>
