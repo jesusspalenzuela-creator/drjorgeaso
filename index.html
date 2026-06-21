@@ -3,79 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finovixe | Panel de Gestión</title>
+    <title>Finovixe | Executive Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+        .gradient-bg { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+    </style>
 </head>
-<body class="bg-slate-50 min-h-screen p-4 md:p-8">
+<body class="bg-slate-50 min-h-screen font-sans">
 
-    <div id="seccion-login" class="max-w-md mx-auto mt-20 bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-        <h1 class="text-2xl font-bold text-slate-900 mb-6">Finovixe</h1>
-        <form id="form-login" class="space-y-4">
-            <input type="text" id="login-usuario" placeholder="Usuario" required class="w-full bg-slate-50 p-4 rounded-xl border border-slate-200 outline-none">
-            <input type="password" id="login-password" placeholder="Contraseña" required class="w-full bg-slate-50 p-4 rounded-xl border border-slate-200 outline-none">
-            <button type="submit" class="w-full bg-slate-900 text-white p-4 rounded-xl font-semibold hover:bg-slate-800 transition">Entrar</button>
-        </form>
-    </div>
-
-    <div id="seccion-panel" class="max-w-[95rem] mx-auto hidden">
-        <header class="flex justify-between items-center mb-10">
-            <div>
-                <p class="text-slate-400 text-xs uppercase tracking-widest font-bold">Panel de Gestión</p>
-                <h1 class="text-3xl font-bold text-slate-900" id="nombre-cliente-titulo"></h1>
-            </div>
-            <div class="flex gap-4">
-                <button id="btn-refrescar" class="bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50">Actualizar</button>
-                <button id="btn-cerrar-sesion" class="text-slate-400 hover:text-red-600 text-sm font-semibold">Salir</button>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm"><p class="text-slate-400 text-xs font-bold uppercase">Total Citas</p><h3 id="stat-total" class="text-2xl font-bold mt-1">0</h3></div>
-            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm"><p class="text-green-500 text-xs font-bold uppercase">Confirmadas</p><h3 id="stat-confirmadas" class="text-2xl font-bold mt-1">0</h3></div>
-            <button id="btn-abrir-modal" class="bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">+ Nueva Cita</button>
-        </div>
-
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-x-auto">
-            <table class="w-full text-left text-[11px]">
-                <thead id="tabla-cabecera" class="bg-slate-50 text-slate-400 uppercase tracking-widest font-bold"></thead>
-                <tbody id="tabla-cuerpo" class="divide-y divide-slate-50"></tbody>
-            </table>
+    <div id="seccion-login" class="flex items-center justify-center min-h-screen">
+        <div class="w-full max-w-md p-8 bg-white rounded-3xl shadow-2xl border border-slate-100">
+            <h1 class="text-3xl font-black text-slate-900 mb-2">Finovixe</h1>
+            <p class="text-slate-500 mb-8">Gestión profesional de citas</p>
+            <form id="form-login" class="space-y-4">
+                <input type="text" id="login-usuario" placeholder="Usuario" required class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none">
+                <input type="password" id="login-password" placeholder="Contraseña" required class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none">
+                <button type="submit" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-300">Acceder</button>
+            </form>
         </div>
     </div>
 
-    <div id="modal-cita" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-white p-8 rounded-3xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
-            <h2 id="titulo-modal" class="text-xl font-bold mb-6">Programar Nueva Cita</h2>
-            <form id="form-cita" class="space-y-4">
-                <div class="grid grid-cols-3 gap-4">
-                    <input type="text" id="form-identificacion" placeholder="Identificación" required class="bg-slate-50 p-3 rounded-xl border w-full">
-                    <input type="number" id="form-edad" placeholder="Edad" required class="bg-slate-50 p-3 rounded-xl border w-full">
-                    <input type="text" id="form-telefono" placeholder="Teléfono" required class="bg-slate-50 p-3 rounded-xl border w-full">
+    <div id="seccion-panel" class="hidden">
+        <nav class="gradient-bg text-white p-6 shadow-xl">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <h1 class="text-xl font-black tracking-tighter">FINOVIXE <span class="text-indigo-400">PRO</span></h1>
+                <div class="flex items-center gap-4">
+                    <span id="nombre-cliente-titulo" class="text-sm font-medium opacity-80"></span>
+                    <button id="btn-cerrar-sesion" class="text-xs bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl transition">Salir</button>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="form-nombres" placeholder="Nombres" required class="bg-slate-50 p-3 rounded-xl border w-full">
-                    <input type="text" id="form-apellidos" placeholder="Apellidos" required class="bg-slate-50 p-3 rounded-xl border w-full">
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto p-6 mt-8">
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900">Agenda Médica</h2>
+                    <p class="text-slate-500">Bienvenido a tu panel de control central.</p>
                 </div>
-                <div class="grid grid-cols-3 gap-4">
-                    <input type="date" id="form-fecha" required class="bg-slate-50 p-3 rounded-xl border w-full">
-                    <input type="time" id="form-hora" required class="bg-slate-50 p-3 rounded-xl border w-full">
-                    <input type="text" id="form-profesional" placeholder="Profesional" required class="bg-blue-50 p-3 rounded-xl border border-blue-200 w-full font-bold text-blue-900">
+                <div class="flex gap-3">
+                    <button id="btn-refrescar" class="px-6 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 shadow-sm hover:shadow-md transition">Sincronizar</button>
+                    <button id="btn-abrir-modal" class="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition">+ Crear Cita</button>
                 </div>
-                <textarea id="form-motivo" placeholder="Motivo de la consulta" class="bg-slate-50 p-3 rounded-xl border w-full"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm"><p class="text-slate-400 text-xs font-bold uppercase mb-2">Total Citas</p><h3 id="stat-total" class="text-3xl font-black text-slate-900">0</h3></div>
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm"><p class="text-indigo-400 text-xs font-bold uppercase mb-2">Confirmadas</p><h3 id="stat-confirmadas" class="text-3xl font-black text-indigo-600">0</h3></div>
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm"><p class="text-slate-400 text-xs font-bold uppercase mb-2">Estado</p><h3 class="text-lg font-bold text-emerald-500">Sistema Activo</h3></div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead id="tabla-cabecera" class="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase text-[10px] tracking-widest font-bold"></thead>
+                        <tbody id="tabla-cuerpo" class="divide-y divide-slate-50 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal-cita" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-3xl shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h2 id="titulo-modal" class="text-2xl font-black text-slate-900 mb-6">Nueva Cita</h2>
+            <form id="form-cita" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" id="form-identificacion" placeholder="Identificación" required class="col-span-2 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <input type="text" id="form-nombres" placeholder="Nombres" required class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <input type="text" id="form-apellidos" placeholder="Apellidos" required class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <input type="number" id="form-edad" placeholder="Edad" required class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <input type="text" id="form-telefono" placeholder="Teléfono" required class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <input type="date" id="form-fecha" required class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <input type="time" id="form-hora" required class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <input type="text" id="form-profesional" placeholder="Profesional" required class="col-span-2 p-4 rounded-xl bg-indigo-50 border border-indigo-200 font-bold text-indigo-900">
+                <textarea id="form-motivo" placeholder="Motivo" class="col-span-2 p-4 rounded-xl bg-slate-50 border border-slate-200"></textarea>
                 
-                <div id="contenedor-campos-plantilla" class="grid grid-cols-2 gap-4 border-t pt-4 mt-2"></div>
-
-                <div class="border-t pt-4 mt-2">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-slate-500 uppercase">¿Necesitas un campo nuevo?</span>
-                        <button type="button" id="btn-agregar-campo" class="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded font-bold hover:bg-indigo-100">+ Agregar Campo</button>
-                    </div>
-                    <div id="contenedor-campos" class="space-y-2"></div>
+                <div id="contenedor-campos-plantilla" class="col-span-2 grid grid-cols-2 gap-4 border-t pt-4"></div>
+                
+                <div class="col-span-2 border-t pt-4">
+                    <button type="button" id="btn-agregar-campo" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-lg">+ Añadir campo permanente</button>
+                    <div id="contenedor-campos" class="mt-4 space-y-2"></div>
                 </div>
 
-                <div class="flex gap-4 pt-4">
-                    <button type="button" id="btn-cerrar-modal" class="w-full text-slate-400 hover:text-slate-600">Cancelar</button>
-                    <button type="submit" class="w-full bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-slate-800">Guardar Cambios</button>
+                <div class="col-span-2 flex gap-4 pt-4">
+                    <button type="button" id="btn-cerrar-modal" class="flex-1 p-4 rounded-xl font-bold text-slate-400 hover:bg-slate-100">Cancelar</button>
+                    <button type="submit" class="flex-1 p-4 rounded-xl font-bold bg-slate-900 text-white shadow-lg hover:bg-black">Guardar</button>
                 </div>
             </form>
         </div>
