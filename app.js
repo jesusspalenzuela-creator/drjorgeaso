@@ -1,9 +1,9 @@
 const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
 const N8N_POST_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/crearcita';
 
-// AQUÍ ESTÁN LAS CONTRASEÑAS Y LOS CLIENTES
 const USUARIOS_VALIDOS = { "drjorgeaso": "1234", "inovixe": "admin", "clinicadental": "12345" };
 let clienteLogueado = "";
+let camposDinamicosGlobales = []; // Aquí guardaremos los campos detectados
 
 const modal = document.getElementById('modal-cita');
 document.getElementById('btn-abrir-modal').onclick = () => modal.classList.remove('hidden');
@@ -11,7 +11,7 @@ document.getElementById('btn-cerrar-modal').onclick = () => modal.classList.add(
 document.getElementById('btn-cerrar-sesion').onclick = () => location.reload();
 document.getElementById('btn-refrescar').onclick = cargarCitasDelServidor;
 
-// Agregar Campos Manuales
+// Agregar Campos Totalmente Nuevos
 document.getElementById('btn-agregar-campo').addEventListener('click', () => {
     const container = document.getElementById('contenedor-campos');
     const id = 'campo_' + Date.now();
@@ -48,8 +48,36 @@ async function cargarCitasDelServidor() {
         document.getElementById('stat-total').innerText = citas.length;
         document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado === 'confirmó').length;
 
-        document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => `
-            <tr class="hover:bg-slate-50 transition border-b border-slate-50">
+        // 1. EXTRAER CAMPOS DINÁMICOS DEL HISTORIAL DEL CLIENTE
+        let keysUnicas = new Set();
+        citas.forEach(c => {
+            if (c.campos_personalizados) {
+                // Parseamos por si PostgreSQL lo envió como texto
+                let obj = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : c.campos_personalizados;
+                c.camposParseados = obj; // Guardamos el objeto fácil de leer
+                Object.keys(obj).forEach(k => keysUnicas.add(k));
+            } else {
+                c.camposParseados = {};
+            }
+        });
+        camposDinamicosGlobales = Array.from(keysUnicas);
+
+        // 2. CONSTRUIR CABECERAS DINÁMICAMENTE
+        let htmlCabecera = `<tr>
+            <th class="p-4">ID</th><th class="p-4">Identificación</th><th class="p-4">Paciente</th>
+            <th class="p-4">Edad</th><th class="p-4">Teléfono</th><th class="p-4">F. Cita</th>
+            <th class="p-4">H. Cita</th><th class="p-4">Profesional</th><th class="p-4">Motivo</th>
+            <th class="p-4">Procesado</th><th class="p-4">Estado</th>`;
+        
+        camposDinamicosGlobales.forEach(k => {
+            htmlCabecera += `<th class="p-4 text-indigo-400 uppercase tracking-widest">${k.replace(/_/g, ' ')}</th>`;
+        });
+        htmlCabecera += `</tr>`;
+        document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
+
+        // 3. PINTAR FILAS CON LAS COLUMNAS EXTRA
+        document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => {
+            let row = `<tr class="hover:bg-slate-50 transition border-b border-slate-50">
                 <td class="p-4">${c.id || '-'}</td>
                 <td class="p-4">${c.identificacion || '-'}</td>
                 <td class="p-4 font-bold text-slate-800">${c.nombres || ''} ${c.apellidos || ''}</td>
@@ -64,9 +92,25 @@ async function cargarCitasDelServidor() {
                     <span class="px-2 py-1 rounded-full text-[9px] font-bold ${c.estado === 'confirmó' ? 'bg-green-100 text-green-700' : 'bg-slate-100'} uppercase">
                         ${c.estado || 'pendiente'}
                     </span>
-                </td>
-            </tr>
+                </td>`;
+            
+            // Añadir las celdas de los campos dinámicos
+            camposDinamicosGlobales.forEach(k => {
+                row += `<td class="p-4 font-semibold text-indigo-600">${c.camposParseados[k] || '-'}</td>`;
+            });
+            
+            row += `</tr>`;
+            return row;
+        }).join('');
+
+        // 4. ACTUALIZAR PLANTILLA DEL MODAL
+        document.getElementById('contenedor-campos-plantilla').innerHTML = camposDinamicosGlobales.map(k => `
+            <div>
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">${k.replace(/_/g, ' ')}</label>
+                <input type="text" data-key="${k}" class="input-plantilla bg-indigo-50 p-3 rounded-xl border border-indigo-100 w-full font-semibold text-indigo-900" placeholder="Escribir...">
+            </div>
         `).join('');
+
     } catch (e) { console.error(e); }
 }
 
@@ -74,9 +118,18 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     let camposPersonalizadosObj = {};
+    
+    // Recoger los datos de la Plantilla (los que ya existen)
+    document.querySelectorAll('.input-plantilla').forEach(input => {
+        const key = input.getAttribute('data-key');
+        if (input.value.trim()) {
+            camposPersonalizadosObj[key] = input.value.trim();
+        }
+    });
+
+    // Recoger los campos Totalmente Nuevos (si creó uno nuevo ahora)
     const nombresCampos = document.querySelectorAll('.nombre-campo');
     const valoresCampos = document.querySelectorAll('.valor-campo');
-    
     nombresCampos.forEach((input, index) => {
         const key = input.value.trim().toLowerCase().replace(/ /g, "_");
         if(key) {
@@ -85,7 +138,7 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
     });
 
     const payload = {
-        id_cliente: clienteLogueado, // Esto separa a tus clientes
+        id_cliente: clienteLogueado,
         identificacion: document.getElementById('form-identificacion').value,
         edad: parseInt(document.getElementById('form-edad').value) || 0,
         nombres: document.getElementById('form-nombres').value,
@@ -93,7 +146,7 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
         telefono: document.getElementById('form-telefono').value,
         fecha_cita: document.getElementById('form-fecha').value,
         hora_cita: document.getElementById('form-hora').value,
-        profesional: document.getElementById('form-profesional').value, // Doctor manual
+        profesional: document.getElementById('form-profesional').value,
         motivo: document.getElementById('form-motivo').value,
         estado: 'esperando respuesta',
         procesado: 'pendiente',
