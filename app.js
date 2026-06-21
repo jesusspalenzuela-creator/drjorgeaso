@@ -1,5 +1,6 @@
 const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
 const N8N_POST_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/crearcita';
+
 const USUARIOS_VALIDOS = { "drjorgeaso": "1234", "inovixe": "admin" };
 let clienteLogueado = "";
 
@@ -40,10 +41,9 @@ async function cargarCitasDelServidor() {
                 <td class="p-4">${c.telefono || '-'}</td>
                 <td class="p-4">${c.fecha_cita ? c.fecha_cita.split('T')[0] : '-'}</td>
                 <td class="p-4">${c.hora_cita || '-'}</td>
-                <td class="p-4 font-semibold text-blue-700">${c.profesional || '-'}</td>
-                <td class="p-4">${c.motivo || '-'}</td>
-                <td class="p-4">${c.procesado || 'pendiente'}</td>
-                <td class="p-4"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${c.estado === 'confirmó' ? 'bg-green-100 text-green-700' : 'bg-slate-100'} uppercase">${c.estado || 'pendiente'}</span></td>
+                <td class="p-4 text-blue-700 font-semibold">${c.profesional || '-'}</td>
+                <td class="p-4 text-slate-500">${c.motivo || '-'}</td>
+                <td class="p-4"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${c.estado === 'confirmó' ? 'bg-green-100 text-green-700' : 'bg-slate-100'}">${c.estado || 'pendiente'}</span></td>
             </tr>
         `).join('');
     } catch (e) { console.error(e); }
@@ -61,10 +61,14 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
         hora_cita: document.getElementById('form-hora').value,
         profesional: document.getElementById('form-profesional').value,
         motivo: document.getElementById('form-motivo').value,
-        procesado: 'pendiente',
-        estado: 'esperando respuesta'
+        estado: 'esperando respuesta',
+        procesado: 'pendiente'
     };
-    await fetch(N8N_POST_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+    await fetch(N8N_POST_URL, { 
+        method: 'POST', 
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload) 
+    });
     modal.classList.add('hidden');
     document.getElementById('form-cita').reset();
     cargarCitasDelServidor();
