@@ -32,18 +32,24 @@ async function cargarCitasDelServidor() {
         document.getElementById('stat-total').innerText = citas.length;
         document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado === 'confirmó').length;
 
+        // Render Tabla (11 celdas para 11 columnas)
         document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => `
             <tr class="hover:bg-slate-50 transition border-b border-slate-50">
                 <td class="p-4">${c.id || '-'}</td>
                 <td class="p-4">${c.identificacion || '-'}</td>
-                <td class="p-4 font-bold">${c.nombres || ''} ${c.apellidos || ''}</td>
+                <td class="p-4 font-bold text-slate-800">${c.nombres || ''} ${c.apellidos || ''}</td>
                 <td class="p-4">${c.edad || '-'}</td>
                 <td class="p-4">${c.telefono || '-'}</td>
                 <td class="p-4">${c.fecha_cita ? c.fecha_cita.split('T')[0] : '-'}</td>
                 <td class="p-4">${c.hora_cita || '-'}</td>
                 <td class="p-4 text-blue-700 font-semibold">${c.profesional || '-'}</td>
                 <td class="p-4 text-slate-500">${c.motivo || '-'}</td>
-                <td class="p-4"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${c.estado === 'confirmó' ? 'bg-green-100 text-green-700' : 'bg-slate-100'}">${c.estado || 'pendiente'}</span></td>
+                <td class="p-4">${c.procesado || '-'}</td>
+                <td class="p-4">
+                    <span class="px-2 py-1 rounded-full text-[9px] font-bold ${c.estado === 'confirmó' ? 'bg-green-100 text-green-700' : 'bg-slate-100'} uppercase">
+                        ${c.estado || 'pendiente'}
+                    </span>
+                </td>
             </tr>
         `).join('');
     } catch (e) { console.error(e); }
