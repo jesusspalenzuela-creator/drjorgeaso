@@ -37,17 +37,17 @@ async function cargarCitasDelServidor() {
 
         const cuerpo = document.getElementById('tabla-cuerpo');
         cuerpo.innerHTML = citas.map(c => `
-            <tr class="hover:bg-slate-50 transition border-b border-slate-50">
-                <td class="p-6 text-sm text-slate-500">${c.id || '-'}</td>
-                <td class="p-6 text-sm text-slate-500">${c.identificacion || '-'}</td>
-                <td class="p-6 text-sm font-semibold">${c.nombres || ''} ${c.apellidos || ''}</td>
-                <td class="p-6 text-sm text-slate-500">${c.edad || '-'}</td>
-                <td class="p-6 text-sm text-slate-500">${c.telefono || '-'}</td>
-                <td class="p-6 text-sm text-slate-500">${c.fecha_cita ? c.fecha_cita.split('T')[0] : ''}<br>${c.hora_cita || ''}</td>
-                <td class="p-6 text-sm font-bold text-blue-700">${c.profesional || '-'}</td>
-                <td class="p-6 text-sm text-slate-500">${c.motivo || '-'}</td>
-                <td class="p-6 text-sm text-slate-500">${c.procesado || '-'}</td>
-                <td class="p-6"><span class="px-3 py-1 rounded-full text-[10px] font-bold ${c.estado === 'confirmó' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'} uppercase">${c.estado || 'pendiente'}</span></td>
+            <tr class="hover:bg-slate-50 transition">
+                <td class="p-4">${c.id || '-'}</td>
+                <td class="p-4">${c.identificacion || '-'}</td>
+                <td class="p-4 font-semibold">${c.nombres || ''} ${c.apellidos || ''} <br> <span class="text-xs text-slate-400">Edad: ${c.edad || '-'}</span></td>
+                <td class="p-4">${c.edad || '-'}</td>
+                <td class="p-4">${c.telefono || '-'}</td>
+                <td class="p-4">${c.fecha_cita ? c.fecha_cita.split('T')[0] : ''} <br> ${c.hora_cita || ''}</td>
+                <td class="p-4 text-blue-700 font-bold">${c.profesional || '-'}</td>
+                <td class="p-4">${c.motivo || '-'}</td>
+                <td class="p-4"><span class="px-2 py-1 rounded-lg text-xs font-bold ${c.estado === 'confirmó' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}">${c.estado || 'pendiente'}</span></td>
+                <td class="p-4">${c.procesado || '-'}</td>
             </tr>
         `).join('');
     } catch (e) { console.error(e); }
@@ -69,11 +69,13 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
         estado: 'esperando respuesta',
         procesado: 'pendiente'
     };
+    
     await fetch(N8N_POST_URL, { 
         method: 'POST', 
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload) 
     });
+    
     modal.classList.add('hidden');
     document.getElementById('form-cita').reset();
     cargarCitasDelServidor();
