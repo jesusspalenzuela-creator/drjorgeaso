@@ -5,67 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inóvixe | Pro Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen text-gray-800">
+<body class="bg-slate-50 min-h-screen">
 
-    <!-- LOGIN -->
-    <div id="seccion-login" class="flex items-center justify-center min-h-screen">
-        <div class="bg-white p-10 rounded-3xl shadow-xl w-full max-w-sm border border-gray-100">
-            <h2 class="text-2xl font-bold mb-6 text-center text-blue-900">Inóvixe SaaS</h2>
+    <!-- LOGIN (Se mantiene igual pero estilizado) -->
+    <div id="seccion-login" class="flex items-center justify-center min-h-screen bg-slate-900">
+        <div class="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-sm">
+            <h2 class="text-3xl font-black text-slate-900 mb-2">Inóvixe</h2>
+            <p class="text-slate-500 mb-8">Acceso a plataforma</p>
             <form id="form-login" class="space-y-4">
-                <input type="text" id="login-usuario" placeholder="Usuario" class="w-full bg-gray-50 rounded-xl p-3 border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500">
-                <input type="password" id="login-password" placeholder="Contraseña" class="w-full bg-gray-50 rounded-xl p-3 border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500">
-                <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 transition">Entrar</button>
+                <input type="text" id="login-usuario" placeholder="ID de Usuario" class="w-full bg-slate-50 p-4 rounded-xl border focus:ring-2 focus:ring-indigo-500 outline-none">
+                <input type="password" id="login-password" placeholder="Contraseña" class="w-full bg-slate-50 p-4 rounded-xl border focus:ring-2 focus:ring-indigo-500 outline-none">
+                <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold hover:bg-indigo-700 transition">Iniciar Sesión</button>
             </form>
         </div>
     </div>
 
-    <!-- PANEL PRINCIPAL -->
-    <div id="seccion-panel" class="hidden p-8 max-w-7xl mx-auto">
-        <!-- HEADER -->
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-extrabold text-gray-900">Bienvenido, <span id="nombre-cliente-titulo" class="text-blue-600 capitalize"></span></h1>
-            <button id="btn-cerrar-sesion" class="text-gray-400 hover:text-red-500 transition">Cerrar Sesión</button>
-        </div>
-
-        <!-- TARJETAS MÉTRICAS -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"><p class="text-gray-400 text-xs font-bold uppercase">Total Citas</p><h3 id="stat-total" class="text-3xl font-bold">0</h3></div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"><p class="text-green-500 text-xs font-bold uppercase">Confirmadas</p><h3 id="stat-confirmadas" class="text-3xl font-bold">0</h3></div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"><p class="text-yellow-500 text-xs font-bold uppercase">Pendientes</p><h3 id="stat-pendientes" class="text-3xl font-bold">0</h3></div>
-            <button id="btn-abrir-modal" class="bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">+ Nueva Cita</button>
-        </div>
-
-        <!-- TABLA -->
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="p-6 border-b border-gray-50 flex justify-between items-center">
-                <h2 class="font-bold text-lg">Historial de Pacientes</h2>
-                <button id="btn-refrescar" class="text-blue-600 font-semibold text-sm">Actualizar</button>
+    <!-- PANEL (Sidebar Layout) -->
+    <div id="seccion-panel" class="hidden flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-900 text-white p-8 flex flex-col justify-between">
+            <div>
+                <h1 class="text-2xl font-bold mb-10">Inóvixe</h1>
+                <nav class="space-y-4">
+                    <div class="text-indigo-400 font-bold text-sm uppercase">Dashboard</div>
+                    <div class="text-slate-400 hover:text-white cursor-pointer">Citas</div>
+                </nav>
             </div>
-            <table class="w-full text-sm text-left">
-                <thead class="bg-gray-50 text-gray-400 font-bold uppercase text-xs">
-                    <tr><th class="p-4">Paciente</th><th class="p-4">Teléfono</th><th class="p-4">Fecha</th><th class="p-4">Estado</th></tr>
-                </thead>
-                <tbody id="tabla-cuerpo" class="divide-y divide-gray-50"></tbody>
-            </table>
-        </div>
+            <button id="btn-cerrar-sesion" class="text-slate-500 hover:text-white text-sm">Cerrar Sesión</button>
+        </aside>
+
+        <!-- Contenido -->
+        <main class="flex-1 p-10">
+            <div class="flex justify-between items-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-900">Bienvenido, <span id="nombre-cliente-titulo"></span></h2>
+                <button id="btn-abrir-modal" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200">+ Nueva Cita</button>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-6 mb-10">
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <p class="text-slate-400 text-xs font-bold uppercase">Total</p>
+                    <h3 id="stat-total" class="text-3xl font-bold text-slate-900">0</h3>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <p class="text-green-500 text-xs font-bold uppercase">Confirmadas</p>
+                    <h3 id="stat-confirmadas" class="text-3xl font-bold text-slate-900">0</h3>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <p class="text-yellow-500 text-xs font-bold uppercase">Pendientes</p>
+                    <h3 id="stat-pendientes" class="text-3xl font-bold text-slate-900">0</h3>
+                </div>
+            </div>
+
+            <!-- Tabla -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 text-slate-400 text-xs uppercase font-bold">
+                        <tr><th class="p-6">Paciente</th><th class="p-6">Teléfono</th><th class="p-6">Fecha</th><th class="p-6">Estado</th></tr>
+                    </thead>
+                    <tbody id="tabla-cuerpo" class="divide-y divide-slate-50"></tbody>
+                </table>
+            </div>
+        </main>
     </div>
 
-    <!-- MODAL -->
-    <div id="modal-cita" class="fixed inset-0 bg-black bg-opacity-30 hidden flex items-center justify-center p-4 z-50">
+    <!-- MODAL PREMIUM -->
+    <div id="modal-cita" class="fixed inset-0 bg-slate-900/50 hidden backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-3xl w-full max-w-lg shadow-2xl">
-            <h2 class="text-2xl font-bold mb-6">Nueva Cita</h2>
+            <h2 class="text-2xl font-bold mb-6">Programar Nueva Cita</h2>
             <form id="form-cita" class="space-y-4">
                 <input type="hidden" id="form-profesional">
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="form-nombres" placeholder="Nombres" required class="bg-gray-50 p-3 rounded-xl w-full border">
-                    <input type="text" id="form-apellidos" placeholder="Apellidos" required class="bg-gray-50 p-3 rounded-xl w-full border">
+                    <input type="text" id="form-nombres" placeholder="Nombres" required class="bg-slate-50 p-4 rounded-xl border w-full">
+                    <input type="text" id="form-apellidos" placeholder="Apellidos" required class="bg-slate-50 p-4 rounded-xl border w-full">
                 </div>
-                <input type="date" id="form-fecha" required class="bg-gray-50 p-3 rounded-xl w-full border">
-                <textarea id="form-motivo" placeholder="Motivo" class="bg-gray-50 p-3 rounded-xl w-full border"></textarea>
-                <div class="flex gap-4">
-                    <button type="button" id="btn-cerrar-modal" class="w-full text-gray-500">Cancelar</button>
-                    <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-xl">Guardar</button>
+                <input type="date" id="form-fecha" required class="bg-slate-50 p-4 rounded-xl border w-full">
+                <textarea id="form-motivo" placeholder="Motivo de la consulta" class="bg-slate-50 p-4 rounded-xl border w-full"></textarea>
+                <div class="flex gap-4 pt-4">
+                    <button type="button" id="btn-cerrar-modal" class="w-full text-slate-400 hover:text-slate-600">Cancelar</button>
+                    <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold">Guardar Cita</button>
                 </div>
             </form>
         </div>
