@@ -3,108 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inóvixe | Panel Multi-Cliente</title>
+    <title>Inóvixe | SaaS Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans">
+<body class="bg-gray-50 min-h-screen font-sans">
 
     <div id="seccion-login" class="flex items-center justify-center min-h-screen">
-        <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Inóvixe SaaS Login</h2>
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
+            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Inóvixe SaaS</h2>
             <form id="form-login" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Usuario (ID Cliente)</label>
-                    <input type="text" id="login-usuario" required placeholder="ej: drjorgeaso" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Contraseña</label>
-                    <input type="password" id="login-password" required placeholder="••••••••" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 font-semibold">Entrar al Panel</button>
+                <input type="text" id="login-usuario" required placeholder="Usuario" class="w-full rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-blue-500 outline-none">
+                <input type="password" id="login-password" required placeholder="Contraseña" class="w-full rounded-xl border-gray-200 shadow-sm p-3 border focus:ring-2 focus:ring-blue-500 outline-none">
+                <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 font-bold transition-all">Entrar al Panel</button>
             </form>
-            <p id="login-error" class="text-red-500 text-sm mt-2 text-center hidden">Usuario o contraseña incorrectos</p>
+            <p id="login-error" class="text-red-500 text-sm mt-4 text-center hidden">Credenciales inválidas</p>
         </div>
     </div>
 
     <div id="seccion-panel" class="hidden p-6 max-w-7xl mx-auto space-y-6">
-        <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-            <h1 class="text-2xl font-bold text-gray-800">Panel de Control: <span id="nombre-cliente-titulo" class="text-blue-600 capitalize"></span></h1>
-            <button id="btn-cerrar-sesion" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm">Cerrar Sesión</button>
+        
+        <div class="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Panel: <span id="nombre-cliente-titulo" class="text-blue-600 capitalize"></span></h1>
+                <p class="text-gray-400 text-sm">Gestión inteligente de citas médicas</p>
+            </div>
+            <button id="btn-cerrar-sesion" class="text-gray-400 hover:text-red-600 font-bold text-sm transition-colors">Cerrar Sesión</button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-lg shadow-sm space-y-4 h-fit">
-                <h2 class="text-lg font-bold text-gray-700 border-b pb-2">Cargar Nueva Cita</h2>
-                <form id="form-cita" class="space-y-3">
-                    <input type="hidden" id="form-profesional">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500">Identificación (DNI/Cédula)</label>
-                        <input type="text" id="form-identificacion" required class="w-full border rounded p-1.5 text-sm">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500">Nombres</label>
-                            <input type="text" id="form-nombres" required class="w-full border rounded p-1.5 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500">Apellidos</label>
-                            <input type="text" id="form-apellidos" required class="w-full border rounded p-1.5 text-sm">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500">Edad</label>
-                            <input type="number" id="form-edad" required class="w-full border rounded p-1.5 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500">Teléfono</label>
-                            <input type="text" id="form-telefono" required placeholder="ej: 584123456789" class="w-full border rounded p-1.5 text-sm">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500">Fecha Cita</label>
-                            <input type="date" id="form-fecha" required class="w-full border rounded p-1.5 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500">Hora Cita</label>
-                            <input type="time" id="form-hora" required class="w-full border rounded p-1.5 text-sm">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500">Motivo de la Cita</label>
-                        <textarea id="form-motivo" rows="2" class="w-full border rounded p-1.5 text-sm"></textarea>
-                    </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100"><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest">Total Citas</p><h3 id="stat-total" class="text-3xl font-bold text-gray-800">0</h3></div>
+            <div class="bg-green-50 p-5 rounded-2xl shadow-sm border border-green-100"><p class="text-green-600 text-[10px] uppercase font-black tracking-widest">Confirmadas</p><h3 id="stat-confirmadas" class="text-3xl font-bold text-green-700">0</h3></div>
+            <div class="bg-yellow-50 p-5 rounded-2xl shadow-sm border border-yellow-100"><p class="text-yellow-600 text-[10px] uppercase font-black tracking-widest">Pendientes</p><h3 id="stat-pendientes" class="text-3xl font-bold text-yellow-700">0</h3></div>
+            <div class="bg-red-50 p-5 rounded-2xl shadow-sm border border-red-100"><p class="text-red-600 text-[10px] uppercase font-black tracking-widest">Canceladas</p><h3 id="stat-canceladas" class="text-3xl font-bold text-red-700">0</h3></div>
+        </div>
 
-                    <div class="border-t pt-2 mt-2">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-purple-700">Campos Extra (Manuales)</span>
-                            <button type="button" id="btn-agregar-campo-manual" class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded hover:bg-purple-200">+ Crear Campo</button>
-                        </div>
-                        <div id="contenedor-campos-manuales" class="space-y-2">
-                            </div>
-                    </div>
+        <button id="btn-abrir-modal" class="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all font-bold">+ Nueva Cita</button>
 
-                    <button type="submit" class="w-full bg-green-600 text-white p-2 rounded-md hover:bg-green-700 font-semibold text-sm">Guardar Cita en el Sistema</button>
-                </form>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold text-gray-800">Listado de Citas</h2>
+                <button id="btn-refrescar" class="text-blue-600 font-semibold text-sm hover:underline">🔄 Actualizar Lista</button>
             </div>
-
-            <div class="bg-white p-6 rounded-lg shadow-sm lg:col-span-2 space-y-4">
-                <div class="flex justify-between items-center border-b pb-2">
-                    <h2 class="text-lg font-bold text-gray-700">Listado de Citas Agendadas</h2>
-                    <button id="btn-refrescar" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded text-xs font-semibold">🔄 Actualizar Lista</button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full table-auto text-left">
-                        <thead class="bg-gray-100 text-gray-600 text-xs uppercase font-semibold">
-                            <tr id="tabla-cabecera">
-                                </tr>
-                        </thead>
-                        <tbody id="tabla-cuerpo" class="text-xs divide-y divide-gray-200">
-                            </tbody>
-                    </table>
-                </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left">
+                    <thead class="text-gray-400 text-[10px] uppercase font-bold tracking-widest">
+                        <tr id="tabla-cabecera"></tr>
+                    </thead>
+                    <tbody id="tabla-cuerpo" class="text-sm text-gray-600 divide-y divide-gray-50"></tbody>
+                </table>
             </div>
+        </div>
+    </div>
+
+    <div id="modal-cita" class="fixed inset-0 bg-gray-900/50 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-lg shadow-2xl relative">
+            <button id="btn-cerrar-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">✕</button>
+            <h2 class="text-2xl font-bold mb-6">Agendar Nueva Cita</h2>
+            <form id="form-cita" class="space-y-4">
+                <input type="hidden" id="form-profesional">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="form-identificacion" placeholder="DNI / Cédula" required class="w-full border rounded-xl p-3 bg-gray-50 outline-none">
+                    <input type="text" id="form-telefono" placeholder="Teléfono" required class="w-full border rounded-xl p-3 bg-gray-50 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="form-nombres" placeholder="Nombres" required class="w-full border rounded-xl p-3 bg-gray-50 outline-none">
+                    <input type="text" id="form-apellidos" placeholder="Apellidos" required class="w-full border rounded-xl p-3 bg-gray-50 outline-none">
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <input type="number" id="form-edad" placeholder="Edad" required class="w-full border rounded-xl p-3 bg-gray-50 outline-none">
+                    <input type="date" id="form-fecha" required class="w-full border rounded-xl p-3 bg-gray-50 outline-none">
+                    <input type="time" id="form-hora" required class="w-full border rounded-xl p-3 bg-gray-50 outline-none">
+                </div>
+                <textarea id="form-motivo" placeholder="Motivo de la consulta..." class="w-full border rounded-xl p-3 bg-gray-50 outline-none"></textarea>
+                <button type="submit" class="w-full bg-blue-600 text-white p-4 rounded-xl font-bold hover:bg-blue-700 transition-all">Confirmar Registro</button>
+            </form>
         </div>
     </div>
 
