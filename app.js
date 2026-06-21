@@ -1,18 +1,17 @@
 const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
 const N8N_POST_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/crearcita';
 
-// AQUÍ SE CONFIGURAN LAS CONTRASEÑAS Y CLIENTES
-const USUARIOS_VALIDOS = { "drjorgeaso": "1234", "inovixe": "admin" };
+// AQUÍ ESTÁN LAS CONTRASEÑAS Y LOS CLIENTES
+const USUARIOS_VALIDOS = { "drjorgeaso": "1234", "inovixe": "admin", "clinicadental": "12345" };
 let clienteLogueado = "";
 
-// UI Controles Generales
 const modal = document.getElementById('modal-cita');
 document.getElementById('btn-abrir-modal').onclick = () => modal.classList.remove('hidden');
 document.getElementById('btn-cerrar-modal').onclick = () => modal.classList.add('hidden');
 document.getElementById('btn-cerrar-sesion').onclick = () => location.reload();
 document.getElementById('btn-refrescar').onclick = cargarCitasDelServidor;
 
-// Lógica de Agregar Campos Manuales (Dinámicos)
+// Agregar Campos Manuales
 document.getElementById('btn-agregar-campo').addEventListener('click', () => {
     const container = document.getElementById('contenedor-campos');
     const id = 'campo_' + Date.now();
@@ -27,7 +26,6 @@ document.getElementById('btn-agregar-campo').addEventListener('click', () => {
     container.appendChild(div);
 });
 
-// Login
 document.getElementById('form-login').addEventListener('submit', (e) => {
     e.preventDefault();
     const u = document.getElementById('login-usuario').value.trim().toLowerCase();
@@ -41,7 +39,6 @@ document.getElementById('form-login').addEventListener('submit', (e) => {
     }
 });
 
-// Cargar Citas
 async function cargarCitasDelServidor() {
     try {
         const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
@@ -73,11 +70,9 @@ async function cargarCitasDelServidor() {
     } catch (e) { console.error(e); }
 }
 
-// Enviar Cita Nueva
 document.getElementById('form-cita').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // 1. Recolectar los campos dinámicos
     let camposPersonalizadosObj = {};
     const nombresCampos = document.querySelectorAll('.nombre-campo');
     const valoresCampos = document.querySelectorAll('.valor-campo');
@@ -89,8 +84,8 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
         }
     });
 
-    // 2. Armar el objeto a enviar a n8n
     const payload = {
+        id_cliente: clienteLogueado, // Esto separa a tus clientes
         identificacion: document.getElementById('form-identificacion').value,
         edad: parseInt(document.getElementById('form-edad').value) || 0,
         nombres: document.getElementById('form-nombres').value,
@@ -98,11 +93,11 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
         telefono: document.getElementById('form-telefono').value,
         fecha_cita: document.getElementById('form-fecha').value,
         hora_cita: document.getElementById('form-hora').value,
-        profesional: document.getElementById('form-profesional').value, // Manual
+        profesional: document.getElementById('form-profesional').value, // Doctor manual
         motivo: document.getElementById('form-motivo').value,
         estado: 'esperando respuesta',
         procesado: 'pendiente',
-        campos_personalizados: camposPersonalizadosObj // ESTO ARREGLA EL ERROR DE JSON
+        campos_personalizados: camposPersonalizadosObj
     };
 
     try {
@@ -111,12 +106,9 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload) 
         });
-        
         modal.classList.add('hidden');
         document.getElementById('form-cita').reset();
-        document.getElementById('contenedor-campos').innerHTML = ""; // Limpiar campos extra
+        document.getElementById('contenedor-campos').innerHTML = ""; 
         cargarCitasDelServidor();
-    } catch (error) {
-        console.error("Error al enviar a n8n:", error);
-    }
+    } catch (e) { console.error(e); }
 });
