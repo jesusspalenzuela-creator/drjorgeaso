@@ -1,33 +1,58 @@
 const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
 const N8N_POST_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/crearcita';
-const USUARIOS_VALIDOS = { "drjorgeaso": "1234", "inovixe": "admin" };
+const USUARIOS_VALIDOS = { "drjorgeaso": "1234", "inovixe": "admin", "clinicadental": "12345" };
 
 let clienteLogueado = "";
-let camposDinamicosGlobales = [];
-let idCitaEnEdicion = null; 
+let idCitaEnEdicion = null;
+let camposPlantilla = JSON.parse(localStorage.getItem('campos_plantilla') || '[]');
 
 const modal = document.getElementById('modal-cita');
 
-// Eventos básicos
+// --- EVENTOS INICIALES ---
 document.getElementById('btn-abrir-modal').onclick = () => { resetearFormulario(); modal.classList.remove('hidden'); };
 document.getElementById('btn-cerrar-modal').onclick = () => modal.classList.add('hidden');
 document.getElementById('btn-cerrar-sesion').onclick = () => location.reload();
 document.getElementById('btn-refrescar').onclick = cargarCitasDelServidor;
 
-// Agregar Campos nuevos
+// Agregar campo "permanente" (Plantilla)
 document.getElementById('btn-agregar-campo').addEventListener('click', () => {
-    const container = document.getElementById('contenedor-campos');
-    const id = 'campo_' + Date.now();
-    const div = document.createElement('div');
-    div.id = id;
-    div.className = "flex gap-2";
-    div.innerHTML = `
-        <input type="text" placeholder="Nombre" class="nombre-campo bg-slate-50 p-2 rounded-lg border w-1/2 text-sm">
-        <input type="text" placeholder="Valor" class="valor-campo bg-slate-50 p-2 rounded-lg border w-1/2 text-sm">
-        <button type="button" onclick="document.getElementById('${id}').remove()" class="text-red-500 font-bold px-2">X</button>
-    `;
-    container.appendChild(div);
+    const nombre = prompt("Nombre del nuevo campo (ej: Seguro):");
+    if(nombre) {
+        if(!camposPlantilla.includes(nombre)) {
+            camposPlantilla.push(nombre);
+            localStorage.setItem('campos_plantilla', JSON.stringify(camposPlantilla));
+            renderizarCamposModal();
+        }
+    }
 });
+
+// --- FUNCIONES DE LÓGICA ---
+
+function renderizarCamposModal(datosCita = {}) {
+    const container = document.getElementById('contenedor-campos-plantilla');
+    container.innerHTML = camposPlantilla.map(nombre => `
+        <div class="relative">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">${nombre}</label>
+            <input type="text" data-key="${nombre}" value="${datosCita[nombre] || ''}" class="input-plantilla w-full p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-400 text-[10px]">Borrar</button>
+        </div>
+    `).join('');
+}
+
+window.eliminarCampo = (nombre) => {
+    camposPlantilla = camposPlantilla.filter(c => c !== nombre);
+    localStorage.setItem('campos_plantilla', JSON.stringify(camposPlantilla));
+    renderizarCamposModal();
+};
+
+function resetearFormulario() {
+    idCitaEnEdicion = null;
+    document.getElementById('titulo-modal').innerText = "Programar Nueva Cita";
+    document.getElementById('form-cita').reset();
+    renderizarCamposModal(); // Renderiza campos vacíos
+}
+
+// --- LOGIN Y CARGA ---
 
 document.getElementById('form-login').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -46,32 +71,20 @@ async function cargarCitasDelServidor() {
     try {
         const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
         const data = await res.json();
+        const citas = data.citas || (Array.isArray(data) ? data : []);
         
-        // CORRECCIÓN: Manejar la estructura [ { "citas": [...] } ]
-        let citas = [];
-        if (data.citas) citas = data.citas;
-        else if (Array.isArray(data) && data[0] && data[0].citas) citas = data[0].citas;
-        else if (Array.isArray(data)) citas = data;
-
-        console.log("Citas detectadas:", citas);
-        
-        // Extraer campos únicos
-        let keysUnicas = new Set();
-        citas.forEach(c => {
-            if(c.campos_personalizados) {
-                let obj = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : c.campos_personalizados;
-                c.camposParseados = obj;
-                Object.keys(obj).forEach(k => keysUnicas.add(k));
-            } else { c.camposParseados = {}; }
-        });
-        camposDinamicosGlobales = Array.from(keysUnicas);
+        document.getElementById('stat-total').innerText = citas.length;
+        document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado === 'confirmó').length;
 
         // Render Tabla
-        let cabeceras = ['ID', 'Paciente', 'Edad', 'Teléfono', 'F. Cita', 'H. Cita', 'Profesional', 'Estado', 'Acciones'];
-        document.getElementById('tabla-cabecera').innerHTML = `<tr>${cabeceras.map(h => `<th class="p-4">${h}</th>`).join('')} ${camposDinamicosGlobales.map(k => `<th class="p-4 text-indigo-400">${k}</th>`).join('')}</tr>`;
+        const cabeceras = ['ID', 'Paciente', 'Edad', 'Teléfono', 'F. Cita', 'H. Cita', 'Profesional', 'Estado', 'Acciones'];
+        document.getElementById('tabla-cabecera').innerHTML = `<tr>${cabeceras.map(h => `<th class="p-4">${h}</th>`).join('')} ${camposPlantilla.map(k => `<th class="p-4 text-indigo-400">${k}</th>`).join('')}</tr>`;
 
         document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => {
-            const citaString = encodeURIComponent(JSON.stringify(c));
+            let camposParseados = {};
+            try { camposParseados = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); } catch(e){}
+            
+            const citaString = encodeURIComponent(JSON.stringify({...c, camposParseados}));
             return `
             <tr class="border-b">
                 <td class="p-4">${c.id || '-'}</td>
@@ -83,11 +96,13 @@ async function cargarCitasDelServidor() {
                 <td class="p-4">${c.profesional || '-'}</td>
                 <td class="p-4"><span class="px-2 py-1 rounded-full text-[9px] font-bold ${c.estado === 'confirmó' ? 'bg-green-100 text-green-700' : 'bg-slate-100'} uppercase">${c.estado || 'pendiente'}</span></td>
                 <td class="p-4"><button onclick="prepararEdicion('${citaString}')" class="text-blue-600 font-bold hover:underline">Editar</button></td>
-                ${camposDinamicosGlobales.map(k => `<td class="p-4">${c.camposParseados[k] || '-'}</td>`).join('')}
+                ${camposPlantilla.map(k => `<td class="p-4">${camposParseados[k] || '-'}</td>`).join('')}
             </tr>`;
         }).join('');
     } catch (e) { console.error("Error al cargar:", e); }
 }
+
+// --- EDICIÓN Y GUARDADO ---
 
 window.prepararEdicion = (citaString) => {
     const c = JSON.parse(decodeURIComponent(citaString));
@@ -104,28 +119,15 @@ window.prepararEdicion = (citaString) => {
     document.getElementById('form-profesional').value = c.profesional || '';
     document.getElementById('form-motivo').value = c.motivo || '';
     
-    document.getElementById('contenedor-campos-plantilla').innerHTML = camposDinamicosGlobales.map(k => `
-        <div><label class="text-xs font-bold text-slate-500 uppercase">${k}</label>
-        <input type="text" data-key="${k}" value="${c.camposParseados[k] || ''}" class="input-plantilla bg-indigo-50 p-3 rounded-xl border w-full"></div>
-    `).join('');
-    
+    renderizarCamposModal(c.camposParseados);
     modal.classList.remove('hidden');
 };
-
-function resetearFormulario() {
-    idCitaEnEdicion = null;
-    document.getElementById('titulo-modal').innerText = "Programar Nueva Cita";
-    document.getElementById('form-cita').reset();
-    document.getElementById('contenedor-campos').innerHTML = "";
-    document.getElementById('contenedor-campos-plantilla').innerHTML = "";
-}
 
 document.getElementById('form-cita').addEventListener('submit', async (e) => {
     e.preventDefault();
     let camposPersonalizadosObj = {};
-    document.querySelectorAll('.input-plantilla').forEach(i => camposPersonalizadosObj[i.getAttribute('data-key')] = i.value);
-    document.querySelectorAll('.nombre-campo').forEach((i, idx) => {
-        if(i.value) camposPersonalizadosObj[i.value.trim()] = document.querySelectorAll('.valor-campo')[idx].value;
+    document.querySelectorAll('.input-plantilla').forEach(i => {
+        if(i.value) camposPersonalizadosObj[i.getAttribute('data-key')] = i.value;
     });
 
     const payload = {
@@ -144,7 +146,12 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
         campos_personalizados: camposPersonalizadosObj
     };
 
-    await fetch(N8N_POST_URL, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'application/json'} });
+    await fetch(N8N_POST_URL, { 
+        method: 'POST', 
+        body: JSON.stringify(payload), 
+        headers: {'Content-Type': 'application/json'} 
+    });
+    
     modal.classList.add('hidden');
     resetearFormulario();
     cargarCitasDelServidor();
