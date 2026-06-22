@@ -12,36 +12,40 @@
             font-family: 'Inter', system-ui, sans-serif;
         }
 
-        /* Tarjetas con hover elevado */
-        .card-hover {
-            transition: all 0.2s ease;
-        }
+        /* Hover Elevado Premium */
+        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .card-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
         /* Filas de tabla interactivas */
-        .table-row-hover:hover {
-            background-color: #f8fafc;
-            transition: background-color 0.15s;
-        }
+        .table-row-hover:hover { background-color: #f8fafc; transition: background-color 0.2s; }
 
         /* Scrollbar minimalista */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+
+        /* Animación para Notificaciones (Toasts) */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-enter { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
 </head>
-<body class="bg-slate-900 min-h-screen font-sans antialiased">
+<body class="bg-slate-900 min-h-screen font-sans antialiased overflow-x-hidden">
 
-    <div id="seccion-login" class="flex items-center justify-center min-h-screen p-4">
-        <div class="w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 md:p-10 border border-white/20">
+    <!-- CONTENEDOR DE NOTIFICACIONES (Toasts) -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none w-80"></div>
+
+    <!-- LOGIN -->
+    <div id="seccion-login" class="flex items-center justify-center min-h-screen p-4 relative z-20">
+        <div class="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl p-8 md:p-10 border border-white/20">
             <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-700 to-indigo-800 rounded-2xl shadow-xl shadow-blue-900/20 mb-5">
-                    <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-800 rounded-2xl shadow-xl shadow-blue-900/20 mb-5">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
                 <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Finovixe</h1>
                 <p class="text-slate-500 font-medium mt-1">Panel de gestión profesional</p>
@@ -51,174 +55,164 @@
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-1.5">Usuario</label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
+                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                         </span>
-                        <input type="text" id="login-usuario" placeholder="Tu usuario" required
-                               class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition">
+                        <input type="text" id="login-usuario" placeholder="Tu usuario" required class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition font-medium text-slate-700">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-1.5">Contraseña</label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
+                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                         </span>
-                        <input type="password" id="login-password" placeholder="••••••••" required
-                               class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition">
+                        <input type="password" id="login-password" placeholder="••••••••" required class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition font-medium text-slate-700">
                     </div>
                 </div>
 
-                <button type="submit" 
-                        class="w-full bg-gradient-to-r from-blue-700 to-indigo-800 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-900/20 hover:shadow-xl hover:scale-[1.02] transition-all">
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-800 text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-900/30 hover:shadow-xl hover:scale-[1.02] transition-all tracking-wide">
                     Acceder al panel
                 </button>
             </form>
-
-            <p class="text-center text-xs text-slate-400 mt-6">Plataforma segura · v2.0</p>
+            <p class="text-center text-xs text-slate-400 mt-6 font-medium">Plataforma segura · v2.1</p>
         </div>
     </div>
 
-    <div id="seccion-panel" class="hidden relative min-h-screen" style="background: linear-gradient(135deg, #0b1120 0%, #1a2332 100%);">
-        <canvas id="particle-canvas" class="absolute inset-0 z-0 pointer-events-none"></canvas>
+    <!-- PANEL PRINCIPAL -->
+    <div id="seccion-panel" class="hidden relative min-h-screen" style="background: linear-gradient(135deg, #0b1120 0%, #162032 100%);">
+        <canvas id="particle-canvas" class="absolute inset-0 z-0 pointer-events-none opacity-60"></canvas>
 
-        <nav class="relative z-10 bg-slate-900/80 backdrop-blur-md text-white shadow-xl sticky top-0 border-b border-white/10">
+        <!-- NAVBAR -->
+        <nav class="relative z-10 bg-slate-900/70 backdrop-blur-xl text-white sticky top-0 border-b border-white/5 shadow-2xl">
             <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 bg-blue-700 rounded-lg flex items-center justify-center shadow-md">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
+                    <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/50">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                     </div>
-                    <h1 class="text-xl font-extrabold tracking-tight">FINOVIXE <span class="text-blue-400">PRO</span></h1>
+                    <h1 class="text-xl font-black tracking-tight">FINOVIXE <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">PRO</span></h1>
                 </div>
                 <div class="flex items-center gap-4">
-                    <span id="nombre-cliente-titulo" class="text-sm font-medium text-slate-300 bg-white/10 px-4 py-1.5 rounded-full backdrop-blur-sm"></span>
-                    <button id="btn-cerrar-sesion" 
-                            class="flex items-center gap-2 text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl transition-all font-medium backdrop-blur-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
+                    <span id="nombre-cliente-titulo" class="text-sm font-semibold text-blue-100 bg-white/5 px-4 py-2 rounded-full border border-white/10 backdrop-blur-md hidden sm:block"></span>
+                    <button id="btn-cerrar-sesion" class="flex items-center gap-2 text-sm bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 px-4 py-2 rounded-xl transition-all font-bold border border-red-500/20 backdrop-blur-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                         Salir
                     </button>
                 </div>
             </div>
         </nav>
 
-        <main class="relative z-10 max-w-7xl mx-auto px-6 py-8">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4">
+        <main class="relative z-10 max-w-7xl mx-auto px-6 py-10">
+            <!-- CABECERA DE ACCIONES -->
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-10 gap-6">
                 <div>
-                    <h2 class="text-3xl font-extrabold text-white tracking-tight drop-shadow-md">Agenda Médica</h2>
-                    <p class="text-blue-200 font-medium mt-1">Panel de control centralizado</p>
+                    <h2 class="text-4xl font-black text-white tracking-tight drop-shadow-lg mb-2">Agenda Médica</h2>
+                    <p class="text-blue-200/80 font-medium text-lg flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Panel de control en vivo
+                    </p>
                 </div>
-                
-                <div class="flex gap-3 w-full sm:w-auto flex-wrap justify-end">
-                    <button id="btn-agregar-campo" 
-                            class="flex items-center gap-2 px-5 py-3 bg-white/5 border border-white/10 rounded-xl font-semibold text-blue-300 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
+                <div class="flex gap-3 w-full lg:w-auto flex-wrap lg:flex-nowrap justify-end">
+                    <button id="btn-agregar-campo" class="flex-1 lg:flex-none justify-center flex items-center gap-2 px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl font-bold text-blue-300 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                         Nuevo Campo
                     </button>
-                    <button id="btn-refrescar" 
-                            class="flex items-center gap-2 px-5 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl font-semibold text-white shadow-sm hover:bg-white/20 transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
+                    <button id="btn-refrescar" class="flex-1 lg:flex-none justify-center flex items-center gap-2 px-5 py-3.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl font-bold text-white shadow-sm hover:bg-white/20 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         Sincronizar
                     </button>
-                    <button id="btn-abrir-modal" 
-                            class="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-blue-900/30 hover:shadow-xl hover:scale-[1.02] transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
+                    <button id="btn-abrir-modal" class="w-full lg:w-auto justify-center flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-blue-900/50 hover:shadow-xl hover:scale-[1.02] transition-all border border-blue-500/30">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                         Nueva Cita
                     </button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/50 shadow-xl card-hover flex items-center gap-4 backdrop-blur-sm">
-                    <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Citas</p>
-                        <h3 id="stat-total" class="text-3xl font-extrabold text-slate-900">0</h3>
-                    </div>
+            <!-- TARJETAS DE ESTADÍSTICAS (5 Columnas) -->
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
+                <!-- Total -->
+                <div class="bg-white/95 p-5 rounded-2xl border border-slate-200/50 shadow-xl card-hover backdrop-blur-xl relative overflow-hidden">
+                    <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">Total Citas</p>
+                    <h3 id="stat-total" class="text-4xl font-black text-slate-800">0</h3>
                 </div>
-
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/50 shadow-xl card-hover flex items-center gap-4 backdrop-blur-sm">
-                    <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-emerald-500 text-xs font-bold uppercase tracking-wider">Confirmadas</p>
-                        <h3 id="stat-confirmadas" class="text-3xl font-extrabold text-emerald-600">0</h3>
-                    </div>
+                <!-- Confirmadas -->
+                <div class="bg-white/95 p-5 rounded-2xl border border-slate-200/50 shadow-xl card-hover backdrop-blur-xl relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 w-20 h-20 bg-emerald-100 rounded-full z-0 opacity-50 group-hover:scale-110 transition-transform"></div>
+                    <p class="text-emerald-600 text-[10px] font-black uppercase tracking-widest mb-1 relative z-10">Confirmadas</p>
+                    <h3 id="stat-confirmadas" class="text-4xl font-black text-emerald-600 relative z-10">0</h3>
                 </div>
-
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/50 shadow-xl card-hover flex items-center gap-4 backdrop-blur-sm">
-                    <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
+                <!-- Canceladas -->
+                <div class="bg-white/95 p-5 rounded-2xl border border-slate-200/50 shadow-xl card-hover backdrop-blur-xl relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 w-20 h-20 bg-red-100 rounded-full z-0 opacity-50 group-hover:scale-110 transition-transform"></div>
+                    <p class="text-red-500 text-[10px] font-black uppercase tracking-widest mb-1 relative z-10">Canceladas</p>
+                    <h3 id="stat-canceladas" class="text-4xl font-black text-red-500 relative z-10">0</h3>
+                </div>
+                <!-- Reprogramadas -->
+                <div class="bg-white/95 p-5 rounded-2xl border border-slate-200/50 shadow-xl card-hover backdrop-blur-xl relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 w-20 h-20 bg-amber-100 rounded-full z-0 opacity-50 group-hover:scale-110 transition-transform"></div>
+                    <p class="text-amber-500 text-[10px] font-black uppercase tracking-widest mb-1 relative z-10">Reprogramadas</p>
+                    <h3 id="stat-reprogramadas" class="text-4xl font-black text-amber-500 relative z-10">0</h3>
+                </div>
+                <!-- Estado del sistema -->
+                <div class="bg-white/95 p-5 rounded-2xl border border-slate-200/50 shadow-xl card-hover backdrop-blur-xl flex flex-col justify-center items-center text-center">
+                    <div class="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center mb-2 shadow-inner">
+                        <div class="w-4 h-4 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
                     </div>
-                    <div>
-                        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Estado</p>
-                        <h3 class="text-lg font-bold text-emerald-600">Sistema Activo</h3>
-                    </div>
+                    <p class="text-slate-600 text-[10px] font-black uppercase tracking-widest">Estado</p>
+                    <p class="text-sm font-bold text-emerald-600">En línea</p>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden backdrop-blur-sm">
-                <div class="overflow-x-auto">
+            <!-- TABLA PRINCIPAL -->
+            <div class="bg-white/95 rounded-[2rem] shadow-2xl shadow-black/10 border border-slate-200/60 overflow-hidden backdrop-blur-xl">
+                <div class="overflow-x-auto p-1">
                     <table class="w-full text-left whitespace-nowrap">
-                        <thead id="tabla-cabecera" class="bg-slate-50 border-b-2 border-slate-200 text-slate-500 uppercase text-[10px] tracking-widest font-bold"></thead>
-                        <tbody id="tabla-cuerpo" class="divide-y divide-slate-100 text-sm"></tbody>
+                        <thead id="tabla-cabecera" class="bg-slate-100/50 border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-widest font-extrabold"></thead>
+                        <tbody id="tabla-cuerpo" class="divide-y divide-slate-100/80 text-[13px] font-medium"></tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
 
-    <div id="modal-cita" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-white p-8 rounded-3xl w-full max-w-3xl shadow-2xl overflow-y-auto max-h-[90vh] border border-slate-100">
-            <div class="flex justify-between items-start mb-6">
-                <h2 id="titulo-modal" class="text-2xl font-extrabold text-slate-900">Nueva Cita</h2>
-                <button id="btn-cerrar-modal" class="text-slate-400 hover:text-slate-600 transition p-1">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+    <!-- MODAL DE CREACIÓN / EDICIÓN -->
+    <div id="modal-cita" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md hidden items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-[2rem] w-full max-w-4xl shadow-2xl overflow-y-auto max-h-[90vh] border border-slate-200">
+            <div class="flex justify-between items-center mb-8 border-b border-slate-100 pb-4">
+                <h2 id="titulo-modal" class="text-3xl font-black text-slate-900 tracking-tight">Nueva Cita</h2>
+                <button id="btn-cerrar-modal" class="text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-full p-2 transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
 
-            <form id="form-cita" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input type="text" id="form-identificacion" placeholder="Identificación" required class="col-span-2 p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition">
-                <input type="text" id="form-nombres" placeholder="Nombres" required class="p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition">
-                <input type="text" id="form-apellidos" placeholder="Apellidos" required class="p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition">
-                <input type="number" id="form-edad" placeholder="Edad" required class="p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition">
-                <input type="text" id="form-telefono" placeholder="Teléfono" required class="p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition">
-                <input type="date" id="form-fecha" required class="p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition">
-                <input type="time" id="form-hora" required class="p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition">
-                <input type="text" id="form-profesional" placeholder="Profesional" required class="col-span-2 p-4 rounded-xl bg-blue-50 border border-blue-200 font-semibold text-blue-900 placeholder-blue-300 focus:ring-2 focus:ring-blue-600 outline-none transition">
-                <textarea id="form-motivo" placeholder="Motivo de la consulta" class="col-span-2 p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition" rows="2"></textarea>
+            <form id="form-cita" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <!-- Fila 1 -->
+                <div class="md:col-span-1"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Identificación</label><input type="text" id="form-identificacion" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
+                <div class="md:col-span-2"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Nombres</label><input type="text" id="form-nombres" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
                 
-                <div id="contenedor-campos-plantilla" class="col-span-2 grid grid-cols-2 gap-4 border-t pt-4"></div>
+                <!-- Fila 2 -->
+                <div class="md:col-span-2"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Apellidos</label><input type="text" id="form-apellidos" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
+                <div class="md:col-span-1"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Edad</label><input type="number" id="form-edad" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
+                
+                <!-- Fila 3 -->
+                <div class="md:col-span-1"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Teléfono</label><input type="text" id="form-telefono" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
+                <div class="md:col-span-1"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Fecha</label><input type="date" id="form-fecha" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
+                <div class="md:col-span-1"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Hora</label><input type="time" id="form-hora" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
+                
+                <!-- Fila 4 -->
+                <div class="md:col-span-1"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Profesional Asignado</label><input type="text" id="form-profesional" required class="w-full p-4 rounded-xl bg-blue-50 border border-blue-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-bold text-blue-900"></div>
+                <div class="md:col-span-2"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Motivo de Consulta</label><textarea id="form-motivo" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800" rows="1"></textarea></div>
+                
+                <!-- CAMPOS DINÁMICOS -->
+                <div class="md:col-span-3 mt-4 pt-6 border-t border-slate-100">
+                    <h3 class="text-sm font-black text-slate-800 mb-4 flex items-center gap-2"><span class="w-1.5 h-4 bg-blue-500 rounded-full"></span> Información Adicional</h3>
+                    <div id="contenedor-campos-plantilla" class="grid grid-cols-1 md:grid-cols-3 gap-5"></div>
+                </div>
 
-                <div class="col-span-2 flex gap-4 pt-4 mt-2">
+                <div class="md:col-span-3 flex gap-4 pt-6 mt-4 border-t border-slate-100">
                     <button type="button" id="btn-cerrar-modal-secundario" class="flex-1 p-4 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition">Cancelar</button>
-                    <button type="submit" class="flex-1 p-4 rounded-xl font-bold bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-lg hover:shadow-xl hover:from-blue-800 hover:to-indigo-900 transition">
-                        Guardar cita
+                    <button type="submit" class="flex-[2] p-4 rounded-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-800 transition tracking-wide text-lg">
+                        Guardar Información
                     </button>
                 </div>
             </form>
@@ -227,71 +221,40 @@
 
     <script src="app.js"></script>
 
+    <!-- SISTEMA DE PARTÍCULAS -->
     <script>
         (function() {
             function initParticles() {
                 const panel = document.getElementById('seccion-panel');
                 if (!panel || panel.classList.contains('hidden')) return;
-                
                 const canvas = document.getElementById('particle-canvas');
                 if (!canvas || canvas.dataset.initialized) return; 
-                
                 const ctx = canvas.getContext('2d');
                 let particles = [];
-                const maxParticles = 70;
-                const colors = ['rgba(255,255,255,0.7)', 'rgba(59,130,246,0.5)', 'rgba(147,197,253,0.4)', 'rgba(168,85,247,0.4)'];
-                
-                function resize() {
-                    canvas.width = panel.offsetWidth;
-                    canvas.height = panel.offsetHeight;
-                }
-                
-                window.addEventListener('resize', resize);
-                resize();
-                
-                for (let i = 0; i < maxParticles; i++) {
+                function resize() { canvas.width = panel.offsetWidth; canvas.height = panel.offsetHeight; }
+                window.addEventListener('resize', resize); resize();
+                for (let i = 0; i < 60; i++) {
                     particles.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        radius: Math.random() * 2.5 + 0.5,
-                        speedX: (Math.random() - 0.5) * 0.4,
-                        speedY: (Math.random() - 0.5) * 0.4 - 0.3, 
-                        color: colors[Math.floor(Math.random() * colors.length)]
+                        x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 2 + 0.5,
+                        speedX: (Math.random() - 0.5) * 0.3, speedY: (Math.random() - 0.5) * 0.3 - 0.2, 
+                        color: ['rgba(255,255,255,0.4)', 'rgba(59,130,246,0.3)', 'rgba(147,197,253,0.2)'][Math.floor(Math.random() * 3)]
                     });
                 }
-                
                 function animate() {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
                     for (let p of particles) {
-                        p.x += p.speedX;
-                        p.y += p.speedY;
-                        
-                        if (p.x < -5) p.x = canvas.width + 5;
-                        if (p.x > canvas.width + 5) p.x = -5;
-                        if (p.y < -5) p.y = canvas.height + 5;
-                        if (p.y > canvas.height + 5) p.y = -5;
-                        
-                        ctx.beginPath();
-                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                        ctx.fillStyle = p.color;
-                        ctx.shadowBlur = 6;
-                        ctx.shadowColor = p.color;
-                        ctx.fill();
+                        p.x += p.speedX; p.y += p.speedY;
+                        if (p.x < -5) p.x = canvas.width + 5; if (p.x > canvas.width + 5) p.x = -5;
+                        if (p.y < -5) p.y = canvas.height + 5; if (p.y > canvas.height + 5) p.y = -5;
+                        ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = p.color; ctx.fill();
                     }
                     requestAnimationFrame(animate);
                 }
-                canvas.dataset.initialized = 'true';
-                animate();
+                canvas.dataset.initialized = 'true'; animate();
             }
-            
-            document.getElementById('form-login').addEventListener('submit', function(e) {
-                setTimeout(initParticles, 150);
-            });
-            
-            window.addEventListener('load', function() {
-                if (!document.getElementById('seccion-panel').classList.contains('hidden')) initParticles();
-            });
+            document.getElementById('form-login').addEventListener('submit', () => setTimeout(initParticles, 150));
+            window.addEventListener('load', () => { if (!document.getElementById('seccion-panel').classList.contains('hidden')) initParticles(); });
         })();
     </script>
 </body>
