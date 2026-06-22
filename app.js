@@ -8,52 +8,68 @@ let camposPlantilla = JSON.parse(localStorage.getItem('campos_plantilla') || '[]
 
 const modal = document.getElementById('modal-cita');
 
-// --- EVENTOS INICIALES ---
-document.getElementById('btn-abrir-modal').onclick = () => { resetearFormulario(); modal.classList.remove('hidden'); };
-document.getElementById('btn-cerrar-modal').onclick = () => modal.classList.add('hidden');
+// --- EVENTOS DEL MODAL (Añadido "flex" para centrar) ---
+document.getElementById('btn-abrir-modal').onclick = () => { 
+    resetearFormulario(); 
+    modal.classList.remove('hidden'); 
+    modal.classList.add('flex'); // <-- Esto centra el modal
+};
+
+const cerrarModal = () => { 
+    modal.classList.add('hidden'); 
+    modal.classList.remove('flex'); 
+};
+document.getElementById('btn-cerrar-modal').onclick = cerrarModal;
+document.getElementById('btn-cerrar-modal-secundario').onclick = cerrarModal;
+
 document.getElementById('btn-cerrar-sesion').onclick = () => location.reload();
 document.getElementById('btn-refrescar').onclick = cargarCitasDelServidor;
 
-// Agregar campo "permanente" (Plantilla)
+// --- BOTÓN DE CAMPOS EN EL DASHBOARD ---
 document.getElementById('btn-agregar-campo').addEventListener('click', () => {
-    const nombre = prompt("Nombre del nuevo campo (ej: Seguro):");
-    if(nombre) {
-        if(!camposPlantilla.includes(nombre)) {
-            camposPlantilla.push(nombre);
+    const nombre = prompt("Nombre del nuevo campo (ej: Seguro, Alergias):");
+    if(nombre && nombre.trim() !== "") {
+        const nombreLimpio = nombre.trim();
+        if(!camposPlantilla.includes(nombreLimpio)) {
+            camposPlantilla.push(nombreLimpio);
             localStorage.setItem('campos_plantilla', JSON.stringify(camposPlantilla));
-            renderizarCamposModal();
+            cargarCitasDelServidor(); // Refresca la tabla para mostrar la nueva columna
+            alert(`¡Campo "${nombreLimpio}" añadido con éxito!`);
+        } else {
+            alert("Este campo ya existe.");
         }
     }
 });
 
 // --- FUNCIONES DE LÓGICA ---
-
 function renderizarCamposModal(datosCita = {}) {
     const container = document.getElementById('contenedor-campos-plantilla');
     container.innerHTML = camposPlantilla.map(nombre => `
         <div class="relative">
-            <label class="text-[10px] font-bold text-slate-400 uppercase">${nombre}</label>
-            <input type="text" data-key="${nombre}" value="${datosCita[nombre] || ''}" class="input-plantilla w-full p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-400 text-[10px]">Borrar</button>
+            <label class="text-[11px] font-bold text-slate-500 uppercase mb-1 block">${nombre}</label>
+            <input type="text" data-key="${nombre}" value="${datosCita[nombre] || ''}" class="input-plantilla w-full p-4 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition">
+            <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-500 hover:text-red-700 text-[10px] font-bold p-1">Eliminar</button>
         </div>
     `).join('');
 }
 
 window.eliminarCampo = (nombre) => {
-    camposPlantilla = camposPlantilla.filter(c => c !== nombre);
-    localStorage.setItem('campos_plantilla', JSON.stringify(camposPlantilla));
-    renderizarCamposModal();
+    if(confirm(`¿Seguro que deseas eliminar la columna "${nombre}"? Los datos antiguos se conservarán en la base de datos pero no se verán en pantalla.`)) {
+        camposPlantilla = camposPlantilla.filter(c => c !== nombre);
+        localStorage.setItem('campos_plantilla', JSON.stringify(camposPlantilla));
+        renderizarCamposModal();
+        cargarCitasDelServidor();
+    }
 };
 
 function resetearFormulario() {
     idCitaEnEdicion = null;
-    document.getElementById('titulo-modal').innerText = "Programar Nueva Cita";
+    document.getElementById('titulo-modal').innerText = "Nueva Cita";
     document.getElementById('form-cita').reset();
-    renderizarCamposModal(); // Renderiza campos vacíos
+    renderizarCamposModal(); 
 }
 
 // --- LOGIN Y CARGA ---
-
 document.getElementById('form-login').addEventListener('submit', (e) => {
     e.preventDefault();
     const u = document.getElementById('login-usuario').value.trim().toLowerCase();
@@ -64,6 +80,8 @@ document.getElementById('form-login').addEventListener('submit', (e) => {
         document.getElementById('seccion-panel').classList.remove('hidden');
         document.getElementById('nombre-cliente-titulo').innerText = u;
         cargarCitasDelServidor();
+    } else {
+        alert("Usuario o contraseña incorrectos");
     }
 });
 
@@ -76,34 +94,48 @@ async function cargarCitasDelServidor() {
         document.getElementById('stat-total').innerText = citas.length;
         document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado === 'confirmó').length;
 
-        // Render Tabla
-        const cabeceras = ['ID', 'Paciente', 'Edad', 'Teléfono', 'F. Cita', 'H. Cita', 'Profesional', 'Estado', 'Acciones'];
-        document.getElementById('tabla-cabecera').innerHTML = `<tr>${cabeceras.map(h => `<th class="p-4">${h}</th>`).join('')} ${camposPlantilla.map(k => `<th class="p-4 text-indigo-400">${k}</th>`).join('')}</tr>`;
+        // 1. ARMADO DE CABECERAS (Acciones SIEMPRE al final)
+        const cabecerasBase = ['ID', 'Paciente', 'Edad', 'Teléfono', 'F. Cita', 'H. Cita', 'Profesional', 'Estado'];
+        let htmlCabecera = `<tr>`;
+        cabecerasBase.forEach(h => htmlCabecera += `<th class="p-4">${h}</th>`);
+        camposPlantilla.forEach(k => htmlCabecera += `<th class="p-4 text-blue-500">${k}</th>`);
+        htmlCabecera += `<th class="p-4 text-right">Acciones</th></tr>`;
+        document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
 
+        // 2. ARMADO DE FILAS (Botón editar SIEMPRE al final)
         document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => {
             let camposParseados = {};
             try { camposParseados = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); } catch(e){}
             
             const citaString = encodeURIComponent(JSON.stringify({...c, camposParseados}));
-            return `
-            <tr class="border-b">
-                <td class="p-4">${c.id || '-'}</td>
-                <td class="p-4 font-bold">${c.nombres || ''} ${c.apellidos || ''}</td>
+            
+            let row = `
+            <tr class="table-row-hover border-b border-slate-100">
+                <td class="p-4 font-medium text-slate-500">${c.id || '-'}</td>
+                <td class="p-4 font-bold text-slate-900">${c.nombres || ''} ${c.apellidos || ''}</td>
                 <td class="p-4">${c.edad || '-'}</td>
                 <td class="p-4">${c.telefono || '-'}</td>
                 <td class="p-4">${c.fecha_cita?.split('T')[0] || '-'}</td>
                 <td class="p-4">${c.hora_cita || '-'}</td>
-                <td class="p-4">${c.profesional || '-'}</td>
-                <td class="p-4"><span class="px-2 py-1 rounded-full text-[9px] font-bold ${c.estado === 'confirmó' ? 'bg-green-100 text-green-700' : 'bg-slate-100'} uppercase">${c.estado || 'pendiente'}</span></td>
-                <td class="p-4"><button onclick="prepararEdicion('${citaString}')" class="text-blue-600 font-bold hover:underline">Editar</button></td>
-                ${camposPlantilla.map(k => `<td class="p-4">${camposParseados[k] || '-'}</td>`).join('')}
+                <td class="p-4 font-semibold text-blue-700">${c.profesional || '-'}</td>
+                <td class="p-4"><span class="px-3 py-1 rounded-full text-[10px] font-bold ${c.estado === 'confirmó' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'} uppercase tracking-wide">${c.estado || 'pendiente'}</span></td>`;
+            
+            // Agregar columnas dinámicas
+            camposPlantilla.forEach(k => {
+                row += `<td class="p-4 text-slate-600">${camposParseados[k] || '-'}</td>`;
+            });
+
+            // Botón Acciones al final
+            row += `<td class="p-4 text-right">
+                        <button onclick="prepararEdicion('${citaString}')" class="text-blue-600 font-bold hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all shadow-sm">Editar</button>
+                    </td>
             </tr>`;
+            return row;
         }).join('');
     } catch (e) { console.error("Error al cargar:", e); }
 }
 
 // --- EDICIÓN Y GUARDADO ---
-
 window.prepararEdicion = (citaString) => {
     const c = JSON.parse(decodeURIComponent(citaString));
     idCitaEnEdicion = c.id; 
@@ -120,7 +152,9 @@ window.prepararEdicion = (citaString) => {
     document.getElementById('form-motivo').value = c.motivo || '';
     
     renderizarCamposModal(c.camposParseados);
+    
     modal.classList.remove('hidden');
+    modal.classList.add('flex'); // Centra al editar también
 };
 
 document.getElementById('form-cita').addEventListener('submit', async (e) => {
@@ -146,13 +180,25 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
         campos_personalizados: camposPersonalizadosObj
     };
 
-    await fetch(N8N_POST_URL, { 
-        method: 'POST', 
-        body: JSON.stringify(payload), 
-        headers: {'Content-Type': 'application/json'} 
-    });
-    
-    modal.classList.add('hidden');
-    resetearFormulario();
-    cargarCitasDelServidor();
+    const btnSubmit = e.target.querySelector('button[type="submit"]');
+    btnSubmit.innerText = "Guardando...";
+    btnSubmit.disabled = true;
+
+    try {
+        await fetch(N8N_POST_URL, { 
+            method: 'POST', 
+            body: JSON.stringify(payload), 
+            headers: {'Content-Type': 'application/json'} 
+        });
+        
+        cerrarModal();
+        resetearFormulario();
+        await cargarCitasDelServidor();
+    } catch (error) {
+        alert("Error al guardar la cita.");
+        console.error(error);
+    } finally {
+        btnSubmit.innerText = "Guardar cita";
+        btnSubmit.disabled = false;
+    }
 });
