@@ -23,7 +23,7 @@
 
         /* Filas de tabla interactivas */
         .table-row-hover:hover {
-            background-color: #f1f5f9;
+            background-color: #f8fafc;
             transition: background-color 0.15s;
         }
 
@@ -35,7 +35,6 @@
 </head>
 <body class="bg-slate-900 min-h-screen font-sans antialiased">
 
-    <!-- LOGIN (fondo estático oscuro, sin partículas para contraste limpio) -->
     <div id="seccion-login" class="flex items-center justify-center min-h-screen p-4">
         <div class="w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 md:p-10 border border-white/20">
             <div class="text-center mb-8">
@@ -85,12 +84,9 @@
         </div>
     </div>
 
-    <!-- PANEL PRINCIPAL (con degradado y partículas) -->
     <div id="seccion-panel" class="hidden relative min-h-screen" style="background: linear-gradient(135deg, #0b1120 0%, #1a2332 100%);">
-        <!-- Canvas de partículas (fondo tecnológico) -->
         <canvas id="particle-canvas" class="absolute inset-0 z-0 pointer-events-none"></canvas>
 
-        <!-- NAVBAR (por encima de las partículas) -->
         <nav class="relative z-10 bg-slate-900/80 backdrop-blur-md text-white shadow-xl sticky top-0 border-b border-white/10">
             <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
@@ -114,15 +110,21 @@
             </div>
         </nav>
 
-        <!-- CONTENIDO (tarjetas blancas flotando) -->
         <main class="relative z-10 max-w-7xl mx-auto px-6 py-8">
-            <!-- Cabecera -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4">
                 <div>
                     <h2 class="text-3xl font-extrabold text-white tracking-tight drop-shadow-md">Agenda Médica</h2>
                     <p class="text-blue-200 font-medium mt-1">Panel de control centralizado</p>
                 </div>
-                <div class="flex gap-3 w-full sm:w-auto">
+                
+                <div class="flex gap-3 w-full sm:w-auto flex-wrap justify-end">
+                    <button id="btn-agregar-campo" 
+                            class="flex items-center gap-2 px-5 py-3 bg-white/5 border border-white/10 rounded-xl font-semibold text-blue-300 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Nuevo Campo
+                    </button>
                     <button id="btn-refrescar" 
                             class="flex items-center gap-2 px-5 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl font-semibold text-white shadow-sm hover:bg-white/20 transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +142,6 @@
                 </div>
             </div>
 
-            <!-- Tarjetas de estadísticas -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
                 <div class="bg-white p-6 rounded-2xl border border-slate-200/50 shadow-xl card-hover flex items-center gap-4 backdrop-blur-sm">
                     <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600">
@@ -179,10 +180,9 @@
                 </div>
             </div>
 
-            <!-- Tabla -->
             <div class="bg-white rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden backdrop-blur-sm">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full text-left whitespace-nowrap">
                         <thead id="tabla-cabecera" class="bg-slate-50 border-b-2 border-slate-200 text-slate-500 uppercase text-[10px] tracking-widest font-bold"></thead>
                         <tbody id="tabla-cuerpo" class="divide-y divide-slate-100 text-sm"></tbody>
                     </table>
@@ -191,7 +191,6 @@
         </main>
     </div>
 
-    <!-- MODAL (centrado, igual que antes) -->
     <div id="modal-cita" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
         <div class="bg-white p-8 rounded-3xl w-full max-w-3xl shadow-2xl overflow-y-auto max-h-[90vh] border border-slate-100">
             <div class="flex justify-between items-start mb-6">
@@ -215,19 +214,9 @@
                 <textarea id="form-motivo" placeholder="Motivo de la consulta" class="col-span-2 p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition" rows="2"></textarea>
                 
                 <div id="contenedor-campos-plantilla" class="col-span-2 grid grid-cols-2 gap-4 border-t pt-4"></div>
-                
-                <div class="col-span-2 border-t pt-4">
-                    <button type="button" id="btn-agregar-campo" class="text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Añadir campo permanente
-                    </button>
-                    <div id="contenedor-campos" class="mt-4 space-y-2"></div>
-                </div>
 
-                <div class="col-span-2 flex gap-4 pt-4">
-                    <button type="button" id="btn-cerrar-modal" class="flex-1 p-4 rounded-xl font-bold text-slate-400 hover:bg-slate-50 border border-slate-200 transition">Cancelar</button>
+                <div class="col-span-2 flex gap-4 pt-4 mt-2">
+                    <button type="button" id="btn-cerrar-modal-secundario" class="flex-1 p-4 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition">Cancelar</button>
                     <button type="submit" class="flex-1 p-4 rounded-xl font-bold bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-lg hover:shadow-xl hover:from-blue-800 hover:to-indigo-900 transition">
                         Guardar cita
                     </button>
@@ -238,26 +227,19 @@
 
     <script src="app.js"></script>
 
-    <!-- SISTEMA DE PARTÍCULAS (sin interferir con app.js) -->
     <script>
         (function() {
-            // Inicia partículas apenas el panel se muestre (después del login)
             function initParticles() {
                 const panel = document.getElementById('seccion-panel');
                 if (!panel || panel.classList.contains('hidden')) return;
                 
                 const canvas = document.getElementById('particle-canvas');
-                if (!canvas || canvas.dataset.initialized) return; // evita doble inicialización
+                if (!canvas || canvas.dataset.initialized) return; 
                 
                 const ctx = canvas.getContext('2d');
                 let particles = [];
                 const maxParticles = 70;
-                const colors = [
-                    'rgba(255,255,255,0.7)',  // blanco brillante
-                    'rgba(59,130,246,0.5)',  // azul
-                    'rgba(147,197,253,0.4)', // azul claro
-                    'rgba(168,85,247,0.4)'   // toque violeta
-                ];
+                const colors = ['rgba(255,255,255,0.7)', 'rgba(59,130,246,0.5)', 'rgba(147,197,253,0.4)', 'rgba(168,85,247,0.4)'];
                 
                 function resize() {
                     canvas.width = panel.offsetWidth;
@@ -267,14 +249,13 @@
                 window.addEventListener('resize', resize);
                 resize();
                 
-                // Crear partículas
                 for (let i = 0; i < maxParticles; i++) {
                     particles.push({
                         x: Math.random() * canvas.width,
                         y: Math.random() * canvas.height,
                         radius: Math.random() * 2.5 + 0.5,
                         speedX: (Math.random() - 0.5) * 0.4,
-                        speedY: (Math.random() - 0.5) * 0.4 - 0.3, // tendencia a subir
+                        speedY: (Math.random() - 0.5) * 0.4 - 0.3, 
                         color: colors[Math.floor(Math.random() * colors.length)]
                     });
                 }
@@ -286,7 +267,6 @@
                         p.x += p.speedX;
                         p.y += p.speedY;
                         
-                        // Rebotar en bordes o reaparecer
                         if (p.x < -5) p.x = canvas.width + 5;
                         if (p.x > canvas.width + 5) p.x = -5;
                         if (p.y < -5) p.y = canvas.height + 5;
@@ -299,27 +279,18 @@
                         ctx.shadowColor = p.color;
                         ctx.fill();
                     }
-                    
                     requestAnimationFrame(animate);
                 }
-                
                 canvas.dataset.initialized = 'true';
                 animate();
             }
             
-            // Detectar cuando el panel se hace visible después del login
             document.getElementById('form-login').addEventListener('submit', function(e) {
-                // Pequeño retraso para que el DOM se actualice
                 setTimeout(initParticles, 150);
             });
             
-            // También iniciar si la sesión ya estaba activa (por si recargan la página estando logueados)
-            // Pero eso dependería de la lógica de tu app. Se puede intentar al cargar la página:
             window.addEventListener('load', function() {
-                // Si el panel ya está visible al cargar (por implementación futura), iniciamos partículas
-                if (!document.getElementById('seccion-panel').classList.contains('hidden')) {
-                    initParticles();
-                }
+                if (!document.getElementById('seccion-panel').classList.contains('hidden')) initParticles();
             });
         })();
     </script>
