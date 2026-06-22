@@ -10,12 +10,6 @@
         
         body {
             font-family: 'Inter', system-ui, sans-serif;
-            background: #f8fafc;
-        }
-
-        /* Efecto sutil para el fondo del login */
-        .login-bg {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         }
 
         /* Tarjetas con hover elevado */
@@ -24,7 +18,7 @@
         }
         .card-hover:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
         }
 
         /* Filas de tabla interactivas */
@@ -36,13 +30,13 @@
         /* Scrollbar minimalista */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
     </style>
 </head>
-<body class="min-h-screen font-sans antialiased">
+<body class="bg-slate-900 min-h-screen font-sans antialiased">
 
-    <!-- SECCIÓN LOGIN -->
-    <div id="seccion-login" class="login-bg flex items-center justify-center min-h-screen p-4">
+    <!-- LOGIN (fondo estático oscuro, sin partículas para contraste limpio) -->
+    <div id="seccion-login" class="flex items-center justify-center min-h-screen p-4">
         <div class="w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 md:p-10 border border-white/20">
             <div class="text-center mb-8">
                 <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-700 to-indigo-800 rounded-2xl shadow-xl shadow-blue-900/20 mb-5">
@@ -91,10 +85,13 @@
         </div>
     </div>
 
-    <!-- PANEL PRINCIPAL -->
-    <div id="seccion-panel" class="hidden">
-        <!-- NAVBAR SUPERIOR -->
-        <nav class="bg-slate-900 text-white shadow-xl sticky top-0 z-40 border-b border-slate-700/50">
+    <!-- PANEL PRINCIPAL (con degradado y partículas) -->
+    <div id="seccion-panel" class="hidden relative min-h-screen" style="background: linear-gradient(135deg, #0b1120 0%, #1a2332 100%);">
+        <!-- Canvas de partículas (fondo tecnológico) -->
+        <canvas id="particle-canvas" class="absolute inset-0 z-0 pointer-events-none"></canvas>
+
+        <!-- NAVBAR (por encima de las partículas) -->
+        <nav class="relative z-10 bg-slate-900/80 backdrop-blur-md text-white shadow-xl sticky top-0 border-b border-white/10">
             <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 bg-blue-700 rounded-lg flex items-center justify-center shadow-md">
@@ -105,9 +102,9 @@
                     <h1 class="text-xl font-extrabold tracking-tight">FINOVIXE <span class="text-blue-400">PRO</span></h1>
                 </div>
                 <div class="flex items-center gap-4">
-                    <span id="nombre-cliente-titulo" class="text-sm font-medium text-slate-300 bg-slate-800 px-4 py-1.5 rounded-full"></span>
+                    <span id="nombre-cliente-titulo" class="text-sm font-medium text-slate-300 bg-white/10 px-4 py-1.5 rounded-full backdrop-blur-sm"></span>
                     <button id="btn-cerrar-sesion" 
-                            class="flex items-center gap-2 text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl transition-all font-medium">
+                            class="flex items-center gap-2 text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl transition-all font-medium backdrop-blur-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
@@ -117,24 +114,24 @@
             </div>
         </nav>
 
-        <!-- CONTENIDO PRINCIPAL -->
-        <main class="max-w-7xl mx-auto px-6 py-8">
-            <!-- CABECERA Y BOTONES -->
+        <!-- CONTENIDO (tarjetas blancas flotando) -->
+        <main class="relative z-10 max-w-7xl mx-auto px-6 py-8">
+            <!-- Cabecera -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4">
                 <div>
-                    <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Agenda Médica</h2>
-                    <p class="text-slate-500 font-medium mt-1">Panel de control centralizado</p>
+                    <h2 class="text-3xl font-extrabold text-white tracking-tight drop-shadow-md">Agenda Médica</h2>
+                    <p class="text-blue-200 font-medium mt-1">Panel de control centralizado</p>
                 </div>
                 <div class="flex gap-3 w-full sm:w-auto">
                     <button id="btn-refrescar" 
-                            class="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-xl font-semibold text-slate-700 shadow-sm hover:shadow-md hover:border-slate-300 transition-all">
+                            class="flex items-center gap-2 px-5 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl font-semibold text-white shadow-sm hover:bg-white/20 transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                         Sincronizar
                     </button>
                     <button id="btn-abrir-modal" 
-                            class="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-700 to-indigo-800 text-white rounded-xl font-bold shadow-lg shadow-blue-900/20 hover:shadow-xl hover:scale-[1.02] transition-all">
+                            class="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-blue-900/30 hover:shadow-xl hover:scale-[1.02] transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
@@ -143,10 +140,9 @@
                 </div>
             </div>
 
-            <!-- TARJETAS DE ESTADÍSTICAS -->
+            <!-- Tarjetas de estadísticas -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-                <!-- Total Citas -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm card-hover flex items-center gap-4">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/50 shadow-xl card-hover flex items-center gap-4 backdrop-blur-sm">
                     <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -158,8 +154,7 @@
                     </div>
                 </div>
 
-                <!-- Confirmadas (verde) -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm card-hover flex items-center gap-4">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/50 shadow-xl card-hover flex items-center gap-4 backdrop-blur-sm">
                     <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -171,8 +166,7 @@
                     </div>
                 </div>
 
-                <!-- Estado del sistema (verde/rojo según convenga) -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm card-hover flex items-center gap-4">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/50 shadow-xl card-hover flex items-center gap-4 backdrop-blur-sm">
                     <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -185,8 +179,8 @@
                 </div>
             </div>
 
-            <!-- TABLA DE CITAS -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <!-- Tabla -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden backdrop-blur-sm">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead id="tabla-cabecera" class="bg-slate-50 border-b-2 border-slate-200 text-slate-500 uppercase text-[10px] tracking-widest font-bold"></thead>
@@ -197,7 +191,7 @@
         </main>
     </div>
 
-    <!-- MODAL CENTRADO EXACTAMENTE -->
+    <!-- MODAL (centrado, igual que antes) -->
     <div id="modal-cita" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
         <div class="bg-white p-8 rounded-3xl w-full max-w-3xl shadow-2xl overflow-y-auto max-h-[90vh] border border-slate-100">
             <div class="flex justify-between items-start mb-6">
@@ -243,5 +237,91 @@
     </div>
 
     <script src="app.js"></script>
+
+    <!-- SISTEMA DE PARTÍCULAS (sin interferir con app.js) -->
+    <script>
+        (function() {
+            // Inicia partículas apenas el panel se muestre (después del login)
+            function initParticles() {
+                const panel = document.getElementById('seccion-panel');
+                if (!panel || panel.classList.contains('hidden')) return;
+                
+                const canvas = document.getElementById('particle-canvas');
+                if (!canvas || canvas.dataset.initialized) return; // evita doble inicialización
+                
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const maxParticles = 70;
+                const colors = [
+                    'rgba(255,255,255,0.7)',  // blanco brillante
+                    'rgba(59,130,246,0.5)',  // azul
+                    'rgba(147,197,253,0.4)', // azul claro
+                    'rgba(168,85,247,0.4)'   // toque violeta
+                ];
+                
+                function resize() {
+                    canvas.width = panel.offsetWidth;
+                    canvas.height = panel.offsetHeight;
+                }
+                
+                window.addEventListener('resize', resize);
+                resize();
+                
+                // Crear partículas
+                for (let i = 0; i < maxParticles; i++) {
+                    particles.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        radius: Math.random() * 2.5 + 0.5,
+                        speedX: (Math.random() - 0.5) * 0.4,
+                        speedY: (Math.random() - 0.5) * 0.4 - 0.3, // tendencia a subir
+                        color: colors[Math.floor(Math.random() * colors.length)]
+                    });
+                }
+                
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    for (let p of particles) {
+                        p.x += p.speedX;
+                        p.y += p.speedY;
+                        
+                        // Rebotar en bordes o reaparecer
+                        if (p.x < -5) p.x = canvas.width + 5;
+                        if (p.x > canvas.width + 5) p.x = -5;
+                        if (p.y < -5) p.y = canvas.height + 5;
+                        if (p.y > canvas.height + 5) p.y = -5;
+                        
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = p.color;
+                        ctx.shadowBlur = 6;
+                        ctx.shadowColor = p.color;
+                        ctx.fill();
+                    }
+                    
+                    requestAnimationFrame(animate);
+                }
+                
+                canvas.dataset.initialized = 'true';
+                animate();
+            }
+            
+            // Detectar cuando el panel se hace visible después del login
+            document.getElementById('form-login').addEventListener('submit', function(e) {
+                // Pequeño retraso para que el DOM se actualice
+                setTimeout(initParticles, 150);
+            });
+            
+            // También iniciar si la sesión ya estaba activa (por si recargan la página estando logueados)
+            // Pero eso dependería de la lógica de tu app. Se puede intentar al cargar la página:
+            window.addEventListener('load', function() {
+                // Si el panel ya está visible al cargar (por implementación futura), iniciamos partículas
+                if (!document.getElementById('seccion-panel').classList.contains('hidden')) {
+                    initParticles();
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
