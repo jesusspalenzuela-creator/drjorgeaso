@@ -4,22 +4,26 @@ const USUARIOS_VALIDOS = { "drjorgeaso": "1234", "inovixe": "admin", "clinicaden
 
 let clienteLogueado = "";
 let idCitaEnEdicion = null;
-
-// Gestores de memoria local (LocalStorage)
 let camposPlantilla = JSON.parse(localStorage.getItem('campos_plantilla') || '[]');
 let columnasOcultas = JSON.parse(localStorage.getItem('columnas_ocultas') || '[]'); 
 
-// NUEVO: Diccionario y Orden de Columnas
-const COLUMNAS_BASE = ['id', 'paciente', 'edad', 'identificacion', 'telefono', 'fecha_cita', 'hora_cita', 'profesional', 'estado'];
+// --- ESTRUCTURA DE ORDEN Y NOMBRES ---
+const COLUMNAS_BASE = ['id', 'identificacion', 'paciente', 'edad', 'telefono', 'fecha_cita', 'hora_cita', 'profesional', 'estado'];
 const NOMBRES_COLUMNAS = {
-    'id': 'ID del Registro', 'paciente': 'Nombre del Paciente', 'edad': 'Edad',
-    'identificacion': 'Identificación', 'telefono': 'Teléfono', 'fecha_cita': 'Fecha de Cita',
-    'hora_cita': 'Hora de Cita', 'profesional': 'Profesional Asignado', 'estado': 'Estado Actual'
+    'id': 'ID', 'identificacion': 'Identificación', 'paciente': 'Paciente', 'edad': 'Edad',
+    'telefono': 'Teléfono', 'fecha_cita': 'F. Cita', 'hora_cita': 'H. Cita', 
+    'profesional': 'Profesional', 'estado': 'Estado'
 };
+
+// Cargar orden o inicializar si es la primera vez
 let ordenColumnas = JSON.parse(localStorage.getItem('orden_columnas'));
 if (!ordenColumnas || ordenColumnas.length === 0) {
     ordenColumnas = [...COLUMNAS_BASE, ...camposPlantilla];
-    localStorage.setItem('orden_columnas', JSON.stringify(ordenColumnas));
+} else {
+    // Asegurar que si agregaste campos nuevos, aparezcan en el orden
+    camposPlantilla.forEach(campo => {
+        if (!ordenColumnas.includes(campo)) ordenColumnas.push(campo);
+    });
 }
 
 let citasAnteriores = [];
@@ -29,13 +33,11 @@ let loopSincronizacion = null;
 const modal = document.getElementById('modal-cita');
 const modalColumnas = document.getElementById('modal-columnas');
 
-// --- SISTEMA DE NOTIFICACIONES ---
+// --- NOTIFICACIONES ---
 window.mostrarNotificacion = (titulo, mensaje, tipo = 'info') => {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
-    let bgIcono = 'bg-blue-100 text-blue-600';
-    let iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`;
-    
+    let bgIcono = 'bg-blue-100 text-blue-600', iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`;
     if(tipo === 'success' || tipo === 'confirmó') { bgIcono = 'bg-emerald-100 text-emerald-600'; iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />`; }
     else if(tipo === 'error' || tipo === 'canceló') { bgIcono = 'bg-red-100 text-red-600'; iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`; }
     else if(tipo === 'warning' || tipo === 'reprogramó') { bgIcono = 'bg-amber-100 text-amber-600'; iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />`; }
@@ -47,7 +49,7 @@ window.mostrarNotificacion = (titulo, mensaje, tipo = 'info') => {
     setTimeout(() => { toast.classList.add('opacity-0', 'transition-opacity', 'duration-300'); setTimeout(() => toast.remove(), 300); }, 6000);
 };
 
-// --- EVENTOS BÁSICOS ---
+// --- EVENTOS MODAL ---
 document.getElementById('btn-abrir-modal').onclick = () => { resetearFormulario(); modal.classList.remove('hidden'); modal.classList.add('flex'); };
 const cerrarModal = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
 document.getElementById('btn-cerrar-modal').onclick = cerrarModal;
@@ -55,12 +57,12 @@ document.getElementById('btn-cerrar-modal-secundario').onclick = cerrarModal;
 document.getElementById('btn-cerrar-sesion').onclick = () => location.reload();
 document.getElementById('btn-refrescar').onclick = () => { mostrarNotificacion("Sincronizando...", "Actualizando agenda médica.", "info"); cargarCitasDelServidor(); };
 
-// --- EVENTOS MODAL COLUMNAS (VISTAS Y ORDEN) ---
+// --- GESTIÓN DE VISTAS Y ORDEN ---
 function renderizarModalVistas() {
     const container = document.getElementById('lista-columnas');
     container.innerHTML = ordenColumnas.map((colKey, index) => {
         const isChecked = !columnasOcultas.includes(colKey) ? 'checked' : '';
-        const label = NOMBRES_COLUMNAS[colKey] || `${colKey} (Adicional)`;
+        const label = NOMBRES_COLUMNAS[colKey] || `${colKey}`;
         
         return `
         <div class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all">
@@ -82,13 +84,13 @@ function renderizarModalVistas() {
 }
 
 window.moverColumna = (index, direccion) => {
-    // Guardar estado actual de checkboxes antes de re-renderizar
+    // Sincronizar checkboxes primero
     const checkboxes = document.querySelectorAll('.chk-columna');
     let nuevasOcultas = [];
-    checkboxes.forEach(cb => { if (!cb.checked) nuevasOcultas.push(cb.value); });
+    checkboxes.forEach((cb, idx) => { if (!cb.checked) nuevasOcultas.push(ordenColumnas[idx]); });
     columnasOcultas = nuevasOcultas;
 
-    // Cambiar el orden
+    // Intercambiar elementos
     const nuevoIndex = index + direccion;
     if (nuevoIndex >= 0 && nuevoIndex < ordenColumnas.length) {
         const temp = ordenColumnas[index];
@@ -98,40 +100,34 @@ window.moverColumna = (index, direccion) => {
     }
 };
 
-document.getElementById('btn-configurar-columnas').onclick = () => {
-    renderizarModalVistas();
-    modalColumnas.classList.remove('hidden'); modalColumnas.classList.add('flex');
-};
-
+document.getElementById('btn-configurar-columnas').onclick = () => { renderizarModalVistas(); modalColumnas.classList.remove('hidden'); modalColumnas.classList.add('flex'); };
 document.getElementById('btn-cerrar-modal-columnas').onclick = () => { modalColumnas.classList.add('hidden'); modalColumnas.classList.remove('flex'); };
 
 document.getElementById('btn-guardar-columnas').onclick = () => {
     const checkboxes = document.querySelectorAll('.chk-columna');
     let nuevasOcultas = [];
-    checkboxes.forEach(cb => { if (!cb.checked) nuevasOcultas.push(cb.value); });
+    checkboxes.forEach((cb, idx) => { if (!cb.checked) nuevasOcultas.push(ordenColumnas[idx]); });
     
     columnasOcultas = nuevasOcultas;
     localStorage.setItem('columnas_ocultas', JSON.stringify(columnasOcultas));
-    localStorage.setItem('orden_columnas', JSON.stringify(ordenColumnas)); // Guardar el nuevo orden
+    localStorage.setItem('orden_columnas', JSON.stringify(ordenColumnas));
     
     modalColumnas.classList.add('hidden'); modalColumnas.classList.remove('flex');
-    hashTablaActual = ""; // Forzar redibujado visual
+    hashTablaActual = ""; 
     cargarCitasDelServidor();
-    mostrarNotificacion("Vistas Actualizadas", "Tus preferencias de orden y visualización se han guardado.", "success");
 };
 
-// --- CREAR CAMPO DESDE AFUERA ---
+// --- CREAR CAMPO ---
 document.getElementById('btn-agregar-campo').addEventListener('click', () => {
     const nombre = prompt("Nombre del nuevo campo (ej: Seguro, Alergias):");
     if(nombre && nombre.trim() !== "") {
         const nombreLimpio = nombre.trim();
         if(!camposPlantilla.includes(nombreLimpio)) {
             camposPlantilla.push(nombreLimpio);
-            ordenColumnas.push(nombreLimpio); // Agregar al orden
+            ordenColumnas.push(nombreLimpio);
             localStorage.setItem('campos_plantilla', JSON.stringify(camposPlantilla));
             localStorage.setItem('orden_columnas', JSON.stringify(ordenColumnas));
-            hashTablaActual = ""; 
-            cargarCitasDelServidor(); 
+            hashTablaActual = ""; cargarCitasDelServidor(); 
             mostrarNotificacion("Campo Creado", `La columna "${nombreLimpio}" fue agregada.`, "success");
         } else { alert("Este campo ya existe."); }
     }
@@ -139,10 +135,6 @@ document.getElementById('btn-agregar-campo').addEventListener('click', () => {
 
 function renderizarCamposModal(datosCita = {}) {
     const container = document.getElementById('contenedor-campos-plantilla');
-    if (camposPlantilla.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-400 font-medium col-span-full italic">No hay campos personalizados adicionales. Agrégalos desde el panel principal.</p>`;
-        return;
-    }
     container.innerHTML = camposPlantilla.map(nombre => `
         <div class="relative group">
             <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
@@ -155,12 +147,10 @@ function renderizarCamposModal(datosCita = {}) {
 window.eliminarCampo = (nombre) => {
     if(confirm(`¿Seguro que deseas eliminar la columna "${nombre}"?`)) {
         camposPlantilla = camposPlantilla.filter(c => c !== nombre);
-        ordenColumnas = ordenColumnas.filter(c => c !== nombre); // Quitar del orden
+        ordenColumnas = ordenColumnas.filter(c => c !== nombre);
         localStorage.setItem('campos_plantilla', JSON.stringify(camposPlantilla));
         localStorage.setItem('orden_columnas', JSON.stringify(ordenColumnas));
-        renderizarCamposModal();
-        hashTablaActual = "";
-        cargarCitasDelServidor();
+        renderizarCamposModal(); hashTablaActual = ""; cargarCitasDelServidor();
     }
 };
 
@@ -171,7 +161,7 @@ function resetearFormulario() {
     renderizarCamposModal(); 
 }
 
-// --- LOGIN ---
+// --- CARGA Y RENDER ---
 document.getElementById('form-login').addEventListener('submit', (e) => {
     e.preventDefault();
     const u = document.getElementById('login-usuario').value.trim().toLowerCase();
@@ -181,14 +171,11 @@ document.getElementById('form-login').addEventListener('submit', (e) => {
         document.getElementById('seccion-login').classList.add('hidden');
         document.getElementById('seccion-panel').classList.remove('hidden');
         document.getElementById('nombre-cliente-titulo').innerText = "Usuario: " + u;
-        
         cargarCitasDelServidor();
         loopSincronizacion = setInterval(cargarCitasDelServidor, 10000);
-        mostrarNotificacion("Acceso Exitoso", "Bienvenido al panel de control de Finovixe.", "success");
     } else { alert("Usuario o contraseña incorrectos"); }
 });
 
-// --- MOTOR PRINCIPAL (CONSTRUIDO DINÁMICAMENTE POR ORDEN) ---
 async function cargarCitasDelServidor() {
     try {
         const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
@@ -200,36 +187,32 @@ async function cargarCitasDelServidor() {
             citas.forEach(nuevaCita => {
                 const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id);
                 if (citaVieja && citaVieja.estado !== nuevaCita.estado) {
-                    mostrarNotificacion('Actualización de Estado', `${nuevaCita.nombres} ha cambiado su cita a: ${nuevaCita.estado.toUpperCase()}`, nuevaCita.estado.toLowerCase());
+                    mostrarNotificacion('Actualización de Estado', `${nuevaCita.nombres} ha cambiado a: ${nuevaCita.estado.toUpperCase()}`, nuevaCita.estado.toLowerCase());
                 }
             });
         }
         
-        const nuevoHash = JSON.stringify(citas) + JSON.stringify(camposPlantilla) + JSON.stringify(columnasOcultas) + JSON.stringify(ordenColumnas);
+        const nuevoHash = JSON.stringify(citas) + JSON.stringify(ordenColumnas) + JSON.stringify(columnasOcultas);
         if (nuevoHash === hashTablaActual) return; 
         hashTablaActual = nuevoHash;
         citasAnteriores = JSON.parse(JSON.stringify(citas));
 
-        // Actualizar Métricas
         document.getElementById('stat-total').innerText = citas.length;
         document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length;
         document.getElementById('stat-canceladas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length;
         document.getElementById('stat-reprogramadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length;
 
-        // --- RENDER DE CABECERAS (BASADO EN EL ORDEN) ---
+        // Render Cabecera ordenado
         let htmlCabecera = `<tr>`;
         ordenColumnas.forEach(colKey => {
             if (!columnasOcultas.includes(colKey)) {
-                const isCustom = camposPlantilla.includes(colKey);
-                const colorClass = isCustom ? 'text-blue-500' : '';
-                const label = NOMBRES_COLUMNAS[colKey] || colKey;
-                htmlCabecera += `<th class="p-4 ${colorClass}">${label}</th>`;
+                htmlCabecera += `<th class="p-4">${NOMBRES_COLUMNAS[colKey] || colKey}</th>`;
             }
         });
         htmlCabecera += `<th class="p-4 text-right">Acciones</th></tr>`;
         document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
 
-        // --- RENDER DE FILAS (BASADO EN EL ORDEN) ---
+        // Render Filas ordenado
         document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => {
             let camposParseados = {};
             try { camposParseados = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); } catch(e){}
@@ -238,26 +221,27 @@ async function cargarCitasDelServidor() {
             let estadoClass = 'bg-slate-100 text-slate-600';
             const estadoLower = c.estado?.toLowerCase() || '';
             if(estadoLower === 'confirmó') estadoClass = 'bg-emerald-100 text-emerald-700';
-            if(estadoLower === 'canceló' || estadoLower === 'cancelada') estadoClass = 'bg-red-100 text-red-700';
-            if(estadoLower === 'reprogramó' || estadoLower === 'reprogramada') estadoClass = 'bg-amber-100 text-amber-700';
+            else if(estadoLower.includes('cancel')) estadoClass = 'bg-red-100 text-red-700';
+            else if(estadoLower.includes('reprogram')) estadoClass = 'bg-amber-100 text-amber-700';
             
             let row = `<tr class="table-row-hover">`;
             
             ordenColumnas.forEach(colKey => {
                 if (!columnasOcultas.includes(colKey)) {
-                    // Distribuidor de celdas según el key
-                    switch(colKey) {
-                        case 'id': row += `<td class="p-4 font-bold text-slate-400">${c.id || '-'}</td>`; break;
-                        case 'paciente': row += `<td class="p-4 font-black text-slate-800">${c.nombres || ''} ${c.apellidos || ''}</td>`; break;
-                        case 'edad': row += `<td class="p-4 font-medium">${c.edad || '-'}</td>`; break;
-                        case 'identificacion': row += `<td class="p-4 font-semibold text-slate-600">${c.identificacion || c['identificación'] || '-'}</td>`; break;
-                        case 'telefono': row += `<td class="p-4 font-medium">${c.telefono || '-'}</td>`; break;
-                        case 'fecha_cita': row += `<td class="p-4 font-medium">${c.fecha_cita?.split('T')[0] || '-'}</td>`; break;
-                        case 'hora_cita': row += `<td class="p-4 font-medium">${c.hora_cita || '-'}</td>`; break;
-                        case 'profesional': row += `<td class="p-4 font-bold text-blue-600">${c.profesional || '-'}</td>`; break;
-                        case 'estado': row += `<td class="p-4"><span class="px-3 py-1.5 rounded-lg text-[10px] font-black ${estadoClass} uppercase tracking-widest shadow-sm">${c.estado || 'pendiente'}</span></td>`; break;
-                        default: row += `<td class="p-4 text-slate-600 font-medium">${camposParseados[colKey] || '-'}</td>`; break;
-                    }
+                    // Mapeo dinamico para las celdas
+                    let valor = '-';
+                    if (colKey === 'id') valor = c.id;
+                    else if (colKey === 'identificacion') valor = c.identificacion || c['identificación'] || '-';
+                    else if (colKey === 'paciente') valor = `${c.nombres || ''} ${c.apellidos || ''}`;
+                    else if (colKey === 'edad') valor = c.edad || '-';
+                    else if (colKey === 'telefono') valor = c.telefono || '-';
+                    else if (colKey === 'fecha_cita') valor = c.fecha_cita?.split('T')[0] || '-';
+                    else if (colKey === 'hora_cita') valor = c.hora_cita || '-';
+                    else if (colKey === 'profesional') valor = c.profesional || '-';
+                    else if (colKey === 'estado') valor = `<span class="px-3 py-1.5 rounded-lg text-[10px] font-black ${estadoClass} uppercase">${c.estado || 'pendiente'}</span>`;
+                    else valor = camposParseados[colKey] || '-';
+                    
+                    row += `<td class="p-4">${valor}</td>`;
                 }
             });
 
@@ -267,12 +251,10 @@ async function cargarCitasDelServidor() {
     } catch (e) { console.error("Error al cargar:", e); }
 }
 
-// --- EDICIÓN Y GUARDADO ---
 window.prepararEdicion = (citaString) => {
     const c = JSON.parse(decodeURIComponent(citaString));
     idCitaEnEdicion = c.id; 
     document.getElementById('titulo-modal').innerText = "Editando Cita #" + c.id;
-    
     document.getElementById('form-identificacion').value = c.identificacion || c['identificación'] || '';
     document.getElementById('form-edad').value = c.edad || '';
     document.getElementById('form-telefono').value = c.telefono || '';
@@ -282,7 +264,6 @@ window.prepararEdicion = (citaString) => {
     document.getElementById('form-hora').value = c.hora_cita || '';
     document.getElementById('form-profesional').value = c.profesional || '';
     document.getElementById('form-motivo').value = c.motivo || '';
-    
     renderizarCamposModal(c.camposParseados);
     modal.classList.remove('hidden'); modal.classList.add('flex');
 };
@@ -304,19 +285,18 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
         hora_cita: document.getElementById('form-hora').value,
         profesional: document.getElementById('form-profesional').value,
         motivo: document.getElementById('form-motivo').value,
-        estado: 'esperando respuesta', 
+        estado: 'esperando respuesta',
         campos_personalizados: camposPersonalizadosObj
     };
 
     const btnSubmit = e.target.querySelector('button[type="submit"]');
     btnSubmit.innerText = "Guardando..."; btnSubmit.disabled = true;
-
     try {
         await fetch(N8N_POST_URL, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'application/json'} });
         cerrarModal(); resetearFormulario();
-        mostrarNotificacion("Éxito", "La información de la cita fue guardada.", "success");
+        mostrarNotificacion("Éxito", "Guardado correctamente.", "success");
         hashTablaActual = ""; 
         await cargarCitasDelServidor();
-    } catch (error) { mostrarNotificacion("Error", "No se pudo guardar la cita.", "error"); } 
+    } catch (error) { mostrarNotificacion("Error", "No se pudo guardar.", "error"); } 
     finally { btnSubmit.innerText = "Guardar Información"; btnSubmit.disabled = false; }
 });
