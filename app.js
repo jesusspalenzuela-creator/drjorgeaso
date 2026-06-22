@@ -4,28 +4,92 @@ const USUARIOS_VALIDOS = { "drjorgeaso": "1234", "inovixe": "admin", "clinicaden
 
 let clienteLogueado = "";
 let idCitaEnEdicion = null;
+
+// Gestores de memoria local (LocalStorage)
 let camposPlantilla = JSON.parse(localStorage.getItem('campos_plantilla') || '[]');
+let columnasOcultas = JSON.parse(localStorage.getItem('columnas_ocultas') || '[]'); // NUEVA VARIABLE PARA VISTAS
+
+let citasAnteriores = [];
+let hashTablaActual = ""; 
+let loopSincronizacion = null;
 
 const modal = document.getElementById('modal-cita');
+const modalColumnas = document.getElementById('modal-columnas');
 
-// --- EVENTOS DEL MODAL (Añadido "flex" para centrar) ---
-document.getElementById('btn-abrir-modal').onclick = () => { 
-    resetearFormulario(); 
-    modal.classList.remove('hidden'); 
-    modal.classList.add('flex'); // <-- Esto centra el modal
+// --- SISTEMA DE NOTIFICACIONES ---
+window.mostrarNotificacion = (titulo, mensaje, tipo = 'info') => {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    let bgIcono = 'bg-blue-100 text-blue-600';
+    let iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`;
+    
+    if(tipo === 'success' || tipo === 'confirmó') { bgIcono = 'bg-emerald-100 text-emerald-600'; iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />`; }
+    else if(tipo === 'error' || tipo === 'canceló') { bgIcono = 'bg-red-100 text-red-600'; iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`; }
+    else if(tipo === 'warning' || tipo === 'reprogramó') { bgIcono = 'bg-amber-100 text-amber-600'; iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />`; }
+
+    toast.className = `toast-enter flex items-start gap-4 p-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-slate-100 pointer-events-auto cursor-pointer`;
+    toast.innerHTML = `<div class="flex-shrink-0 w-10 h-10 ${bgIcono} rounded-full flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">${iconSvg}</svg></div><div class="flex-1"><h4 class="text-sm font-black text-slate-800">${titulo}</h4><p class="text-[13px] text-slate-500 font-medium leading-tight mt-0.5">${mensaje}</p></div>`;
+    container.appendChild(toast);
+    toast.onclick = () => toast.remove();
+    setTimeout(() => { toast.classList.add('opacity-0', 'transition-opacity', 'duration-300'); setTimeout(() => toast.remove(), 300); }, 6000);
 };
 
-const cerrarModal = () => { 
-    modal.classList.add('hidden'); 
-    modal.classList.remove('flex'); 
-};
+// --- EVENTOS BÁSICOS ---
+document.getElementById('btn-abrir-modal').onclick = () => { resetearFormulario(); modal.classList.remove('hidden'); modal.classList.add('flex'); };
+const cerrarModal = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
 document.getElementById('btn-cerrar-modal').onclick = cerrarModal;
 document.getElementById('btn-cerrar-modal-secundario').onclick = cerrarModal;
-
 document.getElementById('btn-cerrar-sesion').onclick = () => location.reload();
-document.getElementById('btn-refrescar').onclick = cargarCitasDelServidor;
+document.getElementById('btn-refrescar').onclick = () => { mostrarNotificacion("Sincronizando...", "Actualizando agenda médica.", "info"); cargarCitasDelServidor(); };
 
-// --- BOTÓN DE CAMPOS EN EL DASHBOARD ---
+// --- EVENTOS MODAL COLUMNAS (NUEVO) ---
+document.getElementById('btn-configurar-columnas').onclick = () => {
+    const container = document.getElementById('lista-columnas');
+    // Lista completa de columnas posibles
+    const todasLasColumnas = [
+        { key: 'id', label: 'ID del Registro' },
+        { key: 'paciente', label: 'Nombre del Paciente' },
+        { key: 'edad', label: 'Edad' },
+        { key: 'identificacion', label: 'Identificación (DNI/Cédula)' },
+        { key: 'telefono', label: 'Teléfono' },
+        { key: 'fecha_cita', label: 'Fecha de Cita' },
+        { key: 'hora_cita', label: 'Hora de Cita' },
+        { key: 'profesional', label: 'Profesional Asignado' },
+        { key: 'estado', label: 'Estado Actual' }
+    ];
+    camposPlantilla.forEach(k => todasLasColumnas.push({ key: k, label: `${k} (Campo Extra)` }));
+
+    // Generar checkboxes
+    container.innerHTML = todasLasColumnas.map(col => {
+        const isChecked = !columnasOcultas.includes(col.key) ? 'checked' : '';
+        return `
+        <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition-all">
+            <input type="checkbox" value="${col.key}" class="w-5 h-5 custom-checkbox rounded text-blue-600 focus:ring-blue-500 border-slate-300" ${isChecked}>
+            <span class="font-semibold text-slate-700">${col.label}</span>
+        </label>
+        `;
+    }).join('');
+    
+    modalColumnas.classList.remove('hidden'); modalColumnas.classList.add('flex');
+};
+
+document.getElementById('btn-cerrar-modal-columnas').onclick = () => { modalColumnas.classList.add('hidden'); modalColumnas.classList.remove('flex'); };
+
+document.getElementById('btn-guardar-columnas').onclick = () => {
+    const checkboxes = document.querySelectorAll('#lista-columnas input[type="checkbox"]');
+    let nuevasOcultas = [];
+    checkboxes.forEach(cb => { if (!cb.checked) nuevasOcultas.push(cb.value); });
+    
+    columnasOcultas = nuevasOcultas;
+    localStorage.setItem('columnas_ocultas', JSON.stringify(columnasOcultas));
+    
+    modalColumnas.classList.add('hidden'); modalColumnas.classList.remove('flex');
+    hashTablaActual = ""; // Forzar redibujado visual
+    cargarCitasDelServidor();
+    mostrarNotificacion("Vistas Actualizadas", "Tus preferencias de tabla se han guardado.", "success");
+};
+
+// --- CREAR CAMPO DESDE AFUERA ---
 document.getElementById('btn-agregar-campo').addEventListener('click', () => {
     const nombre = prompt("Nombre del nuevo campo (ej: Seguro, Alergias):");
     if(nombre && nombre.trim() !== "") {
@@ -33,31 +97,34 @@ document.getElementById('btn-agregar-campo').addEventListener('click', () => {
         if(!camposPlantilla.includes(nombreLimpio)) {
             camposPlantilla.push(nombreLimpio);
             localStorage.setItem('campos_plantilla', JSON.stringify(camposPlantilla));
-            cargarCitasDelServidor(); // Refresca la tabla para mostrar la nueva columna
-            alert(`¡Campo "${nombreLimpio}" añadido con éxito!`);
-        } else {
-            alert("Este campo ya existe.");
-        }
+            hashTablaActual = ""; // Forzar render
+            cargarCitasDelServidor(); 
+            mostrarNotificacion("Campo Creado", `La columna "${nombreLimpio}" fue agregada.`, "success");
+        } else { alert("Este campo ya existe."); }
     }
 });
 
-// --- FUNCIONES DE LÓGICA ---
 function renderizarCamposModal(datosCita = {}) {
     const container = document.getElementById('contenedor-campos-plantilla');
+    if (camposPlantilla.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 font-medium col-span-full italic">No hay campos personalizados adicionales. Agrégalos desde el panel principal.</p>`;
+        return;
+    }
     container.innerHTML = camposPlantilla.map(nombre => `
-        <div class="relative">
-            <label class="text-[11px] font-bold text-slate-500 uppercase mb-1 block">${nombre}</label>
-            <input type="text" data-key="${nombre}" value="${datosCita[nombre] || ''}" class="input-plantilla w-full p-4 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition">
-            <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-500 hover:text-red-700 text-[10px] font-bold p-1">Eliminar</button>
+        <div class="relative group">
+            <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
+            <input type="text" data-key="${nombre}" value="${datosCita[nombre] || ''}" class="input-plantilla w-full p-4 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800">
+            <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-400 hover:text-red-600 text-[10px] font-black p-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-bl-lg">Quitar</button>
         </div>
     `).join('');
 }
 
 window.eliminarCampo = (nombre) => {
-    if(confirm(`¿Seguro que deseas eliminar la columna "${nombre}"? Los datos antiguos se conservarán en la base de datos pero no se verán en pantalla.`)) {
+    if(confirm(`¿Seguro que deseas ocultar la columna "${nombre}"?`)) {
         camposPlantilla = camposPlantilla.filter(c => c !== nombre);
         localStorage.setItem('campos_plantilla', JSON.stringify(camposPlantilla));
         renderizarCamposModal();
+        hashTablaActual = "";
         cargarCitasDelServidor();
     }
 };
@@ -69,7 +136,7 @@ function resetearFormulario() {
     renderizarCamposModal(); 
 }
 
-// --- LOGIN Y CARGA ---
+// --- LOGIN ---
 document.getElementById('form-login').addEventListener('submit', (e) => {
     e.preventDefault();
     const u = document.getElementById('login-usuario').value.trim().toLowerCase();
@@ -78,58 +145,94 @@ document.getElementById('form-login').addEventListener('submit', (e) => {
         clienteLogueado = u;
         document.getElementById('seccion-login').classList.add('hidden');
         document.getElementById('seccion-panel').classList.remove('hidden');
-        document.getElementById('nombre-cliente-titulo').innerText = u;
+        document.getElementById('nombre-cliente-titulo').innerText = "Usuario: " + u;
+        
         cargarCitasDelServidor();
-    } else {
-        alert("Usuario o contraseña incorrectos");
-    }
+        loopSincronizacion = setInterval(cargarCitasDelServidor, 10000);
+        mostrarNotificacion("Acceso Exitoso", "Bienvenido al panel de control de Finovixe.", "success");
+    } else { alert("Usuario o contraseña incorrectos"); }
 });
 
+// --- MOTOR PRINCIPAL ---
 async function cargarCitasDelServidor() {
     try {
         const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
         const data = await res.json();
         const citas = data.citas || (Array.isArray(data) ? data : []);
         
-        document.getElementById('stat-total').innerText = citas.length;
-        document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado === 'confirmó').length;
+        // Comparador Notificaciones
+        if (citasAnteriores.length > 0) {
+            citas.forEach(nuevaCita => {
+                const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id);
+                if (citaVieja && citaVieja.estado !== nuevaCita.estado) {
+                    mostrarNotificacion('Actualización de Estado', `${nuevaCita.nombres} ha cambiado su cita a: ${nuevaCita.estado.toUpperCase()}`, nuevaCita.estado.toLowerCase());
+                }
+            });
+        }
+        
+        // Anti-Parpadeo (incluye columnasOcultas en el hash para redibujar si el usuario cambia la vista)
+        const nuevoHash = JSON.stringify(citas) + JSON.stringify(camposPlantilla) + JSON.stringify(columnasOcultas);
+        if (nuevoHash === hashTablaActual) return; 
+        hashTablaActual = nuevoHash;
+        citasAnteriores = JSON.parse(JSON.stringify(citas));
 
-        // 1. ARMADO DE CABECERAS (Acciones SIEMPRE al final)
-        const cabecerasBase = ['ID', 'Paciente', 'Edad', 'Teléfono', 'F. Cita', 'H. Cita', 'Profesional', 'Estado'];
+        // Actualizar Métricas
+        document.getElementById('stat-total').innerText = citas.length;
+        document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length;
+        document.getElementById('stat-canceladas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length;
+        document.getElementById('stat-reprogramadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length;
+
+        // --- RENDER DE CABECERAS (Con Ocultamiento Inteligente) ---
+        const estructuraCabecera = [
+            { key: 'id', label: 'ID' },
+            { key: 'paciente', label: 'Paciente' },
+            { key: 'edad', label: 'Edad' },
+            { key: 'identificacion', label: 'Identificación' }, // <--- AHORA DESPUÉS DE EDAD
+            { key: 'telefono', label: 'Teléfono' },
+            { key: 'fecha_cita', label: 'F. Cita' },
+            { key: 'hora_cita', label: 'H. Cita' },
+            { key: 'profesional', label: 'Profesional' },
+            { key: 'estado', label: 'Estado' }
+        ];
+
         let htmlCabecera = `<tr>`;
-        cabecerasBase.forEach(h => htmlCabecera += `<th class="p-4">${h}</th>`);
-        camposPlantilla.forEach(k => htmlCabecera += `<th class="p-4 text-blue-500">${k}</th>`);
+        estructuraCabecera.forEach(col => { if (!columnasOcultas.includes(col.key)) htmlCabecera += `<th class="p-4">${col.label}</th>`; });
+        camposPlantilla.forEach(k => { if (!columnasOcultas.includes(k)) htmlCabecera += `<th class="p-4 text-blue-500">${k}</th>`; });
         htmlCabecera += `<th class="p-4 text-right">Acciones</th></tr>`;
         document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
 
-        // 2. ARMADO DE FILAS (Botón editar SIEMPRE al final)
+        // --- RENDER DE FILAS (Con Ocultamiento Inteligente y atrapador de acentos) ---
         document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => {
             let camposParseados = {};
             try { camposParseados = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); } catch(e){}
-            
             const citaString = encodeURIComponent(JSON.stringify({...c, camposParseados}));
             
-            let row = `
-            <tr class="table-row-hover border-b border-slate-100">
-                <td class="p-4 font-medium text-slate-500">${c.id || '-'}</td>
-                <td class="p-4 font-bold text-slate-900">${c.nombres || ''} ${c.apellidos || ''}</td>
-                <td class="p-4">${c.edad || '-'}</td>
-                <td class="p-4">${c.telefono || '-'}</td>
-                <td class="p-4">${c.fecha_cita?.split('T')[0] || '-'}</td>
-                <td class="p-4">${c.hora_cita || '-'}</td>
-                <td class="p-4 font-semibold text-blue-700">${c.profesional || '-'}</td>
-                <td class="p-4"><span class="px-3 py-1 rounded-full text-[10px] font-bold ${c.estado === 'confirmó' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'} uppercase tracking-wide">${c.estado || 'pendiente'}</span></td>`;
+            let estadoClass = 'bg-slate-100 text-slate-600';
+            const estadoLower = c.estado?.toLowerCase() || '';
+            if(estadoLower === 'confirmó') estadoClass = 'bg-emerald-100 text-emerald-700';
+            if(estadoLower === 'canceló' || estadoLower === 'cancelada') estadoClass = 'bg-red-100 text-red-700';
+            if(estadoLower === 'reprogramó' || estadoLower === 'reprogramada') estadoClass = 'bg-amber-100 text-amber-700';
             
-            // Agregar columnas dinámicas
-            camposPlantilla.forEach(k => {
-                row += `<td class="p-4 text-slate-600">${camposParseados[k] || '-'}</td>`;
+            let row = `<tr class="table-row-hover">`;
+            
+            if(!columnasOcultas.includes('id')) row += `<td class="p-4 font-bold text-slate-400">${c.id || '-'}</td>`;
+            if(!columnasOcultas.includes('paciente')) row += `<td class="p-4 font-black text-slate-800">${c.nombres || ''} ${c.apellidos || ''}</td>`;
+            if(!columnasOcultas.includes('edad')) row += `<td class="p-4 font-medium">${c.edad || '-'}</td>`;
+            
+            // LA MAGIA DE LA IDENTIFICACIÓN (Atrapa 'identificacion' e 'identificación')
+            if(!columnasOcultas.includes('identificacion')) row += `<td class="p-4 font-semibold text-slate-600">${c.identificacion || c['identificación'] || '-'}</td>`;
+            
+            if(!columnasOcultas.includes('telefono')) row += `<td class="p-4 font-medium">${c.telefono || '-'}</td>`;
+            if(!columnasOcultas.includes('fecha_cita')) row += `<td class="p-4 font-medium">${c.fecha_cita?.split('T')[0] || '-'}</td>`;
+            if(!columnasOcultas.includes('hora_cita')) row += `<td class="p-4 font-medium">${c.hora_cita || '-'}</td>`;
+            if(!columnasOcultas.includes('profesional')) row += `<td class="p-4 font-bold text-blue-600">${c.profesional || '-'}</td>`;
+            if(!columnasOcultas.includes('estado')) row += `<td class="p-4"><span class="px-3 py-1.5 rounded-lg text-[10px] font-black ${estadoClass} uppercase tracking-widest shadow-sm">${c.estado || 'pendiente'}</span></td>`;
+            
+            camposPlantilla.forEach(k => { 
+                if(!columnasOcultas.includes(k)) row += `<td class="p-4 text-slate-600 font-medium">${camposParseados[k] || '-'}</td>`; 
             });
 
-            // Botón Acciones al final
-            row += `<td class="p-4 text-right">
-                        <button onclick="prepararEdicion('${citaString}')" class="text-blue-600 font-bold hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all shadow-sm">Editar</button>
-                    </td>
-            </tr>`;
+            row += `<td class="p-4 text-right"><button onclick="prepararEdicion('${citaString}')" class="text-blue-700 font-bold hover:text-white bg-blue-50 hover:bg-blue-600 px-5 py-2.5 rounded-xl transition-all shadow-sm">Editar</button></td></tr>`;
             return row;
         }).join('');
     } catch (e) { console.error("Error al cargar:", e); }
@@ -141,7 +244,8 @@ window.prepararEdicion = (citaString) => {
     idCitaEnEdicion = c.id; 
     document.getElementById('titulo-modal').innerText = "Editando Cita #" + c.id;
     
-    document.getElementById('form-identificacion').value = c.identificacion || '';
+    // Alimenta el input asegurando que tome el campo aunque n8n le ponga acento
+    document.getElementById('form-identificacion').value = c.identificacion || c['identificación'] || '';
     document.getElementById('form-edad').value = c.edad || '';
     document.getElementById('form-telefono').value = c.telefono || '';
     document.getElementById('form-nombres').value = c.nombres || '';
@@ -152,17 +256,13 @@ window.prepararEdicion = (citaString) => {
     document.getElementById('form-motivo').value = c.motivo || '';
     
     renderizarCamposModal(c.camposParseados);
-    
-    modal.classList.remove('hidden');
-    modal.classList.add('flex'); // Centra al editar también
+    modal.classList.remove('hidden'); modal.classList.add('flex');
 };
 
 document.getElementById('form-cita').addEventListener('submit', async (e) => {
     e.preventDefault();
     let camposPersonalizadosObj = {};
-    document.querySelectorAll('.input-plantilla').forEach(i => {
-        if(i.value) camposPersonalizadosObj[i.getAttribute('data-key')] = i.value;
-    });
+    document.querySelectorAll('.input-plantilla').forEach(i => { if(i.value) camposPersonalizadosObj[i.getAttribute('data-key')] = i.value; });
 
     const payload = {
         ...(idCitaEnEdicion && { id: idCitaEnEdicion }), 
@@ -176,29 +276,19 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
         hora_cita: document.getElementById('form-hora').value,
         profesional: document.getElementById('form-profesional').value,
         motivo: document.getElementById('form-motivo').value,
-        estado: 'esperando respuesta',
+        estado: 'esperando respuesta', 
         campos_personalizados: camposPersonalizadosObj
     };
 
     const btnSubmit = e.target.querySelector('button[type="submit"]');
-    btnSubmit.innerText = "Guardando...";
-    btnSubmit.disabled = true;
+    btnSubmit.innerText = "Guardando..."; btnSubmit.disabled = true;
 
     try {
-        await fetch(N8N_POST_URL, { 
-            method: 'POST', 
-            body: JSON.stringify(payload), 
-            headers: {'Content-Type': 'application/json'} 
-        });
-        
-        cerrarModal();
-        resetearFormulario();
+        await fetch(N8N_POST_URL, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'application/json'} });
+        cerrarModal(); resetearFormulario();
+        mostrarNotificacion("Éxito", "La información de la cita fue guardada.", "success");
+        hashTablaActual = ""; 
         await cargarCitasDelServidor();
-    } catch (error) {
-        alert("Error al guardar la cita.");
-        console.error(error);
-    } finally {
-        btnSubmit.innerText = "Guardar cita";
-        btnSubmit.disabled = false;
-    }
+    } catch (error) { mostrarNotificacion("Error", "No se pudo guardar la cita.", "error"); } 
+    finally { btnSubmit.innerText = "Guardar Información"; btnSubmit.disabled = false; }
 });
