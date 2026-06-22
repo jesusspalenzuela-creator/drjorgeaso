@@ -7,7 +7,20 @@ let idCitaEnEdicion = null;
 
 // Gestores de memoria local (LocalStorage)
 let camposPlantilla = JSON.parse(localStorage.getItem('campos_plantilla') || '[]');
-let columnasOcultas = JSON.parse(localStorage.getItem('columnas_ocultas') || '[]'); // NUEVA VARIABLE PARA VISTAS
+let columnasOcultas = JSON.parse(localStorage.getItem('columnas_ocultas') || '[]'); 
+
+// NUEVO: Diccionario y Orden de Columnas
+const COLUMNAS_BASE = ['id', 'paciente', 'edad', 'identificacion', 'telefono', 'fecha_cita', 'hora_cita', 'profesional', 'estado'];
+const NOMBRES_COLUMNAS = {
+    'id': 'ID del Registro', 'paciente': 'Nombre del Paciente', 'edad': 'Edad',
+    'identificacion': 'Identificación', 'telefono': 'Teléfono', 'fecha_cita': 'Fecha de Cita',
+    'hora_cita': 'Hora de Cita', 'profesional': 'Profesional Asignado', 'estado': 'Estado Actual'
+};
+let ordenColumnas = JSON.parse(localStorage.getItem('orden_columnas'));
+if (!ordenColumnas || ordenColumnas.length === 0) {
+    ordenColumnas = [...COLUMNAS_BASE, ...camposPlantilla];
+    localStorage.setItem('orden_columnas', JSON.stringify(ordenColumnas));
+}
 
 let citasAnteriores = [];
 let hashTablaActual = ""; 
@@ -42,51 +55,69 @@ document.getElementById('btn-cerrar-modal-secundario').onclick = cerrarModal;
 document.getElementById('btn-cerrar-sesion').onclick = () => location.reload();
 document.getElementById('btn-refrescar').onclick = () => { mostrarNotificacion("Sincronizando...", "Actualizando agenda médica.", "info"); cargarCitasDelServidor(); };
 
-// --- EVENTOS MODAL COLUMNAS (NUEVO) ---
-document.getElementById('btn-configurar-columnas').onclick = () => {
+// --- EVENTOS MODAL COLUMNAS (VISTAS Y ORDEN) ---
+function renderizarModalVistas() {
     const container = document.getElementById('lista-columnas');
-    // Lista completa de columnas posibles
-    const todasLasColumnas = [
-        { key: 'id', label: 'ID del Registro' },
-        { key: 'paciente', label: 'Nombre del Paciente' },
-        { key: 'edad', label: 'Edad' },
-        { key: 'identificacion', label: 'Identificación (DNI/Cédula)' },
-        { key: 'telefono', label: 'Teléfono' },
-        { key: 'fecha_cita', label: 'Fecha de Cita' },
-        { key: 'hora_cita', label: 'Hora de Cita' },
-        { key: 'profesional', label: 'Profesional Asignado' },
-        { key: 'estado', label: 'Estado Actual' }
-    ];
-    camposPlantilla.forEach(k => todasLasColumnas.push({ key: k, label: `${k} (Campo Extra)` }));
-
-    // Generar checkboxes
-    container.innerHTML = todasLasColumnas.map(col => {
-        const isChecked = !columnasOcultas.includes(col.key) ? 'checked' : '';
+    container.innerHTML = ordenColumnas.map((colKey, index) => {
+        const isChecked = !columnasOcultas.includes(colKey) ? 'checked' : '';
+        const label = NOMBRES_COLUMNAS[colKey] || `${colKey} (Adicional)`;
+        
         return `
-        <label class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition-all">
-            <input type="checkbox" value="${col.key}" class="w-5 h-5 custom-checkbox rounded text-blue-600 focus:ring-blue-500 border-slate-300" ${isChecked}>
-            <span class="font-semibold text-slate-700">${col.label}</span>
-        </label>
+        <div class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all">
+            <label class="flex items-center gap-3 cursor-pointer flex-1">
+                <input type="checkbox" value="${colKey}" class="chk-columna w-5 h-5 custom-checkbox rounded text-blue-600 focus:ring-blue-500 border-slate-300" ${isChecked}>
+                <span class="font-semibold text-slate-700">${label}</span>
+            </label>
+            <div class="flex gap-1 ml-2">
+                <button type="button" onclick="moverColumna(${index}, -1)" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition" ${index === 0 ? 'disabled opacity-30 cursor-not-allowed' : ''}>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+                </button>
+                <button type="button" onclick="moverColumna(${index}, 1)" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition" ${index === ordenColumnas.length - 1 ? 'disabled opacity-30 cursor-not-allowed' : ''}>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+            </div>
+        </div>
         `;
     }).join('');
-    
+}
+
+window.moverColumna = (index, direccion) => {
+    // Guardar estado actual de checkboxes antes de re-renderizar
+    const checkboxes = document.querySelectorAll('.chk-columna');
+    let nuevasOcultas = [];
+    checkboxes.forEach(cb => { if (!cb.checked) nuevasOcultas.push(cb.value); });
+    columnasOcultas = nuevasOcultas;
+
+    // Cambiar el orden
+    const nuevoIndex = index + direccion;
+    if (nuevoIndex >= 0 && nuevoIndex < ordenColumnas.length) {
+        const temp = ordenColumnas[index];
+        ordenColumnas[index] = ordenColumnas[nuevoIndex];
+        ordenColumnas[nuevoIndex] = temp;
+        renderizarModalVistas();
+    }
+};
+
+document.getElementById('btn-configurar-columnas').onclick = () => {
+    renderizarModalVistas();
     modalColumnas.classList.remove('hidden'); modalColumnas.classList.add('flex');
 };
 
 document.getElementById('btn-cerrar-modal-columnas').onclick = () => { modalColumnas.classList.add('hidden'); modalColumnas.classList.remove('flex'); };
 
 document.getElementById('btn-guardar-columnas').onclick = () => {
-    const checkboxes = document.querySelectorAll('#lista-columnas input[type="checkbox"]');
+    const checkboxes = document.querySelectorAll('.chk-columna');
     let nuevasOcultas = [];
     checkboxes.forEach(cb => { if (!cb.checked) nuevasOcultas.push(cb.value); });
     
     columnasOcultas = nuevasOcultas;
     localStorage.setItem('columnas_ocultas', JSON.stringify(columnasOcultas));
+    localStorage.setItem('orden_columnas', JSON.stringify(ordenColumnas)); // Guardar el nuevo orden
     
     modalColumnas.classList.add('hidden'); modalColumnas.classList.remove('flex');
     hashTablaActual = ""; // Forzar redibujado visual
     cargarCitasDelServidor();
-    mostrarNotificacion("Vistas Actualizadas", "Tus preferencias de tabla se han guardado.", "success");
+    mostrarNotificacion("Vistas Actualizadas", "Tus preferencias de orden y visualización se han guardado.", "success");
 };
 
 // --- CREAR CAMPO DESDE AFUERA ---
@@ -96,8 +127,10 @@ document.getElementById('btn-agregar-campo').addEventListener('click', () => {
         const nombreLimpio = nombre.trim();
         if(!camposPlantilla.includes(nombreLimpio)) {
             camposPlantilla.push(nombreLimpio);
+            ordenColumnas.push(nombreLimpio); // Agregar al orden
             localStorage.setItem('campos_plantilla', JSON.stringify(camposPlantilla));
-            hashTablaActual = ""; // Forzar render
+            localStorage.setItem('orden_columnas', JSON.stringify(ordenColumnas));
+            hashTablaActual = ""; 
             cargarCitasDelServidor(); 
             mostrarNotificacion("Campo Creado", `La columna "${nombreLimpio}" fue agregada.`, "success");
         } else { alert("Este campo ya existe."); }
@@ -120,9 +153,11 @@ function renderizarCamposModal(datosCita = {}) {
 }
 
 window.eliminarCampo = (nombre) => {
-    if(confirm(`¿Seguro que deseas ocultar la columna "${nombre}"?`)) {
+    if(confirm(`¿Seguro que deseas eliminar la columna "${nombre}"?`)) {
         camposPlantilla = camposPlantilla.filter(c => c !== nombre);
+        ordenColumnas = ordenColumnas.filter(c => c !== nombre); // Quitar del orden
         localStorage.setItem('campos_plantilla', JSON.stringify(camposPlantilla));
+        localStorage.setItem('orden_columnas', JSON.stringify(ordenColumnas));
         renderizarCamposModal();
         hashTablaActual = "";
         cargarCitasDelServidor();
@@ -153,14 +188,14 @@ document.getElementById('form-login').addEventListener('submit', (e) => {
     } else { alert("Usuario o contraseña incorrectos"); }
 });
 
-// --- MOTOR PRINCIPAL ---
+// --- MOTOR PRINCIPAL (CONSTRUIDO DINÁMICAMENTE POR ORDEN) ---
 async function cargarCitasDelServidor() {
     try {
         const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
         const data = await res.json();
         const citas = data.citas || (Array.isArray(data) ? data : []);
         
-        // Comparador Notificaciones
+        // Notificaciones
         if (citasAnteriores.length > 0) {
             citas.forEach(nuevaCita => {
                 const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id);
@@ -170,8 +205,7 @@ async function cargarCitasDelServidor() {
             });
         }
         
-        // Anti-Parpadeo (incluye columnasOcultas en el hash para redibujar si el usuario cambia la vista)
-        const nuevoHash = JSON.stringify(citas) + JSON.stringify(camposPlantilla) + JSON.stringify(columnasOcultas);
+        const nuevoHash = JSON.stringify(citas) + JSON.stringify(camposPlantilla) + JSON.stringify(columnasOcultas) + JSON.stringify(ordenColumnas);
         if (nuevoHash === hashTablaActual) return; 
         hashTablaActual = nuevoHash;
         citasAnteriores = JSON.parse(JSON.stringify(citas));
@@ -182,26 +216,20 @@ async function cargarCitasDelServidor() {
         document.getElementById('stat-canceladas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length;
         document.getElementById('stat-reprogramadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length;
 
-        // --- RENDER DE CABECERAS (Con Ocultamiento Inteligente) ---
-        const estructuraCabecera = [
-            { key: 'id', label: 'ID' },
-            { key: 'paciente', label: 'Paciente' },
-            { key: 'edad', label: 'Edad' },
-            { key: 'identificacion', label: 'Identificación' }, // <--- AHORA DESPUÉS DE EDAD
-            { key: 'telefono', label: 'Teléfono' },
-            { key: 'fecha_cita', label: 'F. Cita' },
-            { key: 'hora_cita', label: 'H. Cita' },
-            { key: 'profesional', label: 'Profesional' },
-            { key: 'estado', label: 'Estado' }
-        ];
-
+        // --- RENDER DE CABECERAS (BASADO EN EL ORDEN) ---
         let htmlCabecera = `<tr>`;
-        estructuraCabecera.forEach(col => { if (!columnasOcultas.includes(col.key)) htmlCabecera += `<th class="p-4">${col.label}</th>`; });
-        camposPlantilla.forEach(k => { if (!columnasOcultas.includes(k)) htmlCabecera += `<th class="p-4 text-blue-500">${k}</th>`; });
+        ordenColumnas.forEach(colKey => {
+            if (!columnasOcultas.includes(colKey)) {
+                const isCustom = camposPlantilla.includes(colKey);
+                const colorClass = isCustom ? 'text-blue-500' : '';
+                const label = NOMBRES_COLUMNAS[colKey] || colKey;
+                htmlCabecera += `<th class="p-4 ${colorClass}">${label}</th>`;
+            }
+        });
         htmlCabecera += `<th class="p-4 text-right">Acciones</th></tr>`;
         document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
 
-        // --- RENDER DE FILAS (Con Ocultamiento Inteligente y atrapador de acentos) ---
+        // --- RENDER DE FILAS (BASADO EN EL ORDEN) ---
         document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => {
             let camposParseados = {};
             try { camposParseados = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); } catch(e){}
@@ -215,21 +243,22 @@ async function cargarCitasDelServidor() {
             
             let row = `<tr class="table-row-hover">`;
             
-            if(!columnasOcultas.includes('id')) row += `<td class="p-4 font-bold text-slate-400">${c.id || '-'}</td>`;
-            if(!columnasOcultas.includes('paciente')) row += `<td class="p-4 font-black text-slate-800">${c.nombres || ''} ${c.apellidos || ''}</td>`;
-            if(!columnasOcultas.includes('edad')) row += `<td class="p-4 font-medium">${c.edad || '-'}</td>`;
-            
-            // LA MAGIA DE LA IDENTIFICACIÓN (Atrapa 'identificacion' e 'identificación')
-            if(!columnasOcultas.includes('identificacion')) row += `<td class="p-4 font-semibold text-slate-600">${c.identificacion || c['identificación'] || '-'}</td>`;
-            
-            if(!columnasOcultas.includes('telefono')) row += `<td class="p-4 font-medium">${c.telefono || '-'}</td>`;
-            if(!columnasOcultas.includes('fecha_cita')) row += `<td class="p-4 font-medium">${c.fecha_cita?.split('T')[0] || '-'}</td>`;
-            if(!columnasOcultas.includes('hora_cita')) row += `<td class="p-4 font-medium">${c.hora_cita || '-'}</td>`;
-            if(!columnasOcultas.includes('profesional')) row += `<td class="p-4 font-bold text-blue-600">${c.profesional || '-'}</td>`;
-            if(!columnasOcultas.includes('estado')) row += `<td class="p-4"><span class="px-3 py-1.5 rounded-lg text-[10px] font-black ${estadoClass} uppercase tracking-widest shadow-sm">${c.estado || 'pendiente'}</span></td>`;
-            
-            camposPlantilla.forEach(k => { 
-                if(!columnasOcultas.includes(k)) row += `<td class="p-4 text-slate-600 font-medium">${camposParseados[k] || '-'}</td>`; 
+            ordenColumnas.forEach(colKey => {
+                if (!columnasOcultas.includes(colKey)) {
+                    // Distribuidor de celdas según el key
+                    switch(colKey) {
+                        case 'id': row += `<td class="p-4 font-bold text-slate-400">${c.id || '-'}</td>`; break;
+                        case 'paciente': row += `<td class="p-4 font-black text-slate-800">${c.nombres || ''} ${c.apellidos || ''}</td>`; break;
+                        case 'edad': row += `<td class="p-4 font-medium">${c.edad || '-'}</td>`; break;
+                        case 'identificacion': row += `<td class="p-4 font-semibold text-slate-600">${c.identificacion || c['identificación'] || '-'}</td>`; break;
+                        case 'telefono': row += `<td class="p-4 font-medium">${c.telefono || '-'}</td>`; break;
+                        case 'fecha_cita': row += `<td class="p-4 font-medium">${c.fecha_cita?.split('T')[0] || '-'}</td>`; break;
+                        case 'hora_cita': row += `<td class="p-4 font-medium">${c.hora_cita || '-'}</td>`; break;
+                        case 'profesional': row += `<td class="p-4 font-bold text-blue-600">${c.profesional || '-'}</td>`; break;
+                        case 'estado': row += `<td class="p-4"><span class="px-3 py-1.5 rounded-lg text-[10px] font-black ${estadoClass} uppercase tracking-widest shadow-sm">${c.estado || 'pendiente'}</span></td>`; break;
+                        default: row += `<td class="p-4 text-slate-600 font-medium">${camposParseados[colKey] || '-'}</td>`; break;
+                    }
+                }
             });
 
             row += `<td class="p-4 text-right"><button onclick="prepararEdicion('${citaString}')" class="text-blue-700 font-bold hover:text-white bg-blue-50 hover:bg-blue-600 px-5 py-2.5 rounded-xl transition-all shadow-sm">Editar</button></td></tr>`;
@@ -244,7 +273,6 @@ window.prepararEdicion = (citaString) => {
     idCitaEnEdicion = c.id; 
     document.getElementById('titulo-modal').innerText = "Editando Cita #" + c.id;
     
-    // Alimenta el input asegurando que tome el campo aunque n8n le ponga acento
     document.getElementById('form-identificacion').value = c.identificacion || c['identificación'] || '';
     document.getElementById('form-edad').value = c.edad || '';
     document.getElementById('form-telefono').value = c.telefono || '';
