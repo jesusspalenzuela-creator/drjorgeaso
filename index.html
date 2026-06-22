@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
-        
         body { font-family: 'Inter', system-ui, sans-serif; }
         .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
@@ -17,7 +16,6 @@
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast-enter { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        /* Checkbox personalizado */
         .custom-checkbox:checked { background-color: #2563eb; border-color: #2563eb; }
     </style>
 </head>
@@ -25,7 +23,6 @@
 
     <div id="toast-container" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none w-80"></div>
 
-    <!-- LOGIN -->
     <div id="seccion-login" class="flex items-center justify-center min-h-screen p-4 relative z-20">
         <div class="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl p-8 md:p-10 border border-white/20">
             <div class="text-center mb-8">
@@ -59,7 +56,6 @@
         </div>
     </div>
 
-    <!-- PANEL PRINCIPAL -->
     <div id="seccion-panel" class="hidden relative min-h-screen" style="background: linear-gradient(135deg, #0b1120 0%, #162032 100%);">
         <canvas id="particle-canvas" class="absolute inset-0 z-0 pointer-events-none opacity-60"></canvas>
 
@@ -83,7 +79,6 @@
                     <p class="text-blue-200/80 font-medium text-lg flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Panel de control en vivo</p>
                 </div>
                 <div class="flex gap-3 w-full lg:w-auto flex-wrap lg:flex-nowrap justify-end">
-                    <!-- BOTÓN DE VISTAS (NUEVO) -->
                     <button id="btn-configurar-columnas" class="flex-1 lg:flex-none justify-center flex items-center gap-2 px-5 py-3.5 bg-slate-800/80 border border-slate-600/50 rounded-xl font-bold text-slate-300 hover:bg-slate-700 transition-all backdrop-blur-md">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                         Vistas
@@ -122,7 +117,6 @@
         </main>
     </div>
 
-    <!-- MODAL DE CONFIGURACIÓN DE COLUMNAS (NUEVO) -->
     <div id="modal-columnas" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md hidden items-center justify-center p-4 z-[60]">
         <div class="bg-white p-8 rounded-[2rem] w-full max-w-md shadow-2xl overflow-y-auto max-h-[90vh] border border-slate-200">
             <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
@@ -134,18 +128,11 @@
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
-            
-            <div id="lista-columnas" class="space-y-2 mb-6">
-                <!-- Se rellena por JS -->
-            </div>
-            
-            <button id="btn-guardar-columnas" class="w-full p-4 rounded-xl font-bold bg-slate-900 text-white shadow-lg hover:bg-slate-800 transition tracking-wide text-lg">
-                Aplicar Cambios
-            </button>
+            <div id="lista-columnas" class="space-y-2 mb-6"></div>
+            <button id="btn-guardar-columnas" class="w-full p-4 rounded-xl font-bold bg-slate-900 text-white shadow-lg hover:bg-slate-800 transition tracking-wide text-lg">Aplicar Cambios</button>
         </div>
     </div>
 
-    <!-- MODAL DE CREACIÓN / EDICIÓN -->
     <div id="modal-cita" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md hidden items-center justify-center p-4 z-50">
         <div class="bg-white p-8 rounded-[2rem] w-full max-w-4xl shadow-2xl overflow-y-auto max-h-[90vh] border border-slate-200">
             <div class="flex justify-between items-center mb-8 border-b border-slate-100 pb-4">
@@ -174,7 +161,6 @@
             </form>
         </div>
     </div>
-
     <script src="app.js"></script>
     <script>
         (function() {
