@@ -1,5 +1,5 @@
 // ================================================
-// app.js - COMPLETO CON CABECERA SIEMPRE VISIBLE
+// app.js - CORREGIDO (maneja respuesta vacía del webhook)
 // ================================================
 
 const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
@@ -333,14 +333,31 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
     }
 });
 
-// --- MOTOR PRINCIPAL (CON CABECERA SIEMPRE VISIBLE) ---
+// --- MOTOR PRINCIPAL (CON CABECERA SIEMPRE VISIBLE Y MANEJO DE JSON VACÍO) ---
 async function cargarCitasDelServidor() {
     try {
+        // 1. Obtener respuesta del webhook
         const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
-        const data = await res.json();
-        const citas = data.citas || (Array.isArray(data) ? data : []);
+        
+        // 2. Obtener el texto de la respuesta (para manejar vacío)
+        const text = await res.text();
+        let citas = [];
+        
+        // 3. Intentar parsear solo si hay contenido
+        if (text && text.trim() !== '') {
+            try {
+                const data = JSON.parse(text);
+                citas = data.citas || (Array.isArray(data) ? data : []);
+            } catch (parseError) {
+                console.warn('Error al parsear JSON:', parseError);
+                citas = [];
+            }
+        } else {
+            // Respuesta vacía = sin citas
+            citas = [];
+        }
 
-        // --- 1. RENDERIZAR CABECERA SIEMPRE (incluso sin citas) ---
+        // --- 4. RENDERIZAR CABECERA SIEMPRE ---
         const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col));
         let htmlCabecera = `<tr>`;
         columnasMostradas.forEach(colKey => {
@@ -350,15 +367,15 @@ async function cargarCitasDelServidor() {
         htmlCabecera += `<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`;
         document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
 
-        // --- 2. ACTUALIZAR ESTADÍSTICAS (siempre) ---
+        // --- 5. ACTUALIZAR ESTADÍSTICAS (siempre) ---
         document.getElementById('stat-total').innerText = citas.length;
         document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length;
         document.getElementById('stat-canceladas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length;
         document.getElementById('stat-reprogramadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length;
 
-        // --- 3. SI NO HAY CITAS, mostrar mensaje y SALIR (la cabecera ya está pintada) ---
+        // --- 6. SI NO HAY CITAS, mostrar mensaje y SALIR ---
         if (citas.length === 0) {
-            const colspan = columnasMostradas.length + 1; // +1 por columna de acciones
+            const colspan = columnasMostradas.length + 1;
             document.getElementById('tabla-cuerpo').innerHTML = `
                 <tr>
                     <td colspan="${colspan}" class="px-6 py-12 text-center text-slate-400 font-medium">
@@ -373,7 +390,7 @@ async function cargarCitasDelServidor() {
             return;
         }
 
-        // --- 4. NOTIFICACIONES DE CAMBIOS DE ESTADO (solo si hay citas) ---
+        // --- 7. NOTIFICACIONES DE CAMBIOS DE ESTADO (si hay citas) ---
         if (citasAnteriores.length > 0) {
             citas.forEach(nuevaCita => {
                 const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id);
@@ -388,7 +405,7 @@ async function cargarCitasDelServidor() {
             });
         }
 
-        // --- 5. RENDERIZAR CUERPO DE LA TABLA (solo si hay citas) ---
+        // --- 8. RENDERIZAR CUERPO DE LA TABLA ---
         const nuevoHash = JSON.stringify(citas) + JSON.stringify(ordenColumnas) + JSON.stringify(columnasOcultas);
         if (nuevoHash === hashTablaActual) return;
         hashTablaActual = nuevoHash;
@@ -432,6 +449,20 @@ async function cargarCitasDelServidor() {
         }).join('');
     } catch (e) {
         console.error("Error al cargar:", e);
+        // En caso de error general, mostramos mensaje de error en la tabla
+        const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col));
+        const colspan = columnasMostradas.length + 1;
+        document.getElementById('tabla-cuerpo').innerHTML = `
+            <tr>
+                <td colspan="${colspan}" class="px-6 py-12 text-center text-red-400 font-medium">
+                    <div class="flex flex-col items-center gap-2">
+                        <svg class="w-12 h-12 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        <span>Error al cargar las citas</span>
+                        <span class="text-sm text-slate-400">Intenta recargar la página o contacta con soporte</span>
+                    </div>
+                </td>
+            </tr>
+        `;
     }
 }
 
