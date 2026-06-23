@@ -215,7 +215,8 @@ window.eliminarCampo = async (nombre) => {
 function resetearFormulario() {
     idCitaEnEdicion = null;
     document.getElementById('titulo-modal').innerText = "Nueva Cita";
-    renderizarCamposModal({});
+    // --- AQUÍ ESTÁ EL CAMBIO: valores por defecto ---
+    renderizarCamposModal({ procesado: 'Pendiente', estado: 'Esperando respuesta' });
 }
 
 // --- LOGIN (reordenación, sin eliminar campos) ---
@@ -362,6 +363,7 @@ async function cargarCitasDelServidor() {
             if (estadoLower === 'confirmó') estadoClass = 'bg-emerald-100 text-emerald-700';
             else if (estadoLower.includes('cancel')) estadoClass = 'bg-red-100 text-red-700';
             else if (estadoLower.includes('reprogram')) estadoClass = 'bg-amber-100 text-amber-700';
+            else if (estadoLower === 'esperando respuesta') estadoClass = 'bg-blue-100 text-blue-700';
 
             let row = `<tr class="table-row-hover">`;
             ordenColumnas.forEach(colKey => {
@@ -398,7 +400,7 @@ window.prepararEdicion = (citaString) => {
     document.getElementById('titulo-modal').innerText = "Editando Cita #" + c.id;
     const datos = {
         procesado: c.procesado || '',
-        estado: c.estado || 'esperando respuesta',
+        estado: c.estado || 'Esperando respuesta',
         ...c.camposParseados
     };
     renderizarCamposModal(datos);
@@ -406,7 +408,7 @@ window.prepararEdicion = (citaString) => {
     modal.classList.add('flex');
 };
 
-// --- GUARDAR CITA (NUEVA O EDICIÓN) --- SIN id_cliente ---
+// --- GUARDAR CITA (NUEVA O EDICIÓN) ---
 document.getElementById('form-cita').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -423,7 +425,7 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
     const payload = {
         ...(idCitaEnEdicion && { id: idCitaEnEdicion }),
         procesado: camposFijos.procesado || '',
-        estado: camposFijos.estado || 'esperando respuesta',
+        estado: camposFijos.estado || 'Esperando respuesta',
         campos_personalizados: camposDinamicos
     };
 
