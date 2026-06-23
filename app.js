@@ -6,20 +6,17 @@ const N8N_CONFIG_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/g
 let clienteLogueado = "";
 let idCitaEnEdicion = null;
 
-// Columnas fijas del sistema (siempre visibles y en ese orden)
 const COLUMNAS_FIJAS = ['id', 'procesado', 'estado'];
 const NOMBRES_COLUMNAS_SISTEMA = {
     'id': 'ID',
     'procesado': 'Procesado',
     'estado': 'Estado'
 };
+const CAMPOS_FIJOS_FORMULARIO = ['procesado', 'estado'];
 
-// Campos que aparecerán en el formulario (fijos + dinámicos)
-const CAMPOS_FIJOS_FORMULARIO = ['procesado', 'estado']; // id no se muestra
-
-let camposPlantilla = [];      // solo los campos personalizados (nombres)
+let camposPlantilla = [];
 let columnasOcultas = [];
-let ordenColumnas = [...COLUMNAS_FIJAS]; // siempre comienza con los fijos
+let ordenColumnas = ['id', 'procesado', 'estado'];
 
 let citasAnteriores = [];
 let hashTablaActual = "";
@@ -44,7 +41,7 @@ window.mostrarNotificacion = (titulo, mensaje, tipo = 'info') => {
     setTimeout(() => { toast.classList.add('opacity-0', 'transition-opacity', 'duration-300'); setTimeout(() => toast.remove(), 300); }, 6000);
 };
 
-// --- GUARDAR CONFIGURACIÓN EN LA BASE DE DATOS ---
+// --- GUARDAR CONFIGURACIÓN ---
 async function sincronizarConfiguracionNube() {
     const payload = {
         usuario: clienteLogueado,
@@ -221,7 +218,7 @@ function resetearFormulario() {
     renderizarCamposModal({});
 }
 
-// --- LOGIN SEGURO CON LIMPIEZA Y ORDEN POR DEFECTO ---
+// --- LOGIN (reordenación, sin eliminar campos) ---
 document.getElementById('form-login').addEventListener('submit', async (e) => {
     e.preventDefault();
     const u = document.getElementById('login-usuario').value.trim().toLowerCase();
@@ -249,42 +246,28 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
                 dbConfig = data.config;
             }
 
-            // --- LIMPIEZA Y ORDEN POR DEFECTO ---
-            let camposGuardados = dbConfig.campos_plantilla || [];
-            // Filtramos para eliminar posibles nombres que coincidan con fijos
-            camposGuardados = camposGuardados.filter(c => !COLUMNAS_FIJAS.includes(c.toLowerCase()));
-            camposPlantilla = camposGuardados;
+            // Obtener campos personalizados guardados (sin filtrar)
+            camposPlantilla = dbConfig.campos_plantilla || [];
+            // Solo aseguramos que no haya nombres iguales a los fijos (por si acaso)
+            camposPlantilla = camposPlantilla.filter(c => !COLUMNAS_FIJAS.includes(c.toLowerCase()));
 
+            // Reconstruir ordenColumnas con el orden deseado: id + campos + procesado + estado
+            let ordenGuardado = dbConfig.orden_columnas || [];
+            // Filtramos para obtener solo los personalizados que existan
+            let personalizadosEnOrden = ordenGuardado.filter(c => camposPlantilla.includes(c) && !COLUMNAS_FIJAS.includes(c));
+            // Si faltan algunos, los agregamos al final (por si se crearon nuevos)
+            let personalizadosFaltantes = camposPlantilla.filter(c => !personalizadosEnOrden.includes(c));
+            let personalizadosOrdenados = [...personalizadosEnOrden, ...personalizadosFaltantes];
+
+            // Construimos el nuevo orden
+            let nuevoOrden = ['id', ...personalizadosOrdenados, 'procesado', 'estado'];
+            // Eliminamos duplicados (por si acaso)
+            ordenColumnas = [...new Set(nuevoOrden)];
+
+            // Columnas ocultas: respetar las guardadas
             columnasOcultas = dbConfig.columnas_ocultas || [];
 
-            // Construir orden por defecto: ['id', ...camposPersonalizados, 'procesado', 'estado']
-            let ordenLimpio = ['id'];
-            // Agregar campos personalizados (en el orden guardado, si existen)
-            const ordenGuardado = dbConfig.orden_columnas || [];
-            // Primero agregamos los que estén en el orden guardado (solo los personalizados)
-            ordenGuardado.forEach(col => {
-                if (!COLUMNAS_FIJAS.includes(col) && !ordenLimpio.includes(col) && camposPlantilla.includes(col)) {
-                    ordenLimpio.push(col);
-                }
-            });
-            // Luego agregamos los que falten (por si se crearon nuevos y no están en el orden guardado)
-            camposPlantilla.forEach(campo => {
-                if (!ordenLimpio.includes(campo)) {
-                    // Insertar antes de 'procesado'
-                    const idxProcesado = ordenLimpio.indexOf('procesado');
-                    if (idxProcesado !== -1) ordenLimpio.splice(idxProcesado, 0, campo);
-                    else ordenLimpio.push(campo);
-                }
-            });
-            // Finalmente aseguramos que 'procesado' y 'estado' estén al final
-            if (!ordenLimpio.includes('procesado')) ordenLimpio.push('procesado');
-            if (!ordenLimpio.includes('estado')) ordenLimpio.push('estado');
-            // Asegurar que 'id' esté primero
-            ordenLimpio = ['id', ...ordenLimpio.filter(c => c !== 'id')];
-
-            ordenColumnas = ordenLimpio;
-
-            // Si la configuración ha cambiado, la guardamos
+            // Si la configuración ha cambiado (por reordenación), la guardamos
             const configNueva = {
                 orden_columnas: ordenColumnas,
                 columnas_ocultas: columnasOcultas,
@@ -302,9 +285,9 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
                         body: JSON.stringify({ usuario: clienteLogueado, config: configNueva }),
                         headers: { 'Content-Type': 'application/json' }
                     });
-                    console.log('Configuración limpiada y guardada en la nube.');
+                    console.log('Configuración reordenada y guardada en la nube.');
                 } catch (e) {
-                    console.warn('No se pudo guardar la configuración limpiada:', e);
+                    console.warn('No se pudo guardar la configuración reordenada:', e);
                 }
             }
 
@@ -353,13 +336,11 @@ async function cargarCitasDelServidor() {
         hashTablaActual = nuevoHash;
         citasAnteriores = JSON.parse(JSON.stringify(citas));
 
-        // Estadísticas
         document.getElementById('stat-total').innerText = citas.length;
         document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length;
         document.getElementById('stat-canceladas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length;
         document.getElementById('stat-reprogramadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length;
 
-        // Cabecera
         let htmlCabecera = `<tr>`;
         ordenColumnas.forEach(colKey => {
             if (!columnasOcultas.includes(colKey)) {
@@ -369,7 +350,6 @@ async function cargarCitasDelServidor() {
         htmlCabecera += `<th class="px-6 py-4 text-right">Acciones</th></tr>`;
         document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
 
-        // Cuerpo
         document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => {
             let camposParseados = {};
             try {
@@ -394,7 +374,6 @@ async function cargarCitasDelServidor() {
                     } else if (colKey === 'procesado') {
                         valor = `<span class="font-medium">${c.procesado || '-'}</span>`;
                     } else {
-                        // Campo personalizado
                         valor = camposParseados[colKey] || '-';
                         if (colKey.toLowerCase().includes('nombres')) {
                             valor = `<span class="font-black text-slate-800">${valor}</span>`;
@@ -427,7 +406,6 @@ window.prepararEdicion = (citaString) => {
     modal.classList.add('flex');
 };
 
-// --- GUARDAR CITA (NUEVA O EDICIÓN) ---
 document.getElementById('form-cita').addEventListener('submit', async (e) => {
     e.preventDefault();
 
