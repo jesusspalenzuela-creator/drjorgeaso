@@ -1,3 +1,7 @@
+// ================================================
+// app.js - COMPLETO CON CABECERA SIEMPRE VISIBLE
+// ================================================
+
 const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
 const N8N_POST_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/crearcita';
 const N8N_LOGIN_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/login';
@@ -43,7 +47,7 @@ window.mostrarNotificacion = (titulo, mensaje, tipo = 'info') => {
     setTimeout(() => { toast.classList.add('opacity-0', 'transition-opacity', 'duration-300'); setTimeout(() => toast.remove(), 300); }, 6000);
 };
 
-// --- GUARDAR CONFIGURACIÓN ---
+// --- GUARDAR CONFIGURACIÓN EN LA NUBE ---
 async function sincronizarConfiguracionNube() {
     const payload = {
         usuario: clienteLogueado,
@@ -65,19 +69,7 @@ async function sincronizarConfiguracionNube() {
     }
 }
 
-// --- RENDERIZAR CABECERA DE LA TABLA (siempre) ---
-function renderizarCabecera() {
-    let htmlCabecera = `<tr>`;
-    ordenColumnas.forEach(colKey => {
-        if (!columnasOcultas.includes(colKey)) {
-            htmlCabecera += `<th class="px-6 py-4 text-slate-600 font-extrabold text-xs uppercase tracking-widest">${NOMBRES_COLUMNAS_SISTEMA[colKey] || colKey}</th>`;
-        }
-    });
-    htmlCabecera += `<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`;
-    document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
-}
-
-// --- EVENTOS MODAL ---
+// --- EVENTOS MODAL PRINCIPAL ---
 document.getElementById('btn-abrir-modal').onclick = () => { resetearFormulario(); modal.classList.remove('hidden'); modal.classList.add('flex'); };
 const cerrarModal = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
 document.getElementById('btn-cerrar-modal').onclick = cerrarModal;
@@ -125,6 +117,7 @@ document.getElementById('form-nuevo-campo').addEventListener('submit', async (e)
         valoresDefault[nombre] = valorDefault;
     }
 
+    // Insertar antes de 'procesado'
     const idxProcesado = ordenColumnas.indexOf('procesado');
     if (idxProcesado !== -1) {
         ordenColumnas.splice(idxProcesado, 0, nombre);
@@ -138,13 +131,12 @@ document.getElementById('form-nuevo-campo').addEventListener('submit', async (e)
     modalNuevoCampo.classList.add('hidden');
     modalNuevoCampo.classList.remove('flex');
     hashTablaActual = "";
-    renderizarCabecera(); // <--- actualizar cabecera
     cargarCitasDelServidor();
     mostrarNotificacion("Campo Creado", `Columna '${nombre}' guardada.`, "success");
     if (!modal.classList.contains('hidden')) renderizarCamposModal();
 });
 
-// --- GESTIÓN DE VISTAS Y ORDEN ---
+// --- GESTIÓN DE VISTAS Y ORDEN DE COLUMNAS ---
 function renderizarModalVistas() {
     const container = document.getElementById('lista-columnas');
     container.innerHTML = ordenColumnas.map((colKey, index) => {
@@ -198,16 +190,16 @@ document.getElementById('btn-guardar-columnas').onclick = async () => {
     modalColumnas.classList.remove('flex');
     hashTablaActual = "";
     await sincronizarConfiguracionNube();
-    renderizarCabecera(); // <--- actualizar cabecera
     cargarCitasDelServidor();
     mostrarNotificacion("Nube Sincronizada", "Preferencias guardadas en tu cuenta.", "success");
 };
 
-// --- RENDERIZAR FORMULARIO ---
+// --- RENDERIZAR FORMULARIO DE CITA ---
 function renderizarCamposModal(datosCita = {}) {
     const container = document.getElementById('contenedor-campos-dinamicos');
     let html = '';
 
+    // Campos fijos: procesado y estado
     CAMPOS_FIJOS_FORMULARIO.forEach(nombre => {
         const valor = datosCita[nombre] || '';
         html += `
@@ -218,8 +210,10 @@ function renderizarCamposModal(datosCita = {}) {
         `;
     });
 
+    // Campos personalizados
     camposPlantilla.forEach(nombre => {
         let valor = datosCita[nombre] || '';
+        // Si es nueva cita y no hay datos, usar valor por defecto si existe
         if (!idCitaEnEdicion && !valor && valoresDefault[nombre]) {
             valor = valoresDefault[nombre];
         }
@@ -243,7 +237,6 @@ window.eliminarCampo = async (nombre) => {
         await sincronizarConfiguracionNube();
         renderizarCamposModal();
         hashTablaActual = "";
-        renderizarCabecera(); // <--- actualizar cabecera
         cargarCitasDelServidor();
     }
 };
@@ -325,9 +318,6 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
             document.getElementById('seccion-panel').classList.remove('hidden');
             document.getElementById('nombre-cliente-titulo').innerText = "Usuario: " + u;
 
-            // Renderizar cabecera inmediatamente
-            renderizarCabecera();
-
             cargarCitasDelServidor();
             loopSincronizacion = setInterval(cargarCitasDelServidor, 10000);
             mostrarNotificacion("Acceso Aprobado", "Entorno personalizado cargado.", "success");
@@ -343,23 +333,32 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
     }
 });
 
-// --- MOTOR PRINCIPAL ---
+// --- MOTOR PRINCIPAL (CON CABECERA SIEMPRE VISIBLE) ---
 async function cargarCitasDelServidor() {
     try {
         const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
         const data = await res.json();
         const citas = data.citas || (Array.isArray(data) ? data : []);
 
-        // --- SI NO HAY CITAS ---
-        if (citas.length === 0) {
-            // Actualizar estadísticas
-            document.getElementById('stat-total').innerText = 0;
-            document.getElementById('stat-confirmadas').innerText = 0;
-            document.getElementById('stat-canceladas').innerText = 0;
-            document.getElementById('stat-reprogramadas').innerText = 0;
+        // --- 1. RENDERIZAR CABECERA SIEMPRE (incluso sin citas) ---
+        const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col));
+        let htmlCabecera = `<tr>`;
+        columnasMostradas.forEach(colKey => {
+            const label = NOMBRES_COLUMNAS_SISTEMA[colKey] || colKey;
+            htmlCabecera += `<th class="px-6 py-4 text-slate-600 font-extrabold text-xs uppercase tracking-widest">${label}</th>`;
+        });
+        htmlCabecera += `<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`;
+        document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
 
-            // Mostrar mensaje en el cuerpo
-            const colspan = ordenColumnas.filter(col => !columnasOcultas.includes(col)).length + 1;
+        // --- 2. ACTUALIZAR ESTADÍSTICAS (siempre) ---
+        document.getElementById('stat-total').innerText = citas.length;
+        document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length;
+        document.getElementById('stat-canceladas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length;
+        document.getElementById('stat-reprogramadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length;
+
+        // --- 3. SI NO HAY CITAS, mostrar mensaje y SALIR (la cabecera ya está pintada) ---
+        if (citas.length === 0) {
+            const colspan = columnasMostradas.length + 1; // +1 por columna de acciones
             document.getElementById('tabla-cuerpo').innerHTML = `
                 <tr>
                     <td colspan="${colspan}" class="px-6 py-12 text-center text-slate-400 font-medium">
@@ -371,11 +370,10 @@ async function cargarCitasDelServidor() {
                     </td>
                 </tr>
             `;
-            // La cabecera ya se renderizó en el login o en cada actualización
             return;
         }
 
-        // --- NOTIFICACIONES DE CAMBIOS DE ESTADO (solo si hay citas) ---
+        // --- 4. NOTIFICACIONES DE CAMBIOS DE ESTADO (solo si hay citas) ---
         if (citasAnteriores.length > 0) {
             citas.forEach(nuevaCita => {
                 const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id);
@@ -390,13 +388,7 @@ async function cargarCitasDelServidor() {
             });
         }
 
-        // --- ACTUALIZAR ESTADÍSTICAS ---
-        document.getElementById('stat-total').innerText = citas.length;
-        document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length;
-        document.getElementById('stat-canceladas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length;
-        document.getElementById('stat-reprogramadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length;
-
-        // --- RENDERIZAR CUERPO DE LA TABLA ---
+        // --- 5. RENDERIZAR CUERPO DE LA TABLA (solo si hay citas) ---
         const nuevoHash = JSON.stringify(citas) + JSON.stringify(ordenColumnas) + JSON.stringify(columnasOcultas);
         if (nuevoHash === hashTablaActual) return;
         hashTablaActual = nuevoHash;
@@ -417,25 +409,23 @@ async function cargarCitasDelServidor() {
             else if (estadoLower === 'esperando respuesta') badgeClass = 'badge-esperando';
 
             let row = `<tr class="table-row hover:bg-slate-50">`;
-            ordenColumnas.forEach(colKey => {
-                if (!columnasOcultas.includes(colKey)) {
-                    let valor = '-';
-                    if (colKey === 'id') {
-                        valor = `<span class="font-bold text-slate-400">${c.id || '-'}</span>`;
-                    } else if (colKey === 'estado') {
-                        valor = `<span class="badge ${badgeClass}">${c.estado || 'pendiente'}</span>`;
-                    } else if (colKey === 'procesado') {
-                        valor = `<span class="font-medium text-slate-600">${c.procesado || '-'}</span>`;
-                    } else {
-                        valor = camposParseados[colKey] || '-';
-                        if (colKey.toLowerCase().includes('nombres')) {
-                            valor = `<span class="font-bold text-slate-800">${valor}</span>`;
-                        } else if (colKey.toLowerCase().includes('profesional')) {
-                            valor = `<span class="font-bold text-blue-600">${valor}</span>`;
-                        }
+            columnasMostradas.forEach(colKey => {
+                let valor = '-';
+                if (colKey === 'id') {
+                    valor = `<span class="font-bold text-slate-400">${c.id || '-'}</span>`;
+                } else if (colKey === 'estado') {
+                    valor = `<span class="badge ${badgeClass}">${c.estado || 'pendiente'}</span>`;
+                } else if (colKey === 'procesado') {
+                    valor = `<span class="font-medium text-slate-600">${c.procesado || '-'}</span>`;
+                } else {
+                    valor = camposParseados[colKey] || '-';
+                    if (colKey.toLowerCase().includes('nombres')) {
+                        valor = `<span class="font-bold text-slate-800">${valor}</span>`;
+                    } else if (colKey.toLowerCase().includes('profesional')) {
+                        valor = `<span class="font-bold text-blue-600">${valor}</span>`;
                     }
-                    row += `<td class="px-6 py-4 text-slate-700">${valor}</td>`;
                 }
+                row += `<td class="px-6 py-4 text-slate-700">${valor}</td>`;
             });
             row += `<td class="px-6 py-4 text-right"><button onclick="prepararEdicion('${citaString}')" class="btn-primary px-5 py-2 rounded-xl text-xs font-bold transition">Editar</button></td></tr>`;
             return row;
@@ -445,6 +435,7 @@ async function cargarCitasDelServidor() {
     }
 }
 
+// --- PREPARAR EDICIÓN DE CITA ---
 window.prepararEdicion = (citaString) => {
     const c = JSON.parse(decodeURIComponent(citaString));
     idCitaEnEdicion = c.id;
@@ -459,7 +450,7 @@ window.prepararEdicion = (citaString) => {
     modal.classList.add('flex');
 };
 
-// --- GUARDAR CITA ---
+// --- GUARDAR CITA (NUEVA O EDICIÓN) ---
 document.getElementById('form-cita').addEventListener('submit', async (e) => {
     e.preventDefault();
 
