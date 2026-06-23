@@ -139,26 +139,16 @@
                 <h2 id="titulo-modal" class="text-3xl font-black text-slate-900 tracking-tight">Nueva Cita</h2>
                 <button id="btn-cerrar-modal" class="text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-full p-2 transition-all"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
-            <form id="form-cita" class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div class="md:col-span-1"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Identificación</label><input type="text" id="form-identificacion" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
-                <div class="md:col-span-2"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Nombres</label><input type="text" id="form-nombres" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
-                <div class="md:col-span-2"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Apellidos</label><input type="text" id="form-apellidos" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
-                <div class="md:col-span-1"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Edad</label><input type="number" id="form-edad" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
-                <div class="md:col-span-1"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Teléfono</label><input type="text" id="form-telefono" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
-                <div class="md:col-span-1"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Fecha</label><input type="date" id="form-fecha" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
-                <div class="md:col-span-1"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Hora</label><input type="time" id="form-hora" required class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800"></div>
-                <div class="md:col-span-1"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Profesional Asignado</label><input type="text" id="form-profesional" required class="w-full p-4 rounded-xl bg-blue-50 border border-blue-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-bold text-blue-900"></div>
-                <div class="md:col-span-2"><label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">Motivo de Consulta</label><textarea id="form-motivo" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800" rows="1"></textarea></div>
+            
+            <form id="form-cita">
+                <div id="contenedor-campos-dinamicos" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
                 
-                <div class="md:col-span-3 mt-4 pt-6 border-t border-slate-100">
-                    <h3 class="text-sm font-black text-slate-800 mb-4 flex items-center gap-2"><span class="w-1.5 h-4 bg-blue-500 rounded-full"></span> Información Adicional</h3>
-                    <div id="contenedor-campos-plantilla" class="grid grid-cols-1 md:grid-cols-3 gap-5"></div>
-                </div>
-                <div class="md:col-span-3 flex gap-4 pt-6 mt-4 border-t border-slate-100">
+                <div class="flex gap-4 pt-6 mt-6 border-t border-slate-100">
                     <button type="button" id="btn-cerrar-modal-secundario" class="flex-1 p-4 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition">Cancelar</button>
                     <button type="submit" class="flex-[2] p-4 rounded-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-800 transition tracking-wide text-lg">Guardar Información</button>
                 </div>
             </form>
+
         </div>
     </div>
     <script src="app.js"></script>
