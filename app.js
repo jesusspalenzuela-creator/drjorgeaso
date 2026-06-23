@@ -1,7 +1,3 @@
-// ================================================
-// app.js - COMPLETO CON CABECERA SIEMPRE VISIBLE
-// ================================================
-
 const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
 const N8N_POST_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/crearcita';
 const N8N_LOGIN_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/login';
@@ -69,6 +65,18 @@ async function sincronizarConfiguracionNube() {
     }
 }
 
+// --- RENDERIZAR CABECERA DE LA TABLA (siempre) ---
+function renderizarCabecera() {
+    let htmlCabecera = `<tr>`;
+    ordenColumnas.forEach(colKey => {
+        if (!columnasOcultas.includes(colKey)) {
+            htmlCabecera += `<th class="px-6 py-4 text-slate-600 font-extrabold text-xs uppercase tracking-widest">${NOMBRES_COLUMNAS_SISTEMA[colKey] || colKey}</th>`;
+        }
+    });
+    htmlCabecera += `<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`;
+    document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
+}
+
 // --- EVENTOS MODAL ---
 document.getElementById('btn-abrir-modal').onclick = () => { resetearFormulario(); modal.classList.remove('hidden'); modal.classList.add('flex'); };
 const cerrarModal = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
@@ -130,6 +138,7 @@ document.getElementById('form-nuevo-campo').addEventListener('submit', async (e)
     modalNuevoCampo.classList.add('hidden');
     modalNuevoCampo.classList.remove('flex');
     hashTablaActual = "";
+    renderizarCabecera(); // <--- actualizar cabecera
     cargarCitasDelServidor();
     mostrarNotificacion("Campo Creado", `Columna '${nombre}' guardada.`, "success");
     if (!modal.classList.contains('hidden')) renderizarCamposModal();
@@ -189,6 +198,7 @@ document.getElementById('btn-guardar-columnas').onclick = async () => {
     modalColumnas.classList.remove('flex');
     hashTablaActual = "";
     await sincronizarConfiguracionNube();
+    renderizarCabecera(); // <--- actualizar cabecera
     cargarCitasDelServidor();
     mostrarNotificacion("Nube Sincronizada", "Preferencias guardadas en tu cuenta.", "success");
 };
@@ -233,6 +243,7 @@ window.eliminarCampo = async (nombre) => {
         await sincronizarConfiguracionNube();
         renderizarCamposModal();
         hashTablaActual = "";
+        renderizarCabecera(); // <--- actualizar cabecera
         cargarCitasDelServidor();
     }
 };
@@ -314,6 +325,9 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
             document.getElementById('seccion-panel').classList.remove('hidden');
             document.getElementById('nombre-cliente-titulo').innerText = "Usuario: " + u;
 
+            // Renderizar cabecera inmediatamente
+            renderizarCabecera();
+
             cargarCitasDelServidor();
             loopSincronizacion = setInterval(cargarCitasDelServidor, 10000);
             mostrarNotificacion("Acceso Aprobado", "Entorno personalizado cargado.", "success");
@@ -329,25 +343,22 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
     }
 });
 
-// --- MOTOR PRINCIPAL (CON CABECERA SIEMPRE VISIBLE) ---
+// --- MOTOR PRINCIPAL ---
 async function cargarCitasDelServidor() {
     try {
         const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
         const data = await res.json();
         const citas = data.citas || (Array.isArray(data) ? data : []);
 
-        // --- RENDERIZAR CABECERA SIEMPRE (incluso sin citas) ---
-        let htmlCabecera = `<tr>`;
-        ordenColumnas.forEach(colKey => {
-            if (!columnasOcultas.includes(colKey)) {
-                htmlCabecera += `<th class="px-6 py-4 text-slate-600 font-extrabold text-xs uppercase tracking-widest">${NOMBRES_COLUMNAS_SISTEMA[colKey] || colKey}</th>`;
-            }
-        });
-        htmlCabecera += `<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`;
-        document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
-
-        // --- SI NO HAY CITAS, mostrar mensaje ---
+        // --- SI NO HAY CITAS ---
         if (citas.length === 0) {
+            // Actualizar estadísticas
+            document.getElementById('stat-total').innerText = 0;
+            document.getElementById('stat-confirmadas').innerText = 0;
+            document.getElementById('stat-canceladas').innerText = 0;
+            document.getElementById('stat-reprogramadas').innerText = 0;
+
+            // Mostrar mensaje en el cuerpo
             const colspan = ordenColumnas.filter(col => !columnasOcultas.includes(col)).length + 1;
             document.getElementById('tabla-cuerpo').innerHTML = `
                 <tr>
@@ -360,11 +371,7 @@ async function cargarCitasDelServidor() {
                     </td>
                 </tr>
             `;
-            // Actualizar estadísticas
-            document.getElementById('stat-total').innerText = 0;
-            document.getElementById('stat-confirmadas').innerText = 0;
-            document.getElementById('stat-canceladas').innerText = 0;
-            document.getElementById('stat-reprogramadas').innerText = 0;
+            // La cabecera ya se renderizó en el login o en cada actualización
             return;
         }
 
