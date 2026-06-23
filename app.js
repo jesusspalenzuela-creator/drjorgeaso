@@ -6,18 +6,16 @@ const N8N_CONFIG_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/g
 let clienteLogueado = "";
 let idCitaEnEdicion = null;
 
-// Variables de Configuración
+// Solo quedan los campos de sistema estáticos
+const COLUMNAS_SISTEMA = ['id', 'estado'];
+const NOMBRES_COLUMNAS_SISTEMA = { 'id': 'ID', 'estado': 'Estado' };
+
+// Si un cliente nuevo entra, le damos esta plantilla inicial (él puede borrarla luego)
+const PLANTILLA_POR_DEFECTO = ['Identificación', 'Nombres', 'Apellidos', 'Teléfono', 'Fecha', 'Hora', 'Profesional'];
+
 let camposPlantilla = [];
 let columnasOcultas = []; 
 let ordenColumnas = [];
-
-const COLUMNAS_BASE = ['id', 'nombres', 'apellidos', 'edad', 'identificacion', 'telefono', 'fecha_cita', 'hora_cita', 'motivo', 'profesional', 'procesado', 'estado'];
-const NOMBRES_COLUMNAS = {
-    'id': 'ID', 'nombres': 'Nombres', 'apellidos': 'Apellidos', 'edad': 'Edad',
-    'identificacion': 'Identificación', 'telefono': 'Teléfono', 'fecha_cita': 'Fecha Cita', 
-    'hora_cita': 'Hora Cita', 'motivo': 'Motivo', 'profesional': 'Profesional', 
-    'procesado': 'Procesado', 'estado': 'Estado'
-};
 
 let citasAnteriores = [];
 let hashTablaActual = ""; 
@@ -66,7 +64,7 @@ function renderizarModalVistas() {
     const container = document.getElementById('lista-columnas');
     container.innerHTML = ordenColumnas.map((colKey, index) => {
         const isChecked = !columnasOcultas.includes(colKey) ? 'checked' : '';
-        const label = NOMBRES_COLUMNAS[colKey] || `${colKey}`;
+        const label = NOMBRES_COLUMNAS_SISTEMA[colKey] || `${colKey}`;
         return `
         <div class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all">
             <label class="flex items-center gap-3 cursor-pointer flex-1">
@@ -113,36 +111,57 @@ document.getElementById('btn-guardar-columnas').onclick = async () => {
     mostrarNotificacion("Nube Sincronizada", "Preferencias guardadas en tu cuenta.", "success");
 };
 
-// --- CREAR CAMPO ---
+// --- CREAR CAMPO DINÁMICO ---
 document.getElementById('btn-agregar-campo').addEventListener('click', async () => {
-    const nombre = prompt("Nombre del nuevo campo (ej: Seguro, Alergias):");
+    const nombre = prompt("Nombre del nuevo campo (ej: Tipo de Consulta, Alergias):");
     if(nombre && nombre.trim() !== "") {
         const nombreLimpio = nombre.trim();
+        // Si el usuario intenta crear un campo que ya es de sistema, no lo dejamos
+        if(COLUMNAS_SISTEMA.includes(nombreLimpio.toLowerCase())) {
+            alert(`El campo '${nombreLimpio}' está reservado por el sistema.`); return;
+        }
+
         if(!camposPlantilla.includes(nombreLimpio)) {
             camposPlantilla.push(nombreLimpio);
-            ordenColumnas.push(nombreLimpio);
+            // Lo insertamos en ordenColumnas justo antes de 'estado' para que se vea ordenado
+            const idxEstado = ordenColumnas.indexOf('estado');
+            if(idxEstado !== -1) ordenColumnas.splice(idxEstado, 0, nombreLimpio);
+            else ordenColumnas.push(nombreLimpio);
             
             await sincronizarConfiguracionNube(); 
             
             hashTablaActual = ""; cargarCitasDelServidor(); 
             mostrarNotificacion("Campo Creado", `Columna guardada en la base de datos.`, "success");
+            // Si el modal de cita está abierto, lo actualizamos
+            if(!modal.classList.contains('hidden')) renderizarCamposModal();
         } else { alert("Este campo ya existe."); }
     }
 });
 
+// --- RENDERIZAR TODO EL FORMULARIO DINÁMICO ---
 function renderizarCamposModal(datosCita = {}) {
-    const container = document.getElementById('contenedor-campos-plantilla');
-    container.innerHTML = camposPlantilla.map(nombre => `
+    const container = document.getElementById('contenedor-campos-dinamicos');
+    
+    container.innerHTML = camposPlantilla.map(nombre => {
+        // Asignamos tipos de input inteligentes según el nombre del campo
+        let inputType = 'text';
+        let nombreMinuscula = nombre.toLowerCase();
+        if (nombreMinuscula.includes('fecha')) inputType = 'date';
+        else if (nombreMinuscula.includes('hora')) inputType = 'time';
+        else if (nombreMinuscula.includes('edad') || nombreMinuscula.includes('cantidad')) inputType = 'number';
+
+        return `
         <div class="relative group">
             <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
-            <input type="text" data-key="${nombre}" value="${datosCita[nombre] || ''}" class="input-plantilla w-full p-4 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800">
+            <input type="${inputType}" data-key="${nombre}" value="${datosCita[nombre] || ''}" class="input-dinamico w-full p-4 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800">
             <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-400 hover:text-red-600 text-[10px] font-black p-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-bl-lg">Quitar</button>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 window.eliminarCampo = async (nombre) => {
-    if(confirm(`¿Eliminar la columna "${nombre}"?`)) {
+    if(confirm(`¿Eliminar la columna "${nombre}" en todas las vistas?`)) {
         camposPlantilla = camposPlantilla.filter(c => c !== nombre);
         ordenColumnas = ordenColumnas.filter(c => c !== nombre);
         
@@ -155,7 +174,6 @@ window.eliminarCampo = async (nombre) => {
 function resetearFormulario() {
     idCitaEnEdicion = null;
     document.getElementById('titulo-modal').innerText = "Nueva Cita";
-    document.getElementById('form-cita').reset();
     renderizarCamposModal(); 
 }
 
@@ -170,9 +188,7 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
 
     try {
         const res = await fetch(N8N_LOGIN_URL, { 
-            method: 'POST', 
-            body: JSON.stringify({usuario: u, password: p}), 
-            headers: {'Content-Type': 'application/json'} 
+            method: 'POST', body: JSON.stringify({usuario: u, password: p}), headers: {'Content-Type': 'application/json'} 
         });
         const data = await res.json();
 
@@ -186,19 +202,16 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
                 dbConfig = data.config;
             }
 
-            camposPlantilla = dbConfig.campos_plantilla || [];
+            // Si es un cliente nuevo y no tiene campos, le cargamos la plantilla por defecto
+            camposPlantilla = dbConfig.campos_plantilla && dbConfig.campos_plantilla.length > 0 ? dbConfig.campos_plantilla : [...PLANTILLA_POR_DEFECTO];
             columnasOcultas = dbConfig.columnas_ocultas || [];
             ordenColumnas = dbConfig.orden_columnas && dbConfig.orden_columnas.length > 0 
                             ? dbConfig.orden_columnas 
-                            : [...COLUMNAS_BASE, ...camposPlantilla];
+                            : ['id', ...camposPlantilla, 'estado'];
 
-            // Forzar actualización si se añadieron campos nuevos
-            COLUMNAS_BASE.forEach(col => {
-                if (!ordenColumnas.includes(col)) ordenColumnas.push(col);
-            });
-
-            // Limpieza de campos obsoletos
-            ordenColumnas = ordenColumnas.filter(c => c !== 'paciente' && c !== 'detalles');
+            // Asegurar que ID y Estado siempre estén presentes
+            if (!ordenColumnas.includes('id')) ordenColumnas.unshift('id');
+            if (!ordenColumnas.includes('estado')) ordenColumnas.push('estado');
 
             document.getElementById('seccion-login').classList.add('hidden');
             document.getElementById('seccion-panel').classList.remove('hidden');
@@ -206,13 +219,13 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
             
             cargarCitasDelServidor();
             loopSincronizacion = setInterval(cargarCitasDelServidor, 10000);
-            mostrarNotificacion("Acceso Aprobado", "Conexión segura establecida.", "success");
+            mostrarNotificacion("Acceso Aprobado", "Entorno personalizado cargado.", "success");
         } else {
             alert("Usuario o contraseña incorrectos.");
         }
     } catch (err) {
         console.error(err);
-        alert("Error de conexión con el servidor. Revisa los flujos en n8n.");
+        alert("Error de conexión con el servidor.");
     } finally {
         btnSubmit.innerText = "Acceder al panel"; btnSubmit.disabled = false;
     }
@@ -229,7 +242,14 @@ async function cargarCitasDelServidor() {
             citas.forEach(nuevaCita => {
                 const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id);
                 if (citaVieja && citaVieja.estado !== nuevaCita.estado) {
-                    mostrarNotificacion('Actualización', `${nuevaCita.nombres} ha cambiado a: ${nuevaCita.estado.toUpperCase()}`, nuevaCita.estado.toLowerCase());
+                    // Solo mostramos notificación si existe un nombre dentro del JSON, sino un genérico
+                    let nombrePaciente = "";
+                    try { 
+                        let jsonParseado = typeof nuevaCita.campos_personalizados === 'string' ? JSON.parse(nuevaCita.campos_personalizados) : nuevaCita.campos_personalizados;
+                        nombrePaciente = jsonParseado['Nombres'] || `Cita #${nuevaCita.id}`;
+                    } catch(e) { nombrePaciente = `Cita #${nuevaCita.id}`; }
+                    
+                    mostrarNotificacion('Actualización', `${nombrePaciente} ha cambiado a: ${nuevaCita.estado.toUpperCase()}`, nuevaCita.estado.toLowerCase());
                 }
             });
         }
@@ -247,13 +267,14 @@ async function cargarCitasDelServidor() {
         let htmlCabecera = `<tr>`;
         ordenColumnas.forEach(colKey => {
             if (!columnasOcultas.includes(colKey)) { 
-                htmlCabecera += `<th class="px-6 py-4">${NOMBRES_COLUMNAS[colKey] || colKey}</th>`; 
+                htmlCabecera += `<th class="px-6 py-4">${NOMBRES_COLUMNAS_SISTEMA[colKey] || colKey}</th>`; 
             }
         });
         htmlCabecera += `<th class="px-6 py-4 text-right">Acciones</th></tr>`;
         document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
 
         document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => {
+            // Toda la info ahora vive aquí
             let camposParseados = {};
             try { camposParseados = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); } catch(e){}
             const citaString = encodeURIComponent(JSON.stringify({...c, camposParseados}));
@@ -268,19 +289,16 @@ async function cargarCitasDelServidor() {
             ordenColumnas.forEach(colKey => {
                 if (!columnasOcultas.includes(colKey)) {
                     let valor = '-';
+                    // Evaluamos campos de sistema
                     if (colKey === 'id') valor = `<span class="font-bold text-slate-400">${c.id || '-'}</span>`;
-                    else if (colKey === 'nombres') valor = `<span class="font-black text-slate-800">${c.nombres || '-'}</span>`;
-                    else if (colKey === 'apellidos') valor = `<span class="font-black text-slate-800">${c.apellidos || '-'}</span>`;
-                    else if (colKey === 'edad') valor = c.edad || '-';
-                    else if (colKey === 'identificacion') valor = `<span class="font-semibold text-slate-600">${c.identificacion || c['identificación'] || '-'}</span>`;
-                    else if (colKey === 'telefono') valor = c.telefono || '-';
-                    else if (colKey === 'fecha_cita') valor = c.fecha_cita?.split('T')[0] || '-';
-                    else if (colKey === 'hora_cita') valor = c.hora_cita || '-';
-                    else if (colKey === 'motivo') valor = `<span class="text-slate-600">${c.motivo || '-'}</span>`;
-                    else if (colKey === 'profesional') valor = `<span class="font-bold text-blue-600">${c.profesional || '-'}</span>`;
-                    else if (colKey === 'procesado') valor = c.procesado || 'false';
                     else if (colKey === 'estado') valor = `<span class="px-3 py-1.5 rounded-lg text-[10px] font-black ${estadoClass} uppercase shadow-sm">${c.estado || 'pendiente'}</span>`;
-                    else valor = camposParseados[colKey] || '-';
+                    else {
+                        // TODO lo demás viene del JSON generado dinámicamente
+                        valor = camposParseados[colKey] || '-';
+                        // Para darle un toque visual, si detecta un campo "Nombres" o "Profesional", le da estilo
+                        if(colKey.toLowerCase().includes('nombres')) valor = `<span class="font-black text-slate-800">${valor}</span>`;
+                        if(colKey.toLowerCase().includes('profesional')) valor = `<span class="font-bold text-blue-600">${valor}</span>`;
+                    }
                     
                     row += `<td class="px-6 py-4">${valor}</td>`;
                 }
@@ -295,38 +313,27 @@ window.prepararEdicion = (citaString) => {
     const c = JSON.parse(decodeURIComponent(citaString));
     idCitaEnEdicion = c.id; 
     document.getElementById('titulo-modal').innerText = "Editando Cita #" + c.id;
-    document.getElementById('form-identificacion').value = c.identificacion || c['identificación'] || '';
-    document.getElementById('form-edad').value = c.edad || '';
-    document.getElementById('form-telefono').value = c.telefono || '';
-    document.getElementById('form-nombres').value = c.nombres || '';
-    document.getElementById('form-apellidos').value = c.apellidos || '';
-    document.getElementById('form-fecha').value = c.fecha_cita?.split('T')[0] || '';
-    document.getElementById('form-hora').value = c.hora_cita || '';
-    document.getElementById('form-profesional').value = c.profesional || '';
-    document.getElementById('form-motivo').value = c.motivo || '';
+    
+    // Simplemente pasamos el paquete parseado al renderizador para que llene los inputs
     renderizarCamposModal(c.camposParseados);
     modal.classList.remove('hidden'); modal.classList.add('flex');
 };
 
 document.getElementById('form-cita').addEventListener('submit', async (e) => {
     e.preventDefault();
-    let camposPersonalizadosObj = {};
-    document.querySelectorAll('.input-plantilla').forEach(i => { if(i.value) camposPersonalizadosObj[i.getAttribute('data-key')] = i.value; });
+    
+    // El sistema dinámico: Coge TODOS los inputs y los empaqueta automáticamente
+    let camposDinamicosObj = {};
+    document.querySelectorAll('.input-dinamico').forEach(i => { 
+        if(i.value) camposDinamicosObj[i.getAttribute('data-key')] = i.value; 
+    });
 
     const payload = {
         ...(idCitaEnEdicion && { id: idCitaEnEdicion }), 
         id_cliente: clienteLogueado,
-        identificacion: document.getElementById('form-identificacion').value,
-        edad: parseInt(document.getElementById('form-edad').value) || 0,
-        nombres: document.getElementById('form-nombres').value,
-        apellidos: document.getElementById('form-apellidos').value,
-        telefono: document.getElementById('form-telefono').value,
-        fecha_cita: document.getElementById('form-fecha').value,
-        hora_cita: document.getElementById('form-hora').value,
-        profesional: document.getElementById('form-profesional').value,
-        motivo: document.getElementById('form-motivo').value,
         estado: 'esperando respuesta',
-        campos_personalizados: camposPersonalizadosObj
+        // Todo el formulario viaja en esta única caja
+        campos_personalizados: camposDinamicosObj
     };
 
     const btnSubmit = e.target.querySelector('button[type="submit"]');
