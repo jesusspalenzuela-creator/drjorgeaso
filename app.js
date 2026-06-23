@@ -11,13 +11,12 @@ let camposPlantilla = [];
 let columnasOcultas = []; 
 let ordenColumnas = [];
 
-// ACÁ SE ACTUALIZARON LOS ENCABEZADOS EXACTAMENTE COMO LOS PEDISTE
-const COLUMNAS_BASE = ['id', 'nombres', 'apellidos', 'edad', 'identificacion', 'telefono', 'fecha_cita', 'hora_cita', 'motivo', 'profesional', 'procesado', 'estado', 'detalles'];
+const COLUMNAS_BASE = ['id', 'nombres', 'apellidos', 'edad', 'identificacion', 'telefono', 'fecha_cita', 'hora_cita', 'motivo', 'profesional', 'procesado', 'estado'];
 const NOMBRES_COLUMNAS = {
     'id': 'ID', 'nombres': 'Nombres', 'apellidos': 'Apellidos', 'edad': 'Edad',
     'identificacion': 'Identificación', 'telefono': 'Teléfono', 'fecha_cita': 'Fecha Cita', 
     'hora_cita': 'Hora Cita', 'motivo': 'Motivo', 'profesional': 'Profesional', 
-    'procesado': 'Procesado', 'estado': 'Estado', 'detalles': 'Detalles'
+    'procesado': 'Procesado', 'estado': 'Estado'
 };
 
 let citasAnteriores = [];
@@ -198,8 +197,8 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
                 if (!ordenColumnas.includes(col)) ordenColumnas.push(col);
             });
 
-            // Limpieza de campos obsoletos (por si quedó 'paciente' guardado en tu DB vieja)
-            ordenColumnas = ordenColumnas.filter(c => c !== 'paciente');
+            // Limpieza de campos obsoletos
+            ordenColumnas = ordenColumnas.filter(c => c !== 'paciente' && c !== 'detalles');
 
             document.getElementById('seccion-login').classList.add('hidden');
             document.getElementById('seccion-panel').classList.remove('hidden');
@@ -248,7 +247,6 @@ async function cargarCitasDelServidor() {
         let htmlCabecera = `<tr>`;
         ordenColumnas.forEach(colKey => {
             if (!columnasOcultas.includes(colKey)) { 
-                // AQUÍ USAMOS px-6 py-4 PARA QUE TENGAN MÁS ESPACIO LATERAL
                 htmlCabecera += `<th class="px-6 py-4">${NOMBRES_COLUMNAS[colKey] || colKey}</th>`; 
             }
         });
@@ -270,7 +268,6 @@ async function cargarCitasDelServidor() {
             ordenColumnas.forEach(colKey => {
                 if (!columnasOcultas.includes(colKey)) {
                     let valor = '-';
-                    // ADAPTADO AL NUEVO ORDEN DE COLUMNAS SEPARADAS
                     if (colKey === 'id') valor = `<span class="font-bold text-slate-400">${c.id || '-'}</span>`;
                     else if (colKey === 'nombres') valor = `<span class="font-black text-slate-800">${c.nombres || '-'}</span>`;
                     else if (colKey === 'apellidos') valor = `<span class="font-black text-slate-800">${c.apellidos || '-'}</span>`;
@@ -281,12 +278,10 @@ async function cargarCitasDelServidor() {
                     else if (colKey === 'hora_cita') valor = c.hora_cita || '-';
                     else if (colKey === 'motivo') valor = `<span class="text-slate-600">${c.motivo || '-'}</span>`;
                     else if (colKey === 'profesional') valor = `<span class="font-bold text-blue-600">${c.profesional || '-'}</span>`;
-                    else if (colKey === 'procesado') valor = c.procesado || '-';
-                    else if (colKey === 'detalles') valor = c.detalles || camposParseados['detalles'] || '-';
+                    else if (colKey === 'procesado') valor = c.procesado || 'false';
                     else if (colKey === 'estado') valor = `<span class="px-3 py-1.5 rounded-lg text-[10px] font-black ${estadoClass} uppercase shadow-sm">${c.estado || 'pendiente'}</span>`;
                     else valor = camposParseados[colKey] || '-';
                     
-                    // SE USA px-6 py-4 EN VEZ DE p-4
                     row += `<td class="px-6 py-4">${valor}</td>`;
                 }
             });
