@@ -6,16 +6,18 @@ const N8N_CONFIG_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/g
 let clienteLogueado = "";
 let idCitaEnEdicion = null;
 
-// Variables de Configuración (Ahora inician vacías, se llenan con la Base de Datos)
+// Variables de Configuración
 let camposPlantilla = [];
 let columnasOcultas = []; 
 let ordenColumnas = [];
 
-const COLUMNAS_BASE = ['id', 'identificacion', 'paciente', 'edad', 'telefono', 'fecha_cita', 'hora_cita', 'profesional', 'estado'];
+// ACÁ SE ACTUALIZARON LOS ENCABEZADOS EXACTAMENTE COMO LOS PEDISTE
+const COLUMNAS_BASE = ['id', 'nombres', 'apellidos', 'edad', 'identificacion', 'telefono', 'fecha_cita', 'hora_cita', 'motivo', 'profesional', 'procesado', 'estado', 'detalles'];
 const NOMBRES_COLUMNAS = {
-    'id': 'ID', 'identificacion': 'Identificación', 'paciente': 'Paciente', 'edad': 'Edad',
-    'telefono': 'Teléfono', 'fecha_cita': 'F. Cita', 'hora_cita': 'H. Cita', 
-    'profesional': 'Profesional', 'estado': 'Estado'
+    'id': 'ID', 'nombres': 'Nombres', 'apellidos': 'Apellidos', 'edad': 'Edad',
+    'identificacion': 'Identificación', 'telefono': 'Teléfono', 'fecha_cita': 'Fecha Cita', 
+    'hora_cita': 'Hora Cita', 'motivo': 'Motivo', 'profesional': 'Profesional', 
+    'procesado': 'Procesado', 'estado': 'Estado', 'detalles': 'Detalles'
 };
 
 let citasAnteriores = [];
@@ -178,9 +180,7 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
         if (data.success) {
             clienteLogueado = u;
             
-            // Cargar Configuración desde la Base de Datos
             let dbConfig = {};
-            // n8n a veces devuelve el JSONB como string, lo parseamos si es necesario
             if (typeof data.config === 'string') {
                 try { dbConfig = JSON.parse(data.config); } catch (err) {}
             } else if (typeof data.config === 'object') {
@@ -193,10 +193,13 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
                             ? dbConfig.orden_columnas 
                             : [...COLUMNAS_BASE, ...camposPlantilla];
 
-            // Si se agregaron campos base nuevos que no estaban en la db, los añadimos
+            // Forzar actualización si se añadieron campos nuevos
             COLUMNAS_BASE.forEach(col => {
                 if (!ordenColumnas.includes(col)) ordenColumnas.push(col);
             });
+
+            // Limpieza de campos obsoletos (por si quedó 'paciente' guardado en tu DB vieja)
+            ordenColumnas = ordenColumnas.filter(c => c !== 'paciente');
 
             document.getElementById('seccion-login').classList.add('hidden');
             document.getElementById('seccion-panel').classList.remove('hidden');
@@ -223,12 +226,11 @@ async function cargarCitasDelServidor() {
         const data = await res.json();
         const citas = data.citas || (Array.isArray(data) ? data : []);
         
-        // Notificaciones (logica igual)
         if (citasAnteriores.length > 0) {
             citas.forEach(nuevaCita => {
                 const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id);
                 if (citaVieja && citaVieja.estado !== nuevaCita.estado) {
-                    mostrarNotificacion('Actualización', `${nuevaCita.nombres} cambió a: ${nuevaCita.estado.toUpperCase()}`, nuevaCita.estado.toLowerCase());
+                    mostrarNotificacion('Actualización', `${nuevaCita.nombres} ha cambiado a: ${nuevaCita.estado.toUpperCase()}`, nuevaCita.estado.toLowerCase());
                 }
             });
         }
@@ -238,47 +240,57 @@ async function cargarCitasDelServidor() {
         hashTablaActual = nuevoHash;
         citasAnteriores = JSON.parse(JSON.stringify(citas));
 
-        // Actualizar Métricas
         document.getElementById('stat-total').innerText = citas.length;
         document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length;
         document.getElementById('stat-canceladas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length;
         document.getElementById('stat-reprogramadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length;
 
-        // 1. ORDEN PROFESIONAL SOLICITADO
-        const ordenProfesional = ['id', 'nombres', 'apellidos', 'edad', 'identificacion', 'telefono', 'fecha_cita', 'hora_cita', 'motivo', 'profesional', 'procesado', 'estado'];
-        const labelsProfesionales = {
-            'id': 'ID', 'nombres': 'Nombres', 'apellidos': 'Apellidos', 'edad': 'Edad',
-            'identificacion': 'Identificación', 'telefono': 'Teléfono', 'fecha_cita': 'F. Cita', 
-            'hora_cita': 'H. Cita', 'motivo': 'Motivo', 'profesional': 'Profesional', 
-            'procesado': 'Procesado', 'estado': 'Estado'
-        };
-
-        // Render Cabecera
         let htmlCabecera = `<tr>`;
-        ordenProfesional.forEach(colKey => {
-            htmlCabecera += `<th class="p-6">${labelsProfesionales[colKey]}</th>`;
+        ordenColumnas.forEach(colKey => {
+            if (!columnasOcultas.includes(colKey)) { 
+                // AQUÍ USAMOS px-6 py-4 PARA QUE TENGAN MÁS ESPACIO LATERAL
+                htmlCabecera += `<th class="px-6 py-4">${NOMBRES_COLUMNAS[colKey] || colKey}</th>`; 
+            }
         });
-        htmlCabecera += `<th class="p-6 text-right">Acciones</th></tr>`;
+        htmlCabecera += `<th class="px-6 py-4 text-right">Acciones</th></tr>`;
         document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
 
-        // Render Filas
         document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => {
-            const citaString = encodeURIComponent(JSON.stringify(c));
+            let camposParseados = {};
+            try { camposParseados = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); } catch(e){}
+            const citaString = encodeURIComponent(JSON.stringify({...c, camposParseados}));
+            
             let estadoClass = 'bg-slate-100 text-slate-600';
             const estadoLower = c.estado?.toLowerCase() || '';
             if(estadoLower === 'confirmó') estadoClass = 'bg-emerald-100 text-emerald-700';
             else if(estadoLower.includes('cancel')) estadoClass = 'bg-red-100 text-red-700';
+            else if(estadoLower.includes('reprogram')) estadoClass = 'bg-amber-100 text-amber-700';
             
             let row = `<tr class="table-row-hover">`;
-            ordenProfesional.forEach(colKey => {
-                let valor = c[colKey] || '-';
-                if (colKey === 'estado') valor = `<span class="px-3 py-1.5 rounded-lg text-[10px] font-black ${estadoClass} uppercase tracking-widest shadow-sm">${c.estado || 'pendiente'}</span>`;
-                if (colKey === 'fecha_cita') valor = c.fecha_cita?.split('T')[0] || '-';
-                
-                row += `<td class="p-6">${valor}</td>`;
+            ordenColumnas.forEach(colKey => {
+                if (!columnasOcultas.includes(colKey)) {
+                    let valor = '-';
+                    // ADAPTADO AL NUEVO ORDEN DE COLUMNAS SEPARADAS
+                    if (colKey === 'id') valor = `<span class="font-bold text-slate-400">${c.id || '-'}</span>`;
+                    else if (colKey === 'nombres') valor = `<span class="font-black text-slate-800">${c.nombres || '-'}</span>`;
+                    else if (colKey === 'apellidos') valor = `<span class="font-black text-slate-800">${c.apellidos || '-'}</span>`;
+                    else if (colKey === 'edad') valor = c.edad || '-';
+                    else if (colKey === 'identificacion') valor = `<span class="font-semibold text-slate-600">${c.identificacion || c['identificación'] || '-'}</span>`;
+                    else if (colKey === 'telefono') valor = c.telefono || '-';
+                    else if (colKey === 'fecha_cita') valor = c.fecha_cita?.split('T')[0] || '-';
+                    else if (colKey === 'hora_cita') valor = c.hora_cita || '-';
+                    else if (colKey === 'motivo') valor = `<span class="text-slate-600">${c.motivo || '-'}</span>`;
+                    else if (colKey === 'profesional') valor = `<span class="font-bold text-blue-600">${c.profesional || '-'}</span>`;
+                    else if (colKey === 'procesado') valor = c.procesado || '-';
+                    else if (colKey === 'detalles') valor = c.detalles || camposParseados['detalles'] || '-';
+                    else if (colKey === 'estado') valor = `<span class="px-3 py-1.5 rounded-lg text-[10px] font-black ${estadoClass} uppercase shadow-sm">${c.estado || 'pendiente'}</span>`;
+                    else valor = camposParseados[colKey] || '-';
+                    
+                    // SE USA px-6 py-4 EN VEZ DE p-4
+                    row += `<td class="px-6 py-4">${valor}</td>`;
+                }
             });
-
-            row += `<td class="p-6 text-right"><button onclick="prepararEdicion('${citaString}')" class="text-blue-700 font-bold hover:text-white bg-blue-50 hover:bg-blue-600 px-5 py-2.5 rounded-xl transition-all shadow-sm">Editar</button></td></tr>`;
+            row += `<td class="px-6 py-4 text-right"><button onclick="prepararEdicion('${citaString}')" class="text-blue-700 font-bold hover:text-white bg-blue-50 hover:bg-blue-600 px-5 py-2.5 rounded-xl transition-all shadow-sm">Editar</button></td></tr>`;
             return row;
         }).join('');
     } catch (e) { console.error("Error al cargar:", e); }
