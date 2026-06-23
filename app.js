@@ -1,3 +1,7 @@
+// ================================================
+// app.js - COMPLETO CON CABECERA SIEMPRE VISIBLE
+// ================================================
+
 const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
 const N8N_POST_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/crearcita';
 const N8N_LOGIN_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/login';
@@ -17,7 +21,7 @@ const CAMPOS_FIJOS_FORMULARIO = ['procesado', 'estado'];
 let camposPlantilla = [];
 let columnasOcultas = [];
 let ordenColumnas = ['id', 'procesado', 'estado'];
-let valoresDefault = {}; // { nombreCampo: valor }
+let valoresDefault = {};
 
 let citasAnteriores = [];
 let hashTablaActual = "";
@@ -36,8 +40,8 @@ window.mostrarNotificacion = (titulo, mensaje, tipo = 'info') => {
     else if(tipo === 'error' || tipo === 'canceló') { bgIcono = 'bg-red-100 text-red-600'; iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`; }
     else if(tipo === 'warning' || tipo === 'reprogramó') { bgIcono = 'bg-amber-100 text-amber-600'; iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />`; }
 
-    toast.className = `toast-enter flex items-start gap-4 p-4 glass backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 pointer-events-auto cursor-pointer`;
-    toast.innerHTML = `<div class="flex-shrink-0 w-10 h-10 ${bgIcono} rounded-full flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">${iconSvg}</svg></div><div class="flex-1"><h4 class="text-sm font-black text-white">${titulo}</h4><p class="text-[13px] text-slate-300 font-medium leading-tight mt-0.5">${mensaje}</p></div>`;
+    toast.className = `toast-enter flex items-start gap-4 p-4 bg-white rounded-2xl shadow-2xl border border-slate-200 pointer-events-auto cursor-pointer`;
+    toast.innerHTML = `<div class="flex-shrink-0 w-10 h-10 ${bgIcono} rounded-full flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">${iconSvg}</svg></div><div class="flex-1"><h4 class="text-sm font-black text-slate-800">${titulo}</h4><p class="text-[13px] text-slate-500 font-medium leading-tight mt-0.5">${mensaje}</p></div>`;
     container.appendChild(toast);
     toast.onclick = () => toast.remove();
     setTimeout(() => { toast.classList.add('opacity-0', 'transition-opacity', 'duration-300'); setTimeout(() => toast.remove(), 300); }, 6000);
@@ -113,7 +117,6 @@ document.getElementById('form-nuevo-campo').addEventListener('submit', async (e)
         valoresDefault[nombre] = valorDefault;
     }
 
-    // Insertar antes de 'procesado'
     const idxProcesado = ordenColumnas.indexOf('procesado');
     if (idxProcesado !== -1) {
         ordenColumnas.splice(idxProcesado, 0, nombre);
@@ -139,14 +142,14 @@ function renderizarModalVistas() {
         const isChecked = !columnasOcultas.includes(colKey) ? 'checked' : '';
         const label = NOMBRES_COLUMNAS_SISTEMA[colKey] || `${colKey}`;
         return `
-        <div class="flex items-center justify-between p-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all">
+        <div class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all">
             <label class="flex items-center gap-3 cursor-pointer flex-1">
-                <input type="checkbox" value="${colKey}" class="chk-columna w-5 h-5 rounded border-white/20 bg-white/5 focus:ring-cyan-500" ${isChecked}>
-                <span class="font-semibold text-slate-200">${label}</span>
+                <input type="checkbox" value="${colKey}" class="chk-columna w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-slate-300" ${isChecked}>
+                <span class="font-semibold text-slate-700">${label}</span>
             </label>
             <div class="flex gap-1 ml-2">
-                <button type="button" onclick="moverColumna(${index}, -1)" class="p-1.5 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg transition" ${index === 0 ? 'disabled opacity-30 cursor-not-allowed' : ''}><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg></button>
-                <button type="button" onclick="moverColumna(${index}, 1)" class="p-1.5 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg transition" ${index === ordenColumnas.length - 1 ? 'disabled opacity-30 cursor-not-allowed' : ''}><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>
+                <button type="button" onclick="moverColumna(${index}, -1)" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition" ${index === 0 ? 'disabled opacity-30 cursor-not-allowed' : ''}><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg></button>
+                <button type="button" onclick="moverColumna(${index}, 1)" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition" ${index === ordenColumnas.length - 1 ? 'disabled opacity-30 cursor-not-allowed' : ''}><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>
             </div>
         </div>`;
     }).join('');
@@ -195,29 +198,26 @@ function renderizarCamposModal(datosCita = {}) {
     const container = document.getElementById('contenedor-campos-dinamicos');
     let html = '';
 
-    // Campos fijos
     CAMPOS_FIJOS_FORMULARIO.forEach(nombre => {
         const valor = datosCita[nombre] || '';
         html += `
         <div class="relative group">
-            <label class="text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1 block">${nombre}</label>
-            <input type="text" data-key="${nombre}" value="${valor}" class="input-fijo w-full bg-white/5 border-white/10 text-white rounded-xl p-4 focus:border-cyan-500">
+            <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
+            <input type="text" data-key="${nombre}" value="${valor}" class="input-fijo w-full bg-white border border-slate-200 rounded-xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
         </div>
         `;
     });
 
-    // Campos personalizados
     camposPlantilla.forEach(nombre => {
-        // Si es nueva cita y no hay datos, usamos el valor por defecto
         let valor = datosCita[nombre] || '';
         if (!idCitaEnEdicion && !valor && valoresDefault[nombre]) {
             valor = valoresDefault[nombre];
         }
         html += `
         <div class="relative group">
-            <label class="text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1 block">${nombre}</label>
-            <input type="text" data-key="${nombre}" value="${valor}" class="input-dinamico w-full bg-white/5 border-white/10 text-white rounded-xl p-4 focus:border-cyan-500">
-            <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-400 hover:text-red-300 text-[10px] font-black p-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/5 rounded-bl-lg">✕</button>
+            <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
+            <input type="text" data-key="${nombre}" value="${valor}" class="input-dinamico w-full bg-white border border-slate-200 rounded-xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+            <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-400 hover:text-red-600 text-[10px] font-black p-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-bl-lg">✕</button>
         </div>
         `;
     });
@@ -329,13 +329,46 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
     }
 });
 
-// --- MOTOR PRINCIPAL ---
+// --- MOTOR PRINCIPAL (CON CABECERA SIEMPRE VISIBLE) ---
 async function cargarCitasDelServidor() {
     try {
         const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
         const data = await res.json();
         const citas = data.citas || (Array.isArray(data) ? data : []);
 
+        // --- RENDERIZAR CABECERA SIEMPRE (incluso sin citas) ---
+        let htmlCabecera = `<tr>`;
+        ordenColumnas.forEach(colKey => {
+            if (!columnasOcultas.includes(colKey)) {
+                htmlCabecera += `<th class="px-6 py-4 text-slate-600 font-extrabold text-xs uppercase tracking-widest">${NOMBRES_COLUMNAS_SISTEMA[colKey] || colKey}</th>`;
+            }
+        });
+        htmlCabecera += `<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`;
+        document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
+
+        // --- SI NO HAY CITAS, mostrar mensaje ---
+        if (citas.length === 0) {
+            const colspan = ordenColumnas.filter(col => !columnasOcultas.includes(col)).length + 1;
+            document.getElementById('tabla-cuerpo').innerHTML = `
+                <tr>
+                    <td colspan="${colspan}" class="px-6 py-12 text-center text-slate-400 font-medium">
+                        <div class="flex flex-col items-center gap-2">
+                            <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                            <span>No hay citas registradas</span>
+                            <span class="text-sm text-slate-400">Crea una nueva cita con el botón "Nueva Cita"</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            // Actualizar estadísticas
+            document.getElementById('stat-total').innerText = 0;
+            document.getElementById('stat-confirmadas').innerText = 0;
+            document.getElementById('stat-canceladas').innerText = 0;
+            document.getElementById('stat-reprogramadas').innerText = 0;
+            return;
+        }
+
+        // --- NOTIFICACIONES DE CAMBIOS DE ESTADO (solo si hay citas) ---
         if (citasAnteriores.length > 0) {
             citas.forEach(nuevaCita => {
                 const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id);
@@ -350,24 +383,17 @@ async function cargarCitasDelServidor() {
             });
         }
 
-        const nuevoHash = JSON.stringify(citas) + JSON.stringify(ordenColumnas) + JSON.stringify(columnasOcultas);
-        if (nuevoHash === hashTablaActual) return;
-        hashTablaActual = nuevoHash;
-        citasAnteriores = JSON.parse(JSON.stringify(citas));
-
+        // --- ACTUALIZAR ESTADÍSTICAS ---
         document.getElementById('stat-total').innerText = citas.length;
         document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length;
         document.getElementById('stat-canceladas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length;
         document.getElementById('stat-reprogramadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length;
 
-        let htmlCabecera = `<tr>`;
-        ordenColumnas.forEach(colKey => {
-            if (!columnasOcultas.includes(colKey)) {
-                htmlCabecera += `<th class="px-6 py-4">${NOMBRES_COLUMNAS_SISTEMA[colKey] || colKey}</th>`;
-            }
-        });
-        htmlCabecera += `<th class="px-6 py-4 text-right">Acciones</th></tr>`;
-        document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
+        // --- RENDERIZAR CUERPO DE LA TABLA ---
+        const nuevoHash = JSON.stringify(citas) + JSON.stringify(ordenColumnas) + JSON.stringify(columnasOcultas);
+        if (nuevoHash === hashTablaActual) return;
+        hashTablaActual = nuevoHash;
+        citasAnteriores = JSON.parse(JSON.stringify(citas));
 
         document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => {
             let camposParseados = {};
@@ -383,7 +409,7 @@ async function cargarCitasDelServidor() {
             else if (estadoLower.includes('reprogram')) badgeClass = 'badge-reprogramada';
             else if (estadoLower === 'esperando respuesta') badgeClass = 'badge-esperando';
 
-            let row = `<tr class="table-row">`;
+            let row = `<tr class="table-row hover:bg-slate-50">`;
             ordenColumnas.forEach(colKey => {
                 if (!columnasOcultas.includes(colKey)) {
                     let valor = '-';
@@ -392,16 +418,16 @@ async function cargarCitasDelServidor() {
                     } else if (colKey === 'estado') {
                         valor = `<span class="badge ${badgeClass}">${c.estado || 'pendiente'}</span>`;
                     } else if (colKey === 'procesado') {
-                        valor = `<span class="font-medium text-slate-300">${c.procesado || '-'}</span>`;
+                        valor = `<span class="font-medium text-slate-600">${c.procesado || '-'}</span>`;
                     } else {
                         valor = camposParseados[colKey] || '-';
                         if (colKey.toLowerCase().includes('nombres')) {
-                            valor = `<span class="font-bold text-white">${valor}</span>`;
+                            valor = `<span class="font-bold text-slate-800">${valor}</span>`;
                         } else if (colKey.toLowerCase().includes('profesional')) {
-                            valor = `<span class="font-bold text-cyan-400">${valor}</span>`;
+                            valor = `<span class="font-bold text-blue-600">${valor}</span>`;
                         }
                     }
-                    row += `<td class="px-6 py-4">${valor}</td>`;
+                    row += `<td class="px-6 py-4 text-slate-700">${valor}</td>`;
                 }
             });
             row += `<td class="px-6 py-4 text-right"><button onclick="prepararEdicion('${citaString}')" class="btn-primary px-5 py-2 rounded-xl text-xs font-bold transition">Editar</button></td></tr>`;
