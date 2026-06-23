@@ -406,6 +406,7 @@ window.prepararEdicion = (citaString) => {
     modal.classList.add('flex');
 };
 
+// --- GUARDAR CITA (NUEVA O EDICIÓN) --- SIN id_cliente ---
 document.getElementById('form-cita').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -421,7 +422,6 @@ document.getElementById('form-cita').addEventListener('submit', async (e) => {
 
     const payload = {
         ...(idCitaEnEdicion && { id: idCitaEnEdicion }),
-        id_cliente: clienteLogueado,
         procesado: camposFijos.procesado || '',
         estado: camposFijos.estado || 'esperando respuesta',
         campos_personalizados: camposDinamicos
