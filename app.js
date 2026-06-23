@@ -180,19 +180,13 @@ function renderizarCamposModal(datosCita = {}) {
         `;
     });
 
-    // 2. Campos personalizados
+    // 2. Campos personalizados (TODOS como texto plano)
     camposPlantilla.forEach(nombre => {
-        let inputType = 'text';
-        let nombreMinuscula = nombre.toLowerCase();
-        if (nombreMinuscula.includes('fecha')) inputType = 'date';
-        else if (nombreMinuscula.includes('hora')) inputType = 'time';
-        else if (nombreMinuscula.includes('edad') || nombreMinuscula.includes('cantidad')) inputType = 'number';
-
         const valor = datosCita[nombre] || '';
         html += `
         <div class="relative group">
             <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
-            <input type="${inputType}" data-key="${nombre}" value="${valor}" class="input-dinamico w-full p-4 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800">
+            <input type="text" data-key="${nombre}" value="${valor}" class="input-dinamico w-full p-4 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800">
             <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-400 hover:text-red-600 text-[10px] font-black p-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-bl-lg">Quitar</button>
         </div>
         `;
@@ -215,7 +209,6 @@ window.eliminarCampo = async (nombre) => {
 function resetearFormulario() {
     idCitaEnEdicion = null;
     document.getElementById('titulo-modal').innerText = "Nueva Cita";
-    // --- AQUÍ ESTÁ EL CAMBIO: valores por defecto ---
     renderizarCamposModal({ procesado: 'Pendiente', estado: 'Esperando respuesta' });
 }
 
