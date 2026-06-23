@@ -17,6 +17,7 @@ const CAMPOS_FIJOS_FORMULARIO = ['procesado', 'estado'];
 let camposPlantilla = [];
 let columnasOcultas = [];
 let ordenColumnas = ['id', 'procesado', 'estado'];
+let valoresDefault = {}; // { nombreCampo: valor }
 
 let citasAnteriores = [];
 let hashTablaActual = "";
@@ -24,6 +25,7 @@ let loopSincronizacion = null;
 
 const modal = document.getElementById('modal-cita');
 const modalColumnas = document.getElementById('modal-columnas');
+const modalNuevoCampo = document.getElementById('modal-nuevo-campo');
 
 // --- NOTIFICACIONES ---
 window.mostrarNotificacion = (titulo, mensaje, tipo = 'info') => {
@@ -34,8 +36,8 @@ window.mostrarNotificacion = (titulo, mensaje, tipo = 'info') => {
     else if(tipo === 'error' || tipo === 'canceló') { bgIcono = 'bg-red-100 text-red-600'; iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`; }
     else if(tipo === 'warning' || tipo === 'reprogramó') { bgIcono = 'bg-amber-100 text-amber-600'; iconSvg = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />`; }
 
-    toast.className = `toast-enter flex items-start gap-4 p-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-slate-100 pointer-events-auto cursor-pointer`;
-    toast.innerHTML = `<div class="flex-shrink-0 w-10 h-10 ${bgIcono} rounded-full flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">${iconSvg}</svg></div><div class="flex-1"><h4 class="text-sm font-black text-slate-800">${titulo}</h4><p class="text-[13px] text-slate-500 font-medium leading-tight mt-0.5">${mensaje}</p></div>`;
+    toast.className = `toast-enter flex items-start gap-4 p-4 glass backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 pointer-events-auto cursor-pointer`;
+    toast.innerHTML = `<div class="flex-shrink-0 w-10 h-10 ${bgIcono} rounded-full flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">${iconSvg}</svg></div><div class="flex-1"><h4 class="text-sm font-black text-white">${titulo}</h4><p class="text-[13px] text-slate-300 font-medium leading-tight mt-0.5">${mensaje}</p></div>`;
     container.appendChild(toast);
     toast.onclick = () => toast.remove();
     setTimeout(() => { toast.classList.add('opacity-0', 'transition-opacity', 'duration-300'); setTimeout(() => toast.remove(), 300); }, 6000);
@@ -48,7 +50,8 @@ async function sincronizarConfiguracionNube() {
         config: {
             orden_columnas: ordenColumnas,
             columnas_ocultas: columnasOcultas,
-            campos_plantilla: camposPlantilla
+            campos_plantilla: camposPlantilla,
+            valores_default: valoresDefault
         }
     };
     try {
@@ -73,6 +76,62 @@ document.getElementById('btn-refrescar').onclick = () => {
     cargarCitasDelServidor();
 };
 
+// --- MODAL NUEVO CAMPO ---
+document.getElementById('btn-agregar-campo').onclick = () => {
+    document.getElementById('campo-nombre').value = '';
+    document.getElementById('campo-valor-default').value = '';
+    modalNuevoCampo.classList.remove('hidden');
+    modalNuevoCampo.classList.add('flex');
+};
+document.getElementById('btn-cerrar-modal-campo').onclick = () => {
+    modalNuevoCampo.classList.add('hidden');
+    modalNuevoCampo.classList.remove('flex');
+};
+
+document.getElementById('form-nuevo-campo').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nombre = document.getElementById('campo-nombre').value.trim();
+    const valorDefault = document.getElementById('campo-valor-default').value.trim();
+
+    if (!nombre) {
+        alert("El nombre del campo es obligatorio.");
+        return;
+    }
+
+    if (COLUMNAS_FIJAS.includes(nombre.toLowerCase())) {
+        alert(`El campo '${nombre}' está reservado por el sistema.`);
+        return;
+    }
+
+    if (camposPlantilla.includes(nombre)) {
+        alert("Este campo ya existe.");
+        return;
+    }
+
+    camposPlantilla.push(nombre);
+    if (valorDefault) {
+        valoresDefault[nombre] = valorDefault;
+    }
+
+    // Insertar antes de 'procesado'
+    const idxProcesado = ordenColumnas.indexOf('procesado');
+    if (idxProcesado !== -1) {
+        ordenColumnas.splice(idxProcesado, 0, nombre);
+    } else {
+        const idxEstado = ordenColumnas.indexOf('estado');
+        if (idxEstado !== -1) ordenColumnas.splice(idxEstado, 0, nombre);
+        else ordenColumnas.push(nombre);
+    }
+
+    await sincronizarConfiguracionNube();
+    modalNuevoCampo.classList.add('hidden');
+    modalNuevoCampo.classList.remove('flex');
+    hashTablaActual = "";
+    cargarCitasDelServidor();
+    mostrarNotificacion("Campo Creado", `Columna '${nombre}' guardada.`, "success");
+    if (!modal.classList.contains('hidden')) renderizarCamposModal();
+});
+
 // --- GESTIÓN DE VISTAS Y ORDEN ---
 function renderizarModalVistas() {
     const container = document.getElementById('lista-columnas');
@@ -80,14 +139,14 @@ function renderizarModalVistas() {
         const isChecked = !columnasOcultas.includes(colKey) ? 'checked' : '';
         const label = NOMBRES_COLUMNAS_SISTEMA[colKey] || `${colKey}`;
         return `
-        <div class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all">
+        <div class="flex items-center justify-between p-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all">
             <label class="flex items-center gap-3 cursor-pointer flex-1">
-                <input type="checkbox" value="${colKey}" class="chk-columna w-5 h-5 custom-checkbox rounded text-blue-600 focus:ring-blue-500 border-slate-300" ${isChecked}>
-                <span class="font-semibold text-slate-700">${label}</span>
+                <input type="checkbox" value="${colKey}" class="chk-columna w-5 h-5 rounded border-white/20 bg-white/5 focus:ring-cyan-500" ${isChecked}>
+                <span class="font-semibold text-slate-200">${label}</span>
             </label>
             <div class="flex gap-1 ml-2">
-                <button type="button" onclick="moverColumna(${index}, -1)" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition" ${index === 0 ? 'disabled opacity-30 cursor-not-allowed' : ''}><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg></button>
-                <button type="button" onclick="moverColumna(${index}, 1)" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition" ${index === ordenColumnas.length - 1 ? 'disabled opacity-30 cursor-not-allowed' : ''}><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>
+                <button type="button" onclick="moverColumna(${index}, -1)" class="p-1.5 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg transition" ${index === 0 ? 'disabled opacity-30 cursor-not-allowed' : ''}><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg></button>
+                <button type="button" onclick="moverColumna(${index}, 1)" class="p-1.5 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg transition" ${index === ordenColumnas.length - 1 ? 'disabled opacity-30 cursor-not-allowed' : ''}><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>
             </div>
         </div>`;
     }).join('');
@@ -131,63 +190,34 @@ document.getElementById('btn-guardar-columnas').onclick = async () => {
     mostrarNotificacion("Nube Sincronizada", "Preferencias guardadas en tu cuenta.", "success");
 };
 
-// --- CREAR CAMPO DINÁMICO (se inserta antes de 'procesado') ---
-document.getElementById('btn-agregar-campo').addEventListener('click', async () => {
-    const nombre = prompt("Nombre del nuevo campo (ej: Tipo de Consulta, Alergias):");
-    if (nombre && nombre.trim() !== "") {
-        const nombreLimpio = nombre.trim();
-        if (COLUMNAS_FIJAS.includes(nombreLimpio.toLowerCase())) {
-            alert(`El campo '${nombreLimpio}' está reservado por el sistema.`);
-            return;
-        }
-        if (!camposPlantilla.includes(nombreLimpio)) {
-            camposPlantilla.push(nombreLimpio);
-            // Insertar antes de 'procesado' (o antes de 'estado' si 'procesado' no existe)
-            const idxProcesado = ordenColumnas.indexOf('procesado');
-            if (idxProcesado !== -1) {
-                ordenColumnas.splice(idxProcesado, 0, nombreLimpio);
-            } else {
-                const idxEstado = ordenColumnas.indexOf('estado');
-                if (idxEstado !== -1) ordenColumnas.splice(idxEstado, 0, nombreLimpio);
-                else ordenColumnas.push(nombreLimpio);
-            }
-
-            await sincronizarConfiguracionNube();
-            hashTablaActual = "";
-            cargarCitasDelServidor();
-            mostrarNotificacion("Campo Creado", `Columna '${nombreLimpio}' guardada.`, "success");
-            if (!modal.classList.contains('hidden')) renderizarCamposModal();
-        } else {
-            alert("Este campo ya existe.");
-        }
-    }
-});
-
-// --- RENDERIZAR FORMULARIO (fijos + dinámicos) ---
+// --- RENDERIZAR FORMULARIO ---
 function renderizarCamposModal(datosCita = {}) {
     const container = document.getElementById('contenedor-campos-dinamicos');
     let html = '';
 
-    // 1. Campos fijos: procesado y estado
+    // Campos fijos
     CAMPOS_FIJOS_FORMULARIO.forEach(nombre => {
-        let inputType = 'text';
         const valor = datosCita[nombre] || '';
         html += `
         <div class="relative group">
-            <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
-            <input type="${inputType}" data-key="${nombre}" value="${valor}" class="input-fijo w-full p-4 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800">
+            <label class="text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1 block">${nombre}</label>
+            <input type="text" data-key="${nombre}" value="${valor}" class="input-fijo w-full bg-white/5 border-white/10 text-white rounded-xl p-4 focus:border-cyan-500">
         </div>
         `;
     });
 
-    // 2. Campos personalizados (TODOS como texto plano)
+    // Campos personalizados
     camposPlantilla.forEach(nombre => {
-        const valor = datosCita[nombre] || '';
+        // Si es nueva cita y no hay datos, usamos el valor por defecto
+        let valor = datosCita[nombre] || '';
+        if (!idCitaEnEdicion && !valor && valoresDefault[nombre]) {
+            valor = valoresDefault[nombre];
+        }
         html += `
         <div class="relative group">
-            <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
-            <input type="text" data-key="${nombre}" value="${valor}" class="input-dinamico w-full p-4 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none transition font-semibold text-slate-800">
-            <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-400 hover:text-red-600 text-[10px] font-black p-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-bl-lg">Quitar</button>
+            <label class="text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1 block">${nombre}</label>
+            <input type="text" data-key="${nombre}" value="${valor}" class="input-dinamico w-full bg-white/5 border-white/10 text-white rounded-xl p-4 focus:border-cyan-500">
+            <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-400 hover:text-red-300 text-[10px] font-black p-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/5 rounded-bl-lg">✕</button>
         </div>
         `;
     });
@@ -199,6 +229,7 @@ window.eliminarCampo = async (nombre) => {
     if (confirm(`¿Eliminar la columna "${nombre}" en todas las vistas?`)) {
         camposPlantilla = camposPlantilla.filter(c => c !== nombre);
         ordenColumnas = ordenColumnas.filter(c => c !== nombre);
+        delete valoresDefault[nombre];
         await sincronizarConfiguracionNube();
         renderizarCamposModal();
         hashTablaActual = "";
@@ -212,7 +243,7 @@ function resetearFormulario() {
     renderizarCamposModal({ procesado: 'Pendiente', estado: 'Esperando respuesta' });
 }
 
-// --- LOGIN (reordenación, sin eliminar campos) ---
+// --- LOGIN ---
 document.getElementById('form-login').addEventListener('submit', async (e) => {
     e.preventDefault();
     const u = document.getElementById('login-usuario').value.trim().toLowerCase();
@@ -240,37 +271,32 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
                 dbConfig = data.config;
             }
 
-            // Obtener campos personalizados guardados (sin filtrar)
             camposPlantilla = dbConfig.campos_plantilla || [];
-            // Solo aseguramos que no haya nombres iguales a los fijos (por si acaso)
             camposPlantilla = camposPlantilla.filter(c => !COLUMNAS_FIJAS.includes(c.toLowerCase()));
 
-            // Reconstruir ordenColumnas con el orden deseado: id + campos + procesado + estado
+            valoresDefault = dbConfig.valores_default || {};
+
             let ordenGuardado = dbConfig.orden_columnas || [];
-            // Filtramos para obtener solo los personalizados que existan
             let personalizadosEnOrden = ordenGuardado.filter(c => camposPlantilla.includes(c) && !COLUMNAS_FIJAS.includes(c));
-            // Si faltan algunos, los agregamos al final (por si se crearon nuevos)
             let personalizadosFaltantes = camposPlantilla.filter(c => !personalizadosEnOrden.includes(c));
             let personalizadosOrdenados = [...personalizadosEnOrden, ...personalizadosFaltantes];
 
-            // Construimos el nuevo orden
             let nuevoOrden = ['id', ...personalizadosOrdenados, 'procesado', 'estado'];
-            // Eliminamos duplicados (por si acaso)
             ordenColumnas = [...new Set(nuevoOrden)];
 
-            // Columnas ocultas: respetar las guardadas
             columnasOcultas = dbConfig.columnas_ocultas || [];
 
-            // Si la configuración ha cambiado (por reordenación), la guardamos
             const configNueva = {
                 orden_columnas: ordenColumnas,
                 columnas_ocultas: columnasOcultas,
-                campos_plantilla: camposPlantilla
+                campos_plantilla: camposPlantilla,
+                valores_default: valoresDefault
             };
             const configOriginal = {
                 orden_columnas: dbConfig.orden_columnas || [],
                 columnas_ocultas: dbConfig.columnas_ocultas || [],
-                campos_plantilla: dbConfig.campos_plantilla || []
+                campos_plantilla: dbConfig.campos_plantilla || [],
+                valores_default: dbConfig.valores_default || {}
             };
             if (JSON.stringify(configNueva) !== JSON.stringify(configOriginal)) {
                 try {
@@ -279,9 +305,8 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
                         body: JSON.stringify({ usuario: clienteLogueado, config: configNueva }),
                         headers: { 'Content-Type': 'application/json' }
                     });
-                    console.log('Configuración reordenada y guardada en la nube.');
                 } catch (e) {
-                    console.warn('No se pudo guardar la configuración reordenada:', e);
+                    console.warn('No se pudo guardar la configuración:', e);
                 }
             }
 
@@ -351,35 +376,35 @@ async function cargarCitasDelServidor() {
             } catch(e) {}
             const citaString = encodeURIComponent(JSON.stringify({...c, camposParseados}));
 
-            let estadoClass = 'bg-slate-100 text-slate-600';
-            const estadoLower = c.estado?.toLowerCase() || '';
-            if (estadoLower === 'confirmó') estadoClass = 'bg-emerald-100 text-emerald-700';
-            else if (estadoLower.includes('cancel')) estadoClass = 'bg-red-100 text-red-700';
-            else if (estadoLower.includes('reprogram')) estadoClass = 'bg-amber-100 text-amber-700';
-            else if (estadoLower === 'esperando respuesta') estadoClass = 'bg-blue-100 text-blue-700';
+            let badgeClass = 'badge-pendiente';
+            let estadoLower = c.estado?.toLowerCase() || '';
+            if (estadoLower === 'confirmó') badgeClass = 'badge-confirmada';
+            else if (estadoLower.includes('cancel')) badgeClass = 'badge-cancelada';
+            else if (estadoLower.includes('reprogram')) badgeClass = 'badge-reprogramada';
+            else if (estadoLower === 'esperando respuesta') badgeClass = 'badge-esperando';
 
-            let row = `<tr class="table-row-hover">`;
+            let row = `<tr class="table-row">`;
             ordenColumnas.forEach(colKey => {
                 if (!columnasOcultas.includes(colKey)) {
                     let valor = '-';
                     if (colKey === 'id') {
                         valor = `<span class="font-bold text-slate-400">${c.id || '-'}</span>`;
                     } else if (colKey === 'estado') {
-                        valor = `<span class="px-3 py-1.5 rounded-lg text-[10px] font-black ${estadoClass} uppercase shadow-sm">${c.estado || 'pendiente'}</span>`;
+                        valor = `<span class="badge ${badgeClass}">${c.estado || 'pendiente'}</span>`;
                     } else if (colKey === 'procesado') {
-                        valor = `<span class="font-medium">${c.procesado || '-'}</span>`;
+                        valor = `<span class="font-medium text-slate-300">${c.procesado || '-'}</span>`;
                     } else {
                         valor = camposParseados[colKey] || '-';
                         if (colKey.toLowerCase().includes('nombres')) {
-                            valor = `<span class="font-black text-slate-800">${valor}</span>`;
+                            valor = `<span class="font-bold text-white">${valor}</span>`;
                         } else if (colKey.toLowerCase().includes('profesional')) {
-                            valor = `<span class="font-bold text-blue-600">${valor}</span>`;
+                            valor = `<span class="font-bold text-cyan-400">${valor}</span>`;
                         }
                     }
                     row += `<td class="px-6 py-4">${valor}</td>`;
                 }
             });
-            row += `<td class="px-6 py-4 text-right"><button onclick="prepararEdicion('${citaString}')" class="text-blue-700 font-bold hover:text-white bg-blue-50 hover:bg-blue-600 px-5 py-2.5 rounded-xl transition-all shadow-sm">Editar</button></td></tr>`;
+            row += `<td class="px-6 py-4 text-right"><button onclick="prepararEdicion('${citaString}')" class="btn-primary px-5 py-2 rounded-xl text-xs font-bold transition">Editar</button></td></tr>`;
             return row;
         }).join('');
     } catch (e) {
@@ -401,7 +426,7 @@ window.prepararEdicion = (citaString) => {
     modal.classList.add('flex');
 };
 
-// --- GUARDAR CITA (NUEVA O EDICIÓN) ---
+// --- GUARDAR CITA ---
 document.getElementById('form-cita').addEventListener('submit', async (e) => {
     e.preventDefault();
 
