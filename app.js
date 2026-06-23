@@ -134,22 +134,26 @@ document.getElementById('btn-guardar-columnas').onclick = async () => {
     mostrarNotificacion("Nube Sincronizada", "Preferencias guardadas en tu cuenta.", "success");
 };
 
-// --- CREAR CAMPO DINÁMICO ---
+// --- CREAR CAMPO DINÁMICO (se inserta antes de 'procesado') ---
 document.getElementById('btn-agregar-campo').addEventListener('click', async () => {
     const nombre = prompt("Nombre del nuevo campo (ej: Tipo de Consulta, Alergias):");
     if (nombre && nombre.trim() !== "") {
         const nombreLimpio = nombre.trim();
-        // No permitir nombres que coincidan con los fijos
         if (COLUMNAS_FIJAS.includes(nombreLimpio.toLowerCase())) {
             alert(`El campo '${nombreLimpio}' está reservado por el sistema.`);
             return;
         }
         if (!camposPlantilla.includes(nombreLimpio)) {
             camposPlantilla.push(nombreLimpio);
-            // Insertar justo antes de 'estado' (o al final si no existe)
-            const idxEstado = ordenColumnas.indexOf('estado');
-            if (idxEstado !== -1) ordenColumnas.splice(idxEstado, 0, nombreLimpio);
-            else ordenColumnas.push(nombreLimpio);
+            // Insertar antes de 'procesado' (o antes de 'estado' si 'procesado' no existe)
+            const idxProcesado = ordenColumnas.indexOf('procesado');
+            if (idxProcesado !== -1) {
+                ordenColumnas.splice(idxProcesado, 0, nombreLimpio);
+            } else {
+                const idxEstado = ordenColumnas.indexOf('estado');
+                if (idxEstado !== -1) ordenColumnas.splice(idxEstado, 0, nombreLimpio);
+                else ordenColumnas.push(nombreLimpio);
+            }
 
             await sincronizarConfiguracionNube();
             hashTablaActual = "";
@@ -170,9 +174,6 @@ function renderizarCamposModal(datosCita = {}) {
     // 1. Campos fijos: procesado y estado
     CAMPOS_FIJOS_FORMULARIO.forEach(nombre => {
         let inputType = 'text';
-        if (nombre.toLowerCase() === 'estado') {
-            // Podrías usar un select, pero lo dejamos como texto por simplicidad
-        }
         const valor = datosCita[nombre] || '';
         html += `
         <div class="relative group">
@@ -217,11 +218,10 @@ window.eliminarCampo = async (nombre) => {
 function resetearFormulario() {
     idCitaEnEdicion = null;
     document.getElementById('titulo-modal').innerText = "Nueva Cita";
-    // Limpiamos los campos con valores vacíos
     renderizarCamposModal({});
 }
 
-// --- LOGIN SEGURO CON LIMPIEZA AUTOMÁTICA ---
+// --- LOGIN SEGURO CON LIMPIEZA Y ORDEN POR DEFECTO ---
 document.getElementById('form-login').addEventListener('submit', async (e) => {
     e.preventDefault();
     const u = document.getElementById('login-usuario').value.trim().toLowerCase();
@@ -249,46 +249,42 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
                 dbConfig = data.config;
             }
 
-            // --- LIMPIEZA AUTOMÁTICA: forzamos que solo estén los fijos ---
-            // Los campos personalizados deben estar vacíos al inicio (o los que el usuario haya creado)
-            // Pero si el usuario ya tiene campos creados, los mantenemos
+            // --- LIMPIEZA Y ORDEN POR DEFECTO ---
             let camposGuardados = dbConfig.campos_plantilla || [];
-            // Filtramos para eliminar posibles nombres que coincidan con fijos (por si acaso)
+            // Filtramos para eliminar posibles nombres que coincidan con fijos
             camposGuardados = camposGuardados.filter(c => !COLUMNAS_FIJAS.includes(c.toLowerCase()));
-
-            // Si es un usuario nuevo o tiene campos antiguos, lo dejamos sin campos personalizados
-            // pero si ya tenía algunos, los conservamos.
             camposPlantilla = camposGuardados;
 
-            // Columnas ocultas: respetamos las guardadas
             columnasOcultas = dbConfig.columnas_ocultas || [];
 
-            // Orden de columnas: siempre comenzamos con ['id', 'procesado', 'estado'] + los personalizados
-            let ordenGuardado = dbConfig.orden_columnas || [];
-            // Filtramos para asegurar que los fijos estén presentes y en el orden correcto
-            let ordenLimpio = [];
-            COLUMNAS_FIJAS.forEach(f => {
-                if (!ordenLimpio.includes(f)) ordenLimpio.push(f);
-            });
-            // Agregamos los personalizados que estén en ordenGuardado y no sean fijos
+            // Construir orden por defecto: ['id', ...camposPersonalizados, 'procesado', 'estado']
+            let ordenLimpio = ['id'];
+            // Agregar campos personalizados (en el orden guardado, si existen)
+            const ordenGuardado = dbConfig.orden_columnas || [];
+            // Primero agregamos los que estén en el orden guardado (solo los personalizados)
             ordenGuardado.forEach(col => {
                 if (!COLUMNAS_FIJAS.includes(col) && !ordenLimpio.includes(col) && camposPlantilla.includes(col)) {
                     ordenLimpio.push(col);
                 }
             });
-            // Agregamos los campos que falten (por si se crearon nuevos y no están en el orden guardado)
+            // Luego agregamos los que falten (por si se crearon nuevos y no están en el orden guardado)
             camposPlantilla.forEach(campo => {
                 if (!ordenLimpio.includes(campo)) {
-                    // Insertar antes de 'estado'
-                    const idxEstado = ordenLimpio.indexOf('estado');
-                    if (idxEstado !== -1) ordenLimpio.splice(idxEstado, 0, campo);
+                    // Insertar antes de 'procesado'
+                    const idxProcesado = ordenLimpio.indexOf('procesado');
+                    if (idxProcesado !== -1) ordenLimpio.splice(idxProcesado, 0, campo);
                     else ordenLimpio.push(campo);
                 }
             });
+            // Finalmente aseguramos que 'procesado' y 'estado' estén al final
+            if (!ordenLimpio.includes('procesado')) ordenLimpio.push('procesado');
+            if (!ordenLimpio.includes('estado')) ordenLimpio.push('estado');
+            // Asegurar que 'id' esté primero
+            ordenLimpio = ['id', ...ordenLimpio.filter(c => c !== 'id')];
 
             ordenColumnas = ordenLimpio;
 
-            // Si la configuración ha cambiado (por ejemplo, se eliminaron campos viejos), la guardamos
+            // Si la configuración ha cambiado, la guardamos
             const configNueva = {
                 orden_columnas: ordenColumnas,
                 columnas_ocultas: columnasOcultas,
@@ -421,7 +417,6 @@ window.prepararEdicion = (citaString) => {
     const c = JSON.parse(decodeURIComponent(citaString));
     idCitaEnEdicion = c.id;
     document.getElementById('titulo-modal').innerText = "Editando Cita #" + c.id;
-    // Preparar objeto con todos los campos (fijos + personalizados)
     const datos = {
         procesado: c.procesado || '',
         estado: c.estado || 'esperando respuesta',
@@ -436,26 +431,21 @@ window.prepararEdicion = (citaString) => {
 document.getElementById('form-cita').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Recoger campos fijos (procesado y estado)
     const camposFijos = {};
     document.querySelectorAll('.input-fijo').forEach(i => {
         camposFijos[i.getAttribute('data-key')] = i.value;
     });
 
-    // Recoger campos dinámicos (personalizados)
     const camposDinamicos = {};
     document.querySelectorAll('.input-dinamico').forEach(i => {
         if (i.value) camposDinamicos[i.getAttribute('data-key')] = i.value;
     });
 
-    // Combinar todo en un solo objeto (los personalizados van dentro de campos_personalizados)
     const payload = {
         ...(idCitaEnEdicion && { id: idCitaEnEdicion }),
         id_cliente: clienteLogueado,
-        // Campos fijos van directo en el payload
         procesado: camposFijos.procesado || '',
         estado: camposFijos.estado || 'esperando respuesta',
-        // El resto (dinámicos) dentro de campos_personalizados
         campos_personalizados: camposDinamicos
     };
 
