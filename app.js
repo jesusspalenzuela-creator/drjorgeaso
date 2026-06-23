@@ -11,7 +11,7 @@ const COLUMNAS_SISTEMA = ['id', 'estado'];
 const NOMBRES_COLUMNAS_SISTEMA = { 'id': 'ID', 'estado': 'Estado' };
 
 // Si un cliente nuevo entra, le damos esta plantilla inicial (él puede borrarla luego)
-const PLANTILLA_POR_DEFECTO = ['Identificación', 'Nombres', 'Apellidos', 'Teléfono', 'Fecha', 'Hora', 'Profesional'];
+const PLANTILLA_POR_DEFECTO = [];
 
 let camposPlantilla = [];
 let columnasOcultas = []; 
