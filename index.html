@@ -10,9 +10,9 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, sans-serif; background: #f0f4f8; color: #1e293b; }
         
-        /* Navbar azul rey */
+        /* Navbar azul rey intenso */
         .navbar-blue {
-            background: #1e3a8a; /* Azul rey oscuro pero no demasiado */
+            background: #0a3d91; /* Azul rey intenso */
             border-bottom: 1px solid rgba(255,255,255,0.15);
         }
         .navbar-blue .text-white { color: white; }
@@ -69,13 +69,14 @@
             border-color: #cbd5e1;
         }
         .btn-danger {
-            background: #fef2f2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
+            background: #dc2626 !important;
+            color: white !important;
+            border: none !important;
+            transition: all 0.3s;
         }
         .btn-danger:hover {
-            background: #fee2e2;
-            border-color: #fca5a5;
+            background: #b91c1c !important;
+            transform: scale(1.02);
         }
         .btn-delete {
             background: #fee2e2;
@@ -91,7 +92,6 @@
             background: #fecaca;
             border-color: #f87171;
         }
-        /* Botón WhatsApp */
         .btn-whatsapp {
             display: inline-flex;
             align-items: center;
@@ -139,11 +139,10 @@
         }
         .badge-confirmada { background: #dcfce7; color: #16a34a; }
         .badge-cancelada { background: #fee2e2; color: #dc2626; }
-        .badge-reprogramada { background: #f3e8ff; color: #7e22ce; } /* Morado */
+        .badge-reprogramada { background: #f3e8ff; color: #7e22ce; }
         .badge-esperando { background: #dbeafe; color: #2563eb; }
         .badge-pendiente { background: #f1f5f9; color: #64748b; }
 
-        /* Placeholder más pequeño */
         input::placeholder, textarea::placeholder {
             font-size: 0.85rem;
             color: #94a3b8;
@@ -172,7 +171,6 @@
             border-radius: 1.5rem;
             box-shadow: 0 24px 64px rgba(0,0,0,0.2);
         }
-        /* Modal de confirmación personalizado */
         .confirm-modal {
             max-width: 420px;
         }
@@ -210,7 +208,6 @@
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast-enter { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .logo-x { color: #2563eb; }
-        /* Estado conexión */
         .status-online { background: #dcfce7; color: #16a34a; border-color: #86efac; }
         .status-offline { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
         .status-dot { width: 0.75rem; height: 0.75rem; border-radius: 50%; display: inline-block; }
@@ -258,7 +255,7 @@
 
     <!-- PANEL PRINCIPAL -->
     <div id="seccion-panel" class="hidden relative min-h-screen">
-        <!-- NAVBAR AZUL REY -->
+        <!-- NAVBAR AZUL REY INTENSO -->
         <nav class="navbar-blue sticky top-0 z-10 shadow-md">
             <div class="max-w-full mx-auto px-6 py-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
@@ -268,8 +265,8 @@
                     <h1 class="text-xl font-black tracking-tight text-white">Clinovix <span class="text-blue-300">·</span> Panel</h1>
                 </div>
                 <div class="flex items-center gap-4">
-                    <span id="nombre-cliente-titulo" class="text-sm font-semibold text-blue-100 bg-white/10 px-4 py-2 rounded-full border border-white/20 hidden sm:block"></span>
-                    <button id="btn-cerrar-sesion" class="flex items-center gap-2 text-sm bg-white/10 text-white hover:bg-white/20 px-4 py-2 rounded-xl transition-all font-bold border border-white/20">
+                    <span id="nombre-cliente-titulo" class="text-sm font-semibold text-white/90 bg-white/10 px-4 py-2 rounded-full border border-white/20 hidden sm:block">Usuario: <span id="usuario-nombre" class="text-blue-200">drjorgeaso</span></span>
+                    <button id="btn-cerrar-sesion" class="flex items-center gap-2 text-sm btn-danger px-4 py-2 rounded-xl font-bold shadow-md shadow-red-900/20">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                         Salir
                     </button>
