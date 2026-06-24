@@ -16,20 +16,20 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
             position: sticky;
             top: 0;
-            z-index: 50; /* ¡Clave! Para que esté siempre por encima */
+            z-index: 50;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
         .navbar-blue .text-white { color: white; }
         .navbar-blue .logo-x { color: #2563eb; }
         
-        /* Usuario resaltado con mejor contraste */
+        /* Usuario resaltado en AZUL */
         .usuario-resaltado {
-            color: #fbbf24; /* Amarillo brillante */
+            color: #60a5fa; /* Azul claro vibrante */
             font-weight: 700;
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
-            background: rgba(0,0,0,0.2);
-            padding: 0.1rem 0.5rem;
-            border-radius: 0.25rem;
+            text-shadow: 0 0 12px rgba(96, 165, 250, 0.4);
+            background: rgba(0,0,0,0.25);
+            padding: 0.1rem 0.6rem;
+            border-radius: 0.3rem;
         }
         
         /* Login - X azul rey */
@@ -293,7 +293,7 @@
 
     <!-- PANEL PRINCIPAL -->
     <div id="seccion-panel" class="hidden relative min-h-screen">
-        <!-- NAVBAR AZUL MARINO OSCURO CON Z-INDEX ALTO -->
+        <!-- NAVBAR -->
         <nav class="navbar-blue">
             <div class="max-w-full mx-auto px-6 py-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
@@ -304,7 +304,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <span id="nombre-cliente-titulo" class="text-sm font-semibold bg-white/10 px-4 py-2 rounded-full border border-white/20 hidden sm:block">
-                        <span class="text-white/80">Usuario:</span> 
+                        <span class="text-white">Usuario:</span> 
                         <span id="usuario-nombre" class="usuario-resaltado">drjorgeaso</span>
                     </span>
                     <button id="btn-cerrar-sesion" class="flex items-center gap-2 text-sm btn-danger px-4 py-2 rounded-xl font-bold shadow-md shadow-red-900/20">
