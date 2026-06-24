@@ -10,9 +10,9 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, sans-serif; background: #f0f4f8; color: #1e293b; }
         
-        /* Navbar azul rey intenso */
+        /* Navbar azul igual al botón Nueva Cita */
         .navbar-blue {
-            background: #0d47a1; /* Azul rey intenso */
+            background: #2563eb; /* Mismo azul del botón */
             border-bottom: 1px solid rgba(255,255,255,0.15);
         }
         .navbar-blue .text-white { color: white; }
@@ -257,14 +257,14 @@
 
     <!-- PANEL PRINCIPAL -->
     <div id="seccion-panel" class="hidden relative min-h-screen">
-        <!-- NAVBAR AZUL REY INTENSO -->
+        <!-- NAVBAR AZUL IGUAL AL BOTÓN -->
         <nav class="navbar-blue sticky top-0 z-10 shadow-md">
             <div class="max-w-full mx-auto px-6 py-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                     </div>
-                    <h1 class="text-xl font-black tracking-tight text-white">Clinovix <span class="text-blue-300">·</span> Panel</h1>
+                    <h1 class="text-xl font-black tracking-tight text-white">Clinovix <span class="text-blue-200">·</span> Panel</h1>
                 </div>
                 <div class="flex items-center gap-4">
                     <span id="nombre-cliente-titulo" class="text-sm font-semibold text-white/90 bg-white/10 px-4 py-2 rounded-full border border-white/20 hidden sm:block">Usuario: <span id="usuario-nombre" class="text-blue-200">drjorgeaso</span></span>
@@ -339,7 +339,7 @@
         </main>
     </div>
 
-    <!-- MODAL: Columnas -->
+    <!-- MODALES -->
     <div id="modal-columnas" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[60]">
         <div class="modal-content w-full max-w-md p-8 overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
@@ -356,7 +356,6 @@
         </div>
     </div>
 
-    <!-- MODAL: Cita -->
     <div id="modal-cita" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-50">
         <div class="modal-content w-full max-w-4xl p-8 overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-8 border-b border-slate-200 pb-4">
@@ -375,7 +374,6 @@
         </div>
     </div>
 
-    <!-- MODAL: Nuevo Campo -->
     <div id="modal-nuevo-campo" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[70]">
         <div class="modal-content w-full max-w-md p-8">
             <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
@@ -398,7 +396,6 @@
         </div>
     </div>
 
-    <!-- MODAL: Confirmación personalizada -->
     <div id="modal-confirmacion" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[80]">
         <div class="modal-content confirm-modal w-full p-6">
             <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-3">
