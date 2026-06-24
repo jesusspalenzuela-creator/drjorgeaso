@@ -1,5 +1,5 @@
 // ================================================
-// app.js - CON MEJORAS FINALES
+// app.js - CON POST PARA ELIMINAR
 // ================================================
 
 const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
@@ -33,7 +33,7 @@ const modalColumnas = document.getElementById('modal-columnas');
 const modalNuevoCampo = document.getElementById('modal-nuevo-campo');
 const modalConfirmacion = document.getElementById('modal-confirmacion');
 
-let pendingDeleteId = null; // ID de la cita a eliminar
+let pendingDeleteId = null;
 
 // --- NOTIFICACIONES ---
 window.mostrarNotificacion = (titulo, mensaje, tipo = 'info') => {
@@ -78,10 +78,9 @@ function mostrarConfirmacion(mensaje, onConfirm) {
     document.getElementById('mensaje-confirmacion').innerText = mensaje;
     modalConfirmacion.classList.remove('hidden');
     modalConfirmacion.classList.add('flex');
-    pendingDeleteId = onConfirm; // Guardamos la función a ejecutar
+    pendingDeleteId = onConfirm;
 }
 
-// Eventos del modal de confirmación
 document.getElementById('btn-cerrar-confirmacion').onclick = () => {
     modalConfirmacion.classList.add('hidden');
     modalConfirmacion.classList.remove('flex');
@@ -94,20 +93,19 @@ document.getElementById('btn-confirmar-cancelar').onclick = () => {
 };
 document.getElementById('btn-confirmar-eliminar').onclick = async () => {
     if (pendingDeleteId) {
-        await pendingDeleteId(); // Ejecutamos la función de eliminación
+        await pendingDeleteId();
         modalConfirmacion.classList.add('hidden');
         modalConfirmacion.classList.remove('flex');
         pendingDeleteId = null;
     }
 };
 
-// --- ELIMINAR CITA (usando confirmación personalizada) ---
+// --- ELIMINAR CITA (USANDO POST) ---
 window.eliminarCita = (id) => {
-    // Mostrar modal personalizado
     mostrarConfirmacion(`¿Estás seguro de que quieres eliminar la cita #${id}? Esta acción no se puede deshacer.`, async () => {
         try {
             const response = await fetch(N8N_DELETE_URL, {
-                method: 'DELETE',
+                method: 'POST', // Cambiado a POST
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: id })
             });
@@ -130,7 +128,6 @@ window.eliminarCita = (id) => {
 // --- FUNCIÓN PARA ABRIR WHATSAPP ---
 window.abrirWhatsApp = (telefono) => {
     if (!telefono) return;
-    // Limpiar el número (solo dígitos y signo +)
     let numero = telefono.toString().replace(/\s/g, '').replace(/-/g, '');
     if (!numero.startsWith('+')) numero = '+' + numero;
     window.open(`https://wa.me/${numero}`, '_blank');
@@ -379,7 +376,7 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
 
             document.getElementById('seccion-login').classList.add('hidden');
             document.getElementById('seccion-panel').classList.remove('hidden');
-            document.getElementById('nombre-cliente-titulo').innerText = "Usuario: " + u;
+            document.getElementById('nombre-cliente-titulo').innerHTML = `Usuario: <span class="text-blue-200">${u}</span>`;
 
             cargarCitasDelServidor();
             loopSincronizacion = setInterval(cargarCitasDelServidor, 10000);
@@ -422,9 +419,7 @@ function actualizarEstadoConexion(online) {
 async function cargarCitasDelServidor() {
     try {
         const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
-        if (!res.ok) {
-            throw new Error(`HTTP error ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         const text = await res.text();
         let citas = [];
         if (text && text.trim() !== '') {
@@ -439,10 +434,8 @@ async function cargarCitasDelServidor() {
             citas = [];
         }
 
-        // Conexión OK
         actualizarEstadoConexion(true);
 
-        // Renderizar cabecera siempre
         const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col));
         let htmlCabecera = `<tr>`;
         columnasMostradas.forEach(colKey => {
@@ -452,7 +445,6 @@ async function cargarCitasDelServidor() {
         htmlCabecera += `<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`;
         document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
 
-        // Estadísticas
         document.getElementById('stat-total').innerText = citas.length;
         document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length;
         document.getElementById('stat-canceladas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length;
@@ -474,7 +466,6 @@ async function cargarCitasDelServidor() {
             return;
         }
 
-        // Notificaciones de cambios de estado
         if (citasAnteriores.length > 0) {
             citas.forEach(nuevaCita => {
                 const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id);
@@ -524,7 +515,6 @@ async function cargarCitasDelServidor() {
                     } else if (colKey.toLowerCase().includes('profesional')) {
                         valor = `<span class="font-bold text-blue-600">${valor}</span>`;
                     }
-                    // Si es teléfono, agregar botón de WhatsApp
                     if (colKey.toLowerCase() === 'telefono' && valor !== '-') {
                         const telefono = valor;
                         valor = `
@@ -551,7 +541,6 @@ async function cargarCitasDelServidor() {
         }).join('');
     } catch (e) {
         console.error("Error al cargar:", e);
-        // Conexión fallida
         actualizarEstadoConexion(false);
         
         const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col));
