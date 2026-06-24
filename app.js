@@ -1,7 +1,3 @@
-// ================================================
-// app.js - CON TODAS LAS MEJORAS FINALES
-// ================================================
-
 const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
 const N8N_POST_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/crearcita';
 const N8N_LOGIN_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/login';
@@ -376,7 +372,9 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
 
             document.getElementById('seccion-login').classList.add('hidden');
             document.getElementById('seccion-panel').classList.remove('hidden');
-            document.getElementById('nombre-cliente-titulo').innerHTML = `Usuario: <span class="usuario-resaltado">${u}</span>`;
+            
+            // --- CORRECCIÓN: actualizar solo el nombre, mantener "Usuario:" fijo ---
+            document.getElementById('usuario-nombre').textContent = u;
 
             cargarCitasDelServidor();
             loopSincronizacion = setInterval(cargarCitasDelServidor, 10000);
