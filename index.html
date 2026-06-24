@@ -21,13 +21,12 @@
         .navbar-blue .text-white { color: white; }
         .navbar-blue .logo-x { color: #2563eb; }
         
+        /* Usuario resaltado - SIN FONDO OSCURO */
         .usuario-resaltado {
             color: #60a5fa;
             font-weight: 700;
             text-shadow: 0 0 12px rgba(96, 165, 250, 0.4);
-            background: rgba(0,0,0,0.25);
-            padding: 0.1rem 0.6rem;
-            border-radius: 0.3rem;
+            /* background eliminado */
         }
         
         .login-x { color: #2563eb; }
@@ -298,7 +297,6 @@
                     <h1 class="text-xl font-black tracking-tight text-white">Clinovi<span class="logo-x">x</span> · Panel</h1>
                 </div>
                 <div class="flex items-center gap-4">
-                    <!-- TEXTO COMPLETO VISIBLE SIEMPRE -->
                     <span id="nombre-cliente-titulo" class="text-sm font-semibold bg-white/10 px-4 py-2 rounded-full border border-white/20 whitespace-nowrap">
                         <span class="text-white">Usuario:</span>
                         <span id="usuario-nombre" class="usuario-resaltado">drjorgeaso</span>
