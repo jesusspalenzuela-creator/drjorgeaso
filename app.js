@@ -1,11 +1,12 @@
 // ================================================
-// app.js - CORREGIDO (maneja respuesta vacía del webhook)
+// app.js - CON ELIMINACIÓN DE CITAS
 // ================================================
 
 const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
 const N8N_POST_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/crearcita';
 const N8N_LOGIN_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/login';
 const N8N_CONFIG_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/guardarconfig';
+const N8N_DELETE_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/eliminar';
 
 let clienteLogueado = "";
 let idCitaEnEdicion = null;
@@ -68,6 +69,40 @@ async function sincronizarConfiguracionNube() {
         console.error("Error guardando preferencias en la nube.");
     }
 }
+
+// --- ELIMINAR CITA ---
+window.eliminarCita = async (id) => {
+    if (!confirm(`¿Estás seguro de que quieres eliminar la cita #${id}? Esta acción no se puede deshacer.`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(N8N_DELETE_URL, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: id })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        if (result.success) {
+            mostrarNotificacion("Cita Eliminada", `La cita #${id} ha sido eliminada correctamente.`, "success");
+            // Recargar la tabla
+            hashTablaActual = "";
+            await cargarCitasDelServidor();
+        } else {
+            mostrarNotificacion("Error", result.message || "No se pudo eliminar la cita.", "error");
+        }
+    } catch (error) {
+        console.error("Error al eliminar:", error);
+        mostrarNotificacion("Error", "Ocurrió un error al intentar eliminar la cita.", "error");
+    }
+};
 
 // --- EVENTOS MODAL PRINCIPAL ---
 document.getElementById('btn-abrir-modal').onclick = () => { resetearFormulario(); modal.classList.remove('hidden'); modal.classList.add('flex'); };
@@ -205,7 +240,7 @@ function renderizarCamposModal(datosCita = {}) {
         html += `
         <div class="relative group">
             <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
-            <input type="text" data-key="${nombre}" value="${valor}" class="input-fijo w-full bg-white border border-slate-200 rounded-xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+            <input type="text" data-key="${nombre}" value="${valor}" class="input-fijo w-full bg-white border border-slate-200 rounded-xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" placeholder="Ingresa ${nombre.toLowerCase()}">
         </div>
         `;
     });
@@ -220,7 +255,7 @@ function renderizarCamposModal(datosCita = {}) {
         html += `
         <div class="relative group">
             <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
-            <input type="text" data-key="${nombre}" value="${valor}" class="input-dinamico w-full bg-white border border-slate-200 rounded-xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+            <input type="text" data-key="${nombre}" value="${valor}" class="input-dinamico w-full bg-white border border-slate-200 rounded-xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" placeholder="Ingresa ${nombre.toLowerCase()}">
             <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-400 hover:text-red-600 text-[10px] font-black p-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-bl-lg">✕</button>
         </div>
         `;
@@ -444,7 +479,14 @@ async function cargarCitasDelServidor() {
                 }
                 row += `<td class="px-6 py-4 text-slate-700">${valor}</td>`;
             });
-            row += `<td class="px-6 py-4 text-right"><button onclick="prepararEdicion('${citaString}')" class="btn-primary px-5 py-2 rounded-xl text-xs font-bold transition">Editar</button></td></tr>`;
+            row += `
+                <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                        <button onclick="prepararEdicion('${citaString}')" class="btn-primary px-4 py-1.5 rounded-lg text-xs font-bold transition">Editar</button>
+                        <button onclick="eliminarCita(${c.id})" class="btn-delete px-4 py-1.5 rounded-lg text-xs font-bold transition">Eliminar</button>
+                    </div>
+                </td>
+            </tr>`;
             return row;
         }).join('');
     } catch (e) {
