@@ -1,5 +1,5 @@
 // ================================================
-// app.js - CON POST PARA ELIMINAR
+// app.js - CON TODAS LAS MEJORAS FINALES
 // ================================================
 
 const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
@@ -100,12 +100,12 @@ document.getElementById('btn-confirmar-eliminar').onclick = async () => {
     }
 };
 
-// --- ELIMINAR CITA (USANDO POST) ---
+// --- ELIMINAR CITA ---
 window.eliminarCita = (id) => {
     mostrarConfirmacion(`¿Estás seguro de que quieres eliminar la cita #${id}? Esta acción no se puede deshacer.`, async () => {
         try {
             const response = await fetch(N8N_DELETE_URL, {
-                method: 'POST', // Cambiado a POST
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: id })
             });
@@ -376,7 +376,7 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
 
             document.getElementById('seccion-login').classList.add('hidden');
             document.getElementById('seccion-panel').classList.remove('hidden');
-            document.getElementById('nombre-cliente-titulo').innerHTML = `Usuario: <span class="text-blue-200">${u}</span>`;
+            document.getElementById('nombre-cliente-titulo').innerHTML = `Usuario: <span class="usuario-resaltado">${u}</span>`;
 
             cargarCitasDelServidor();
             loopSincronizacion = setInterval(cargarCitasDelServidor, 10000);
