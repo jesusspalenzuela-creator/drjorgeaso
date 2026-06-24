@@ -1,5 +1,5 @@
 // ================================================
-// app.js - CON ELIMINACIÓN DE CITAS
+// app.js - CON MEJORAS FINALES
 // ================================================
 
 const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
@@ -31,6 +31,9 @@ let loopSincronizacion = null;
 const modal = document.getElementById('modal-cita');
 const modalColumnas = document.getElementById('modal-columnas');
 const modalNuevoCampo = document.getElementById('modal-nuevo-campo');
+const modalConfirmacion = document.getElementById('modal-confirmacion');
+
+let pendingDeleteId = null; // ID de la cita a eliminar
 
 // --- NOTIFICACIONES ---
 window.mostrarNotificacion = (titulo, mensaje, tipo = 'info') => {
@@ -70,38 +73,67 @@ async function sincronizarConfiguracionNube() {
     }
 }
 
-// --- ELIMINAR CITA ---
-window.eliminarCita = async (id) => {
-    if (!confirm(`¿Estás seguro de que quieres eliminar la cita #${id}? Esta acción no se puede deshacer.`)) {
-        return;
+// --- CONFIRMACIÓN PERSONALIZADA ---
+function mostrarConfirmacion(mensaje, onConfirm) {
+    document.getElementById('mensaje-confirmacion').innerText = mensaje;
+    modalConfirmacion.classList.remove('hidden');
+    modalConfirmacion.classList.add('flex');
+    pendingDeleteId = onConfirm; // Guardamos la función a ejecutar
+}
+
+// Eventos del modal de confirmación
+document.getElementById('btn-cerrar-confirmacion').onclick = () => {
+    modalConfirmacion.classList.add('hidden');
+    modalConfirmacion.classList.remove('flex');
+    pendingDeleteId = null;
+};
+document.getElementById('btn-confirmar-cancelar').onclick = () => {
+    modalConfirmacion.classList.add('hidden');
+    modalConfirmacion.classList.remove('flex');
+    pendingDeleteId = null;
+};
+document.getElementById('btn-confirmar-eliminar').onclick = async () => {
+    if (pendingDeleteId) {
+        await pendingDeleteId(); // Ejecutamos la función de eliminación
+        modalConfirmacion.classList.add('hidden');
+        modalConfirmacion.classList.remove('flex');
+        pendingDeleteId = null;
     }
+};
 
-    try {
-        const response = await fetch(N8N_DELETE_URL, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: id })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`);
+// --- ELIMINAR CITA (usando confirmación personalizada) ---
+window.eliminarCita = (id) => {
+    // Mostrar modal personalizado
+    mostrarConfirmacion(`¿Estás seguro de que quieres eliminar la cita #${id}? Esta acción no se puede deshacer.`, async () => {
+        try {
+            const response = await fetch(N8N_DELETE_URL, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+            if (!response.ok) throw new Error(`Error ${response.status}`);
+            const result = await response.json();
+            if (result.success) {
+                mostrarNotificacion("Cita Eliminada", `La cita #${id} ha sido eliminada correctamente.`, "success");
+                hashTablaActual = "";
+                await cargarCitasDelServidor();
+            } else {
+                mostrarNotificacion("Error", result.message || "No se pudo eliminar la cita.", "error");
+            }
+        } catch (error) {
+            console.error("Error al eliminar:", error);
+            mostrarNotificacion("Error", "Ocurrió un error al intentar eliminar la cita.", "error");
         }
+    });
+};
 
-        const result = await response.json();
-        if (result.success) {
-            mostrarNotificacion("Cita Eliminada", `La cita #${id} ha sido eliminada correctamente.`, "success");
-            // Recargar la tabla
-            hashTablaActual = "";
-            await cargarCitasDelServidor();
-        } else {
-            mostrarNotificacion("Error", result.message || "No se pudo eliminar la cita.", "error");
-        }
-    } catch (error) {
-        console.error("Error al eliminar:", error);
-        mostrarNotificacion("Error", "Ocurrió un error al intentar eliminar la cita.", "error");
-    }
+// --- FUNCIÓN PARA ABRIR WHATSAPP ---
+window.abrirWhatsApp = (telefono) => {
+    if (!telefono) return;
+    // Limpiar el número (solo dígitos y signo +)
+    let numero = telefono.toString().replace(/\s/g, '').replace(/-/g, '');
+    if (!numero.startsWith('+')) numero = '+' + numero;
+    window.open(`https://wa.me/${numero}`, '_blank');
 };
 
 // --- EVENTOS MODAL PRINCIPAL ---
@@ -152,7 +184,6 @@ document.getElementById('form-nuevo-campo').addEventListener('submit', async (e)
         valoresDefault[nombre] = valorDefault;
     }
 
-    // Insertar antes de 'procesado'
     const idxProcesado = ordenColumnas.indexOf('procesado');
     if (idxProcesado !== -1) {
         ordenColumnas.splice(idxProcesado, 0, nombre);
@@ -234,7 +265,6 @@ function renderizarCamposModal(datosCita = {}) {
     const container = document.getElementById('contenedor-campos-dinamicos');
     let html = '';
 
-    // Campos fijos: procesado y estado
     CAMPOS_FIJOS_FORMULARIO.forEach(nombre => {
         const valor = datosCita[nombre] || '';
         html += `
@@ -245,10 +275,8 @@ function renderizarCamposModal(datosCita = {}) {
         `;
     });
 
-    // Campos personalizados
     camposPlantilla.forEach(nombre => {
         let valor = datosCita[nombre] || '';
-        // Si es nueva cita y no hay datos, usar valor por defecto si existe
         if (!idCitaEnEdicion && !valor && valoresDefault[nombre]) {
             valor = valoresDefault[nombre];
         }
@@ -368,17 +396,37 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
     }
 });
 
-// --- MOTOR PRINCIPAL (CON CABECERA SIEMPRE VISIBLE Y MANEJO DE JSON VACÍO) ---
+// --- ACTUALIZAR ESTADO DE CONEXIÓN ---
+function actualizarEstadoConexion(online) {
+    const statusCard = document.getElementById('status-card');
+    const statusText = document.getElementById('status-text');
+    const statusDot = document.getElementById('status-dot');
+    const statusIcon = document.getElementById('status-icon');
+
+    if (online) {
+        statusCard.className = 'card p-5 flex flex-col items-center justify-center text-center';
+        statusText.className = 'text-sm font-bold text-emerald-600';
+        statusText.innerText = 'En línea';
+        statusDot.className = 'w-4 h-4 rounded-full animate-pulse bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]';
+        statusIcon.className = 'w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mb-2';
+    } else {
+        statusCard.className = 'card p-5 flex flex-col items-center justify-center text-center border-red-200';
+        statusText.className = 'text-sm font-bold text-red-600';
+        statusText.innerText = 'Sin conexión';
+        statusDot.className = 'w-4 h-4 rounded-full animate-pulse bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.5)]';
+        statusIcon.className = 'w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mb-2';
+    }
+}
+
+// --- MOTOR PRINCIPAL ---
 async function cargarCitasDelServidor() {
     try {
-        // 1. Obtener respuesta del webhook
         const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
-        
-        // 2. Obtener el texto de la respuesta (para manejar vacío)
+        if (!res.ok) {
+            throw new Error(`HTTP error ${res.status}`);
+        }
         const text = await res.text();
         let citas = [];
-        
-        // 3. Intentar parsear solo si hay contenido
         if (text && text.trim() !== '') {
             try {
                 const data = JSON.parse(text);
@@ -388,11 +436,13 @@ async function cargarCitasDelServidor() {
                 citas = [];
             }
         } else {
-            // Respuesta vacía = sin citas
             citas = [];
         }
 
-        // --- 4. RENDERIZAR CABECERA SIEMPRE ---
+        // Conexión OK
+        actualizarEstadoConexion(true);
+
+        // Renderizar cabecera siempre
         const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col));
         let htmlCabecera = `<tr>`;
         columnasMostradas.forEach(colKey => {
@@ -402,13 +452,12 @@ async function cargarCitasDelServidor() {
         htmlCabecera += `<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`;
         document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
 
-        // --- 5. ACTUALIZAR ESTADÍSTICAS (siempre) ---
+        // Estadísticas
         document.getElementById('stat-total').innerText = citas.length;
         document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length;
         document.getElementById('stat-canceladas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length;
         document.getElementById('stat-reprogramadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length;
 
-        // --- 6. SI NO HAY CITAS, mostrar mensaje y SALIR ---
         if (citas.length === 0) {
             const colspan = columnasMostradas.length + 1;
             document.getElementById('tabla-cuerpo').innerHTML = `
@@ -425,7 +474,7 @@ async function cargarCitasDelServidor() {
             return;
         }
 
-        // --- 7. NOTIFICACIONES DE CAMBIOS DE ESTADO (si hay citas) ---
+        // Notificaciones de cambios de estado
         if (citasAnteriores.length > 0) {
             citas.forEach(nuevaCita => {
                 const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id);
@@ -440,7 +489,6 @@ async function cargarCitasDelServidor() {
             });
         }
 
-        // --- 8. RENDERIZAR CUERPO DE LA TABLA ---
         const nuevoHash = JSON.stringify(citas) + JSON.stringify(ordenColumnas) + JSON.stringify(columnasOcultas);
         if (nuevoHash === hashTablaActual) return;
         hashTablaActual = nuevoHash;
@@ -476,6 +524,18 @@ async function cargarCitasDelServidor() {
                     } else if (colKey.toLowerCase().includes('profesional')) {
                         valor = `<span class="font-bold text-blue-600">${valor}</span>`;
                     }
+                    // Si es teléfono, agregar botón de WhatsApp
+                    if (colKey.toLowerCase() === 'telefono' && valor !== '-') {
+                        const telefono = valor;
+                        valor = `
+                            <span class="flex items-center gap-1">
+                                <span>${telefono}</span>
+                                <button onclick="abrirWhatsApp('${telefono}')" class="btn-whatsapp" title="Abrir WhatsApp">
+                                    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                </button>
+                            </span>
+                        `;
+                    }
                 }
                 row += `<td class="px-6 py-4 text-slate-700">${valor}</td>`;
             });
@@ -491,7 +551,9 @@ async function cargarCitasDelServidor() {
         }).join('');
     } catch (e) {
         console.error("Error al cargar:", e);
-        // En caso de error general, mostramos mensaje de error en la tabla
+        // Conexión fallida
+        actualizarEstadoConexion(false);
+        
         const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col));
         const colspan = columnasMostradas.length + 1;
         document.getElementById('tabla-cuerpo').innerHTML = `
@@ -523,7 +585,7 @@ window.prepararEdicion = (citaString) => {
     modal.classList.add('flex');
 };
 
-// --- GUARDAR CITA (NUEVA O EDICIÓN) ---
+// --- GUARDAR CITA ---
 document.getElementById('form-cita').addEventListener('submit', async (e) => {
     e.preventDefault();
 
