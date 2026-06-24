@@ -10,7 +10,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, sans-serif; background: #f0f4f8; color: #1e293b; }
         
-        /* Navbar azul marino oscuro con z-index alto */
         .navbar-blue {
             background: #0b1a33;
             border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -22,9 +21,8 @@
         .navbar-blue .text-white { color: white; }
         .navbar-blue .logo-x { color: #2563eb; }
         
-        /* Usuario resaltado en AZUL */
         .usuario-resaltado {
-            color: #60a5fa; /* Azul claro vibrante */
+            color: #60a5fa;
             font-weight: 700;
             text-shadow: 0 0 12px rgba(96, 165, 250, 0.4);
             background: rgba(0,0,0,0.25);
@@ -32,7 +30,6 @@
             border-radius: 0.3rem;
         }
         
-        /* Login - X azul rey */
         .login-x { color: #2563eb; }
         
         .glass {
@@ -163,7 +160,6 @@
         .badge-esperando { background: #dbeafe; color: #2563eb; }
         .badge-pendiente { background: #f1f5f9; color: #64748b; }
 
-        /* Tabla con scroll */
         .table-container {
             max-height: 450px;
             overflow-y: auto;
@@ -293,7 +289,6 @@
 
     <!-- PANEL PRINCIPAL -->
     <div id="seccion-panel" class="hidden relative min-h-screen">
-        <!-- NAVBAR -->
         <nav class="navbar-blue">
             <div class="max-w-full mx-auto px-6 py-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
@@ -303,8 +298,9 @@
                     <h1 class="text-xl font-black tracking-tight text-white">Clinovi<span class="logo-x">x</span> · Panel</h1>
                 </div>
                 <div class="flex items-center gap-4">
-                    <span id="nombre-cliente-titulo" class="text-sm font-semibold bg-white/10 px-4 py-2 rounded-full border border-white/20 hidden sm:block">
-                        <span class="text-white">Usuario:</span> 
+                    <!-- TEXTO COMPLETO VISIBLE SIEMPRE -->
+                    <span id="nombre-cliente-titulo" class="text-sm font-semibold bg-white/10 px-4 py-2 rounded-full border border-white/20 whitespace-nowrap">
+                        <span class="text-white">Usuario:</span>
                         <span id="usuario-nombre" class="usuario-resaltado">drjorgeaso</span>
                     </span>
                     <button id="btn-cerrar-sesion" class="flex items-center gap-2 text-sm btn-danger px-4 py-2 rounded-xl font-bold shadow-md shadow-red-900/20">
