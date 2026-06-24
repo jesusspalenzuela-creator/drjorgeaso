@@ -9,6 +9,14 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, sans-serif; background: #f0f4f8; color: #1e293b; }
+        
+        /* Navbar azul rey */
+        .navbar-blue {
+            background: #1e3a8a; /* Azul rey oscuro pero no demasiado */
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+        .navbar-blue .text-white { color: white; }
+        
         .glass {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(12px);
@@ -83,6 +91,32 @@
             background: #fecaca;
             border-color: #f87171;
         }
+        /* Botón WhatsApp */
+        .btn-whatsapp {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: #25D366;
+            color: white;
+            padding: 0.15rem 0.6rem;
+            border-radius: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-whatsapp:hover {
+            background: #1da851;
+            transform: scale(1.05);
+        }
+        .btn-whatsapp svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+        
         .table-header {
             background: #f8fafc;
             border-bottom: 1px solid #e2e8f0;
@@ -105,7 +139,7 @@
         }
         .badge-confirmada { background: #dcfce7; color: #16a34a; }
         .badge-cancelada { background: #fee2e2; color: #dc2626; }
-        .badge-reprogramada { background: #fef9c3; color: #ca8a04; }
+        .badge-reprogramada { background: #f3e8ff; color: #7e22ce; } /* Morado */
         .badge-esperando { background: #dbeafe; color: #2563eb; }
         .badge-pendiente { background: #f1f5f9; color: #64748b; }
 
@@ -138,6 +172,37 @@
             border-radius: 1.5rem;
             box-shadow: 0 24px 64px rgba(0,0,0,0.2);
         }
+        /* Modal de confirmación personalizado */
+        .confirm-modal {
+            max-width: 420px;
+        }
+        .confirm-modal .btn-confirm-danger {
+            background: #dc2626;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .confirm-modal .btn-confirm-danger:hover {
+            background: #b91c1c;
+            transform: scale(1.02);
+        }
+        .confirm-modal .btn-confirm-cancel {
+            background: #e2e8f0;
+            color: #1e293b;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .confirm-modal .btn-confirm-cancel:hover {
+            background: #cbd5e1;
+        }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -145,6 +210,12 @@
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast-enter { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .logo-x { color: #2563eb; }
+        /* Estado conexión */
+        .status-online { background: #dcfce7; color: #16a34a; border-color: #86efac; }
+        .status-offline { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+        .status-dot { width: 0.75rem; height: 0.75rem; border-radius: 50%; display: inline-block; }
+        .status-dot.online { background: #16a34a; box-shadow: 0 0 12px rgba(22,163,74,0.5); }
+        .status-dot.offline { background: #dc2626; box-shadow: 0 0 12px rgba(220,38,38,0.5); }
     </style>
 </head>
 <body class="min-h-screen font-sans antialiased bg-gradient-to-br from-blue-50 via-white to-blue-50/50">
@@ -187,18 +258,18 @@
 
     <!-- PANEL PRINCIPAL -->
     <div id="seccion-panel" class="hidden relative min-h-screen">
-        <!-- NAVBAR -->
-        <nav class="glass sticky top-0 z-10 border-b border-white/30 shadow-sm">
+        <!-- NAVBAR AZUL REY -->
+        <nav class="navbar-blue sticky top-0 z-10 shadow-md">
             <div class="max-w-full mx-auto px-6 py-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-md shadow-blue-900/20">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                     </div>
-                    <h1 class="text-xl font-black tracking-tight text-slate-900">Clinovix <span class="text-blue-600">·</span> Panel</h1>
+                    <h1 class="text-xl font-black tracking-tight text-white">Clinovix <span class="text-blue-300">·</span> Panel</h1>
                 </div>
                 <div class="flex items-center gap-4">
-                    <span id="nombre-cliente-titulo" class="text-sm font-semibold text-slate-700 bg-white/70 px-4 py-2 rounded-full border border-white/30 hidden sm:block"></span>
-                    <button id="btn-cerrar-sesion" class="flex items-center gap-2 text-sm btn-danger px-4 py-2 rounded-xl font-bold">
+                    <span id="nombre-cliente-titulo" class="text-sm font-semibold text-blue-100 bg-white/10 px-4 py-2 rounded-full border border-white/20 hidden sm:block"></span>
+                    <button id="btn-cerrar-sesion" class="flex items-center gap-2 text-sm bg-white/10 text-white hover:bg-white/20 px-4 py-2 rounded-xl transition-all font-bold border border-white/20">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                         Salir
                     </button>
@@ -244,16 +315,16 @@
                     <p id="stat-canceladas" class="stat-number text-red-600">0</p>
                 </div>
                 <div class="card p-5 relative overflow-hidden">
-                    <div class="absolute -right-8 -top-8 w-24 h-24 bg-amber-100 rounded-full blur-2xl opacity-60"></div>
-                    <p class="stat-label text-amber-600">Reprogramadas</p>
-                    <p id="stat-reprogramadas" class="stat-number text-amber-600">0</p>
+                    <div class="absolute -right-8 -top-8 w-24 h-24 bg-purple-100 rounded-full blur-2xl opacity-60"></div>
+                    <p class="stat-label text-purple-600">Reprogramadas</p>
+                    <p id="stat-reprogramadas" class="stat-number text-purple-600">0</p>
                 </div>
-                <div class="card p-5 flex flex-col items-center justify-center text-center">
-                    <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mb-2">
-                        <div class="w-4 h-4 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_20px_rgba(16,185,129,0.5)]"></div>
+                <div class="card p-5 flex flex-col items-center justify-center text-center" id="status-card">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center mb-2" id="status-icon">
+                        <div class="w-4 h-4 rounded-full animate-pulse" id="status-dot"></div>
                     </div>
                     <p class="stat-label">Estado</p>
-                    <p class="text-sm font-bold text-emerald-600">En línea</p>
+                    <p class="text-sm font-bold" id="status-text">En línea</p>
                 </div>
             </div>
 
@@ -325,6 +396,23 @@
                 </div>
                 <button type="submit" class="w-full btn-primary py-4 rounded-xl font-bold text-lg">Crear Campo</button>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Confirmación personalizada -->
+    <div id="modal-confirmacion" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[80]">
+        <div class="modal-content confirm-modal w-full p-6">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-3">
+                <h3 class="text-xl font-black text-slate-900">Confirmar eliminación</h3>
+                <button id="btn-cerrar-confirmacion" class="text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-full p-2 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <p class="text-slate-600 mb-4" id="mensaje-confirmacion">¿Estás seguro de que quieres eliminar esta cita? Esta acción no se puede deshacer.</p>
+            <div class="flex gap-3 justify-end">
+                <button id="btn-confirmar-cancelar" class="btn-confirm-cancel">Cancelar</button>
+                <button id="btn-confirmar-eliminar" class="btn-confirm-danger">Eliminar</button>
+            </div>
         </div>
     </div>
 
