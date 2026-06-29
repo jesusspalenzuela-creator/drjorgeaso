@@ -33,7 +33,6 @@
             transform: translateY(-2px);
         }
 
-        /* Tarjetas de estadísticas */
         .stat-card {
             background: white;
             border-radius: 1.25rem;
@@ -44,7 +43,6 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            min-width: 0;
         }
 
         .stat-card:hover {
@@ -298,13 +296,32 @@
             overflow-y: auto;
             z-index: 100;
             box-shadow: 4px 0 28px rgba(0, 0, 0, 0.4);
-            transition: transform 0.3s ease;
+            transition: width 0.3s ease, padding 0.3s ease;
             display: flex;
             flex-direction: column;
         }
 
         .sidebar.collapsed {
-            transform: translateX(-100%);
+            width: 72px;
+            padding: 1.8rem 0.5rem;
+        }
+
+        .sidebar.collapsed .sidebar-header .brand,
+        .sidebar.collapsed .sidebar-header .subtitle,
+        .sidebar.collapsed .sidebar-nav a span,
+        .sidebar.collapsed .sidebar-footer .user-info div,
+        .sidebar.collapsed .sidebar-footer .btn-logout span {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-nav a {
+            justify-content: center;
+            padding: 0.8rem 0;
+        }
+
+        .sidebar.collapsed .sidebar-footer .btn-logout {
+            justify-content: center;
+            padding: 0.7rem 0;
         }
 
         .sidebar-header .brand {
@@ -378,23 +395,31 @@
         .sidebar-toggle {
             position: fixed;
             top: 1rem;
-            left: 270px;
+            left: 260px;
             z-index: 110;
             background: white;
             border: 1px solid #e2e8f0;
-            border-radius: 0.5rem;
-            width: 2.5rem;
-            height: 2.5rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            width: 28px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
             transition: left 0.3s ease;
         }
 
         .sidebar.collapsed ~ .sidebar-toggle {
-            left: 1rem;
+            left: 72px;
+        }
+
+        .sidebar-toggle svg {
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed ~ .sidebar-toggle svg {
+            transform: rotate(180deg);
         }
 
         #contenido-principal {
@@ -405,7 +430,7 @@
         }
 
         .sidebar.collapsed ~ #contenido-principal {
-            margin-left: 0;
+            margin-left: 72px;
         }
 
         .seccion {
@@ -416,7 +441,6 @@
             display: block;
         }
 
-        /* Botones configuración */
         .config-btn {
             display: flex;
             align-items: center;
@@ -448,21 +472,25 @@
             font-size: 1.4rem;
         }
 
-        .chart-placeholder {
-            background: #f8fafc;
-            border-radius: 1rem;
-            height: 220px;
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-around;
-            padding: 1rem;
+        /* Gráfico de barras real */
+        .chart-bar {
+            transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 8px 8px 0 0;
+            min-height: 4px;
         }
 
-        .bar {
-            width: 30px;
-            background: #2563eb;
-            border-radius: 6px 6px 0 0;
-            transition: height 0.5s;
+        .chart-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-top: 0.3rem;
+        }
+
+        .chart-value {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.2rem;
         }
     </style>
 </head>
@@ -486,7 +514,7 @@
                         <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                         </span>
-                        <input type="text" id="login-usuario" placeholder="Tu usuario" required class="pl-11">
+                        <input type="text" id="login-usuario" placeholder="Tu usuario" required class="pl-11 w-full bg-white border border-slate-200 rounded-xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                     </div>
                 </div>
                 <div>
@@ -495,7 +523,7 @@
                         <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                         </span>
-                        <input type="password" id="login-password" placeholder="••••••••" required class="pl-11">
+                        <input type="password" id="login-password" placeholder="••••••••" required class="pl-11 w-full bg-white border border-slate-200 rounded-xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                     </div>
                 </div>
                 <button type="submit" class="w-full btn-primary py-4 rounded-xl font-bold text-lg">Acceder al panel</button>
@@ -512,14 +540,14 @@
             </div>
             <nav class="sidebar-nav flex-1 mt-6">
                 <ul>
-                    <li><a href="#" data-section="inicio" class="active"><span class="icon">📊</span> Inicio</a></li>
-                    <li><a href="#" data-section="citas"><span class="icon">📅</span> Citas</a></li>
-                    <li><a href="#" data-section="configuracion"><span class="icon">⚙️</span> Configuración</a></li>
+                    <li><a href="#" data-section="inicio" class="active"><span class="icon">📊</span> <span>Inicio</span></a></li>
+                    <li><a href="#" data-section="citas"><span class="icon">📅</span> <span>Citas</span></a></li>
+                    <li><a href="#" data-section="configuracion"><span class="icon">⚙️</span> <span>Configuración</span></a></li>
                 </ul>
             </nav>
             <div class="sidebar-footer mt-auto">
-                <div class="flex items-center gap-3 px-2 mb-4">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white" id="usuario-inicial">D</div>
+                <div class="flex items-center gap-3 px-2 mb-4 user-info">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white flex-shrink-0" id="usuario-inicial">D</div>
                     <div>
                         <p class="font-semibold text-white text-sm" id="usuario-nombre">drjorgeaso</p>
                         <p class="text-xs text-slate-400">Administrador</p>
@@ -527,13 +555,13 @@
                 </div>
                 <button id="btn-cerrar-sesion" class="btn-logout">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                    Cerrar sesión
+                    <span>Cerrar sesión</span>
                 </button>
             </div>
         </aside>
 
         <button class="sidebar-toggle" id="sidebar-toggle">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
         </button>
 
         <div id="contenido-principal">
@@ -545,24 +573,8 @@
                         Sincronizar
                     </button>
                 </div>
-                <!-- Gráfico grande -->
-                <div class="card p-6 mb-8">
-                    <h3 class="text-lg font-bold text-slate-800 mb-4">Resumen de actividad</h3>
-                    <div class="chart-placeholder" id="chart-bars">
-                        <div class="bar" style="height: 70%;"></div>
-                        <div class="bar" style="height: 45%;"></div>
-                        <div class="bar" style="height: 90%;"></div>
-                        <div class="bar" style="height: 60%;"></div>
-                        <div class="bar" style="height: 30%;"></div>
-                        <div class="bar" style="height: 80%;"></div>
-                        <div class="bar" style="height: 50%;"></div>
-                    </div>
-                    <div class="flex justify-between mt-2 text-xs text-slate-500 px-2">
-                        <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
-                    </div>
-                </div>
-                <!-- Tarjetas de estadísticas -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+                <!-- Tarjetas de estadísticas en grid 2x2 -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
                     <div class="stat-card">
                         <div class="stat-icon bg-blue-100 text-blue-600">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
@@ -600,14 +612,35 @@
                         </div>
                     </div>
                 </div>
-                <div class="mt-5 flex items-center gap-3">
-                    <div class="stat-card flex-1" id="status-card">
-                        <div class="stat-icon bg-slate-100 text-slate-600" id="status-icon-circle">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="status-icon-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z" /></svg>
+                <!-- Gráfico real conectado a datos -->
+                <div class="card p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-slate-800">Distribución de citas</h3>
+                        <div class="flex items-center gap-2" id="status-indicator">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500" id="status-dot"></span>
+                            <span class="text-sm font-semibold text-slate-600" id="status-text">En línea</span>
                         </div>
-                        <div class="stat-info">
-                            <div class="value text-xl font-bold" id="status-text">En línea</div>
-                            <div class="label">Estado del sistema</div>
+                    </div>
+                    <div class="flex items-end justify-around gap-4 h-48 px-4">
+                        <div class="flex flex-col items-center flex-1 max-w-[80px]">
+                            <span class="chart-value" id="chart-val-total">0</span>
+                            <div class="w-full bg-blue-500 chart-bar" id="chart-bar-total" style="height: 10px;"></div>
+                            <span class="chart-label">Total</span>
+                        </div>
+                        <div class="flex flex-col items-center flex-1 max-w-[80px]">
+                            <span class="chart-value" id="chart-val-conf">0</span>
+                            <div class="w-full bg-emerald-500 chart-bar" id="chart-bar-conf" style="height: 10px;"></div>
+                            <span class="chart-label">Confirm.</span>
+                        </div>
+                        <div class="flex flex-col items-center flex-1 max-w-[80px]">
+                            <span class="chart-value" id="chart-val-canc">0</span>
+                            <div class="w-full bg-red-500 chart-bar" id="chart-bar-canc" style="height: 10px;"></div>
+                            <span class="chart-label">Cancel.</span>
+                        </div>
+                        <div class="flex flex-col items-center flex-1 max-w-[80px]">
+                            <span class="chart-value" id="chart-val-rep">0</span>
+                            <div class="w-full bg-purple-500 chart-bar" id="chart-bar-rep" style="height: 10px;"></div>
+                            <span class="chart-label">Reprogr.</span>
                         </div>
                     </div>
                 </div>
@@ -625,7 +658,7 @@
                         Sincronizar
                     </button>
                 </div>
-                <div class="card overflow-hidden flex flex-col" style="min-height: 70vh;">
+                <div class="card overflow-hidden flex flex-col" style="min-height: 75vh;">
                     <div class="table-container flex-1">
                         <table class="w-full min-w-max text-left">
                             <thead id="tabla-cabecera" class="table-header text-xs uppercase tracking-widest font-extrabold"></thead>
@@ -661,22 +694,22 @@
         </div>
     </div>
 
-    <!-- MODALES (diseño cuadrado, sin scroll) -->
+    <!-- MODALES (amplios, cuadrados, sin scroll) -->
     <div id="modal-columnas" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[60]">
-        <div class="modal-content w-full max-w-md aspect-square p-6 flex flex-col">
-            <div class="flex justify-between items-center mb-4 border-b pb-3">
-                <div><h2 class="text-xl font-black">Ocultar Columnas</h2><p class="text-sm text-slate-500">Selecciona los datos visibles</p></div>
+        <div class="modal-content w-full max-w-lg p-8 flex flex-col" style="min-height: 500px;">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <div><h2 class="text-xl font-black text-slate-900">Ocultar Columnas</h2><p class="text-sm text-slate-500">Selecciona los datos visibles</p></div>
                 <button id="btn-cerrar-modal-columnas" class="text-slate-400 hover:text-red-500 p-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
             <div id="lista-columnas" class="flex-1 space-y-2 overflow-y-auto"></div>
-            <button id="btn-guardar-columnas" class="w-full btn-primary py-3 rounded-xl font-bold mt-4">Aplicar Cambios</button>
+            <button id="btn-guardar-columnas" class="w-full btn-primary py-4 rounded-xl font-bold mt-6">Aplicar Cambios</button>
         </div>
     </div>
 
     <div id="modal-cita" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-50">
         <div class="modal-content w-full max-w-2xl p-6 max-h-[85vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-5 border-b pb-3">
-                <h2 id="titulo-modal" class="text-2xl font-black">Nueva Cita</h2>
+                <h2 id="titulo-modal" class="text-2xl font-black text-slate-900">Nueva Cita</h2>
                 <button id="btn-cerrar-modal" class="text-slate-400 hover:text-red-500 p-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
             <form id="form-cita">
@@ -690,15 +723,31 @@
     </div>
 
     <div id="modal-nuevo-campo" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[70]">
-        <div class="modal-content w-full max-w-md aspect-square p-6 flex flex-col">
-            <div class="flex justify-between items-center mb-4 border-b pb-3">
-                <h2 class="text-xl font-black">Nuevo Campo</h2>
+        <div class="modal-content w-full max-w-lg p-8 flex flex-col" style="min-height: 450px;">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="text-xl font-black text-slate-900">Nuevo Campo</h2>
                 <button id="btn-cerrar-modal-campo" class="text-slate-400 hover:text-red-500 p-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
-            <form id="form-nuevo-campo" class="flex-1 flex flex-col space-y-4">
-                <div><label class="block text-sm font-semibold mb-1.5">Nombre del campo</label><input type="text" id="campo-nombre" placeholder="Ej: Tipo de Consulta" required></div>
-                <div><label class="block text-sm font-semibold mb-1.5">Valor por defecto <span class="text-slate-400 font-normal">(opcional)</span></label><input type="text" id="campo-valor-default" placeholder="Valor automático"></div>
-                <button type="submit" class="w-full btn-primary py-3 rounded-xl font-bold mt-auto">Crear Campo</button>
+            <form id="form-nuevo-campo" class="flex-1 flex flex-col space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Nombre del campo</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+                        </span>
+                        <input type="text" id="campo-nombre" placeholder="Ej: Tipo de Consulta" required class="pl-12 w-full bg-white border border-slate-200 rounded-xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Valor por defecto <span class="text-slate-400 font-normal">(opcional)</span></label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </span>
+                        <input type="text" id="campo-valor-default" placeholder="Valor automático" class="pl-12 w-full bg-white border border-slate-200 rounded-xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                    </div>
+                </div>
+                <button type="submit" class="w-full btn-primary py-4 rounded-xl font-bold mt-auto">Crear Campo</button>
             </form>
         </div>
     </div>
@@ -706,7 +755,7 @@
     <div id="modal-confirmacion" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[80]">
         <div class="modal-content confirm-modal w-full p-6">
             <div class="flex justify-between items-center mb-4 border-b pb-3">
-                <h3 class="text-lg font-black">Confirmar eliminación</h3>
+                <h3 class="text-lg font-black text-slate-900">Confirmar eliminación</h3>
                 <button id="btn-cerrar-confirmacion" class="text-slate-400 hover:text-red-500 p-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
             <p class="text-slate-600 mb-4 text-sm" id="mensaje-confirmacion"></p>
@@ -718,7 +767,6 @@
     </div>
 
     <script>
-        // El código JavaScript se mantiene completamente funcional.
         const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
         const N8N_POST_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/crearcita';
         const N8N_LOGIN_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/login';
@@ -797,13 +845,36 @@
         function resetearFormulario() { idCitaEnEdicion = null; document.getElementById('titulo-modal').innerText = "Nueva Cita"; renderizarCamposModal({ procesado: 'Pendiente', estado: 'Esperando respuesta' }); }
         document.getElementById('form-login').addEventListener('submit', async (e) => { e.preventDefault(); const u = document.getElementById('login-usuario').value.trim().toLowerCase(); const p = document.getElementById('login-password').value; const btnSubmit = e.target.querySelector('button[type="submit"]'); btnSubmit.innerText = "Autenticando..."; btnSubmit.disabled = true; try { const res = await fetch(N8N_LOGIN_URL, { method: 'POST', body: JSON.stringify({ usuario: u, password: p }), headers: { 'Content-Type': 'application/json' } }); const data = await res.json(); if (data.success) { clienteLogueado = u; let dbConfig = {}; if (typeof data.config === 'string') { try { dbConfig = JSON.parse(data.config); } catch (err) {} } else if (typeof data.config === 'object') { dbConfig = data.config; } camposPlantilla = dbConfig.campos_plantilla || []; camposPlantilla = camposPlantilla.filter(c => !COLUMNAS_FIJAS.includes(c.toLowerCase())); valoresDefault = dbConfig.valores_default || {}; let ordenGuardado = dbConfig.orden_columnas || []; let personalizadosEnOrden = ordenGuardado.filter(c => camposPlantilla.includes(c) && !COLUMNAS_FIJAS.includes(c)); let personalizadosFaltantes = camposPlantilla.filter(c => !personalizadosEnOrden.includes(c)); let personalizadosOrdenados = [...personalizadosEnOrden, ...personalizadosFaltantes]; let nuevoOrden = ['id', ...personalizadosOrdenados, 'procesado', 'estado']; ordenColumnas = [...new Set(nuevoOrden)]; columnasOcultas = dbConfig.columnas_ocultas || []; const configNueva = { orden_columnas: ordenColumnas, columnas_ocultas: columnasOcultas, campos_plantilla: camposPlantilla, valores_default: valoresDefault }; const configOriginal = { orden_columnas: dbConfig.orden_columnas || [], columnas_ocultas: dbConfig.columnas_ocultas || [], campos_plantilla: dbConfig.campos_plantilla || [], valores_default: dbConfig.valores_default || {} }; if (JSON.stringify(configNueva) !== JSON.stringify(configOriginal)) { try { await fetch(N8N_CONFIG_URL, { method: 'POST', body: JSON.stringify({ usuario: clienteLogueado, config: configNueva }), headers: { 'Content-Type': 'application/json' } }); } catch (e) { console.warn('No se pudo guardar la configuración:', e); } } document.getElementById('seccion-login').classList.add('hidden'); document.getElementById('seccion-panel').classList.remove('hidden'); document.getElementById('usuario-nombre').textContent = u; document.getElementById('usuario-inicial').textContent = u.charAt(0).toUpperCase(); cargarCitasDelServidor(); loopSincronizacion = setInterval(cargarCitasDelServidor, 10000); mostrarNotificacion("Acceso Aprobado", "Entorno personalizado cargado.", "success"); } else { mostrarNotificacion("Error", "Usuario o contraseña incorrectos.", "error"); } } catch (err) { console.error(err); mostrarNotificacion("Error", "Error de conexión con el servidor.", "error"); } finally { btnSubmit.innerText = "Acceder al panel"; btnSubmit.disabled = false; } });
 
-        function actualizarEstadoConexion(online) { const statusCard = document.getElementById('status-card'); const statusText = document.getElementById('status-text'); const statusIconCircle = document.getElementById('status-icon-circle'); const statusIconSvg = document.getElementById('status-icon-svg'); if (online) { statusIconCircle.className = 'stat-icon bg-emerald-100 text-emerald-600'; statusText.innerText = 'En línea'; statusText.className = 'value text-xl font-bold text-emerald-600'; statusIconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z" />'; } else { statusIconCircle.className = 'stat-icon bg-red-100 text-red-600'; statusText.innerText = 'Sin conexión'; statusText.className = 'value text-xl font-bold text-red-600'; statusIconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728m-12.728 0a9 9 0 010-12.728m9.9 2.829a5 5 0 010 7.07m-7.072 0a5 5 0 010-7.07M12 8v4l2 2" />'; } }
+        function actualizarEstadoConexion(online) {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            if (online) {
+                dot.className = 'w-3 h-3 rounded-full bg-emerald-500';
+                text.innerText = 'En línea';
+            } else {
+                dot.className = 'w-3 h-3 rounded-full bg-red-500';
+                text.innerText = 'Sin conexión';
+            }
+        }
+
+        function actualizarGrafico(total, confirmadas, canceladas, reprogramadas) {
+            const maxVal = Math.max(total, confirmadas, canceladas, reprogramadas, 1);
+            const scale = (val) => Math.max(8, (val / maxVal) * 120);
+            document.getElementById('chart-bar-total').style.height = scale(total) + 'px';
+            document.getElementById('chart-bar-conf').style.height = scale(confirmadas) + 'px';
+            document.getElementById('chart-bar-canc').style.height = scale(canceladas) + 'px';
+            document.getElementById('chart-bar-rep').style.height = scale(reprogramadas) + 'px';
+            document.getElementById('chart-val-total').innerText = total;
+            document.getElementById('chart-val-conf').innerText = confirmadas;
+            document.getElementById('chart-val-canc').innerText = canceladas;
+            document.getElementById('chart-val-rep').innerText = reprogramadas;
+        }
 
         function renderizarCuerpoTabla(citas) { const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col)); if (citas.length === 0) { const colspan = columnasMostradas.length + 1; document.getElementById('tabla-cuerpo').innerHTML = `<tr><td colspan="${colspan}" class="px-6 py-12 text-center text-slate-400"><div class="flex flex-col items-center gap-2"><svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg><span>No hay citas registradas</span></div></td></tr>`; return; } document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => { let camposParseados = {}; try { camposParseados = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); } catch (e) {} const citaString = encodeURIComponent(JSON.stringify({ ...c, camposParseados })); let badgeClass = 'badge-pendiente'; let estadoLower = c.estado?.toLowerCase() || ''; if (estadoLower === 'confirmó') badgeClass = 'badge-confirmada'; else if (estadoLower.includes('cancel')) badgeClass = 'badge-cancelada'; else if (estadoLower.includes('reprogram')) badgeClass = 'badge-reprogramada'; else if (estadoLower === 'esperando respuesta') badgeClass = 'badge-esperando'; let row = `<tr class="table-row hover:bg-slate-50">`; columnasMostradas.forEach(colKey => { let valor = '-'; if (colKey === 'id') { valor = `<span class="font-bold text-slate-400">${c.id||'-'}</span>`; } else if (colKey === 'estado') { valor = `<span class="badge ${badgeClass}">${c.estado||'pendiente'}</span>`; } else if (colKey === 'procesado') { valor = `<span class="font-medium text-slate-600">${c.procesado||'-'}</span>`; } else { valor = camposParseados[colKey] || '-'; if (colKey.toLowerCase().includes('nombres')) { valor = `<span class="font-bold text-slate-800">${valor}</span>`; } else if (colKey.toLowerCase().includes('profesional')) { valor = `<span class="font-bold text-blue-600">${valor}</span>`; } if (colKey.toLowerCase() === 'telefono' && valor !== '-') { const telefono = valor; valor = `<span class="flex items-center gap-1"><span>${telefono}</span><button onclick="abrirWhatsApp('${telefono}')" class="btn-whatsapp"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></button></span>`; } } row += `<td class="px-6 py-4 text-slate-700">${valor}</td>`; }); row += `<td class="px-6 py-4 text-right"><div class="flex items-center justify-end gap-2"><button onclick="prepararEdicion('${citaString}')" class="btn-primary px-4 py-1.5 rounded-lg text-xs font-bold">Editar</button><button onclick="eliminarCita(${c.id})" class="btn-delete px-4 py-1.5 rounded-lg text-xs font-bold">Eliminar</button></div></td></tr>`; return row; }).join(''); }
 
         function aplicarFiltroYRenderizar() { const termino = terminoBusqueda.toLowerCase().trim(); let citasFiltradas = citasOriginales; if (termino) { citasFiltradas = citasOriginales.filter(c => { let textoCompleto = ''; textoCompleto += (c.id || '') + ' '; textoCompleto += (c.procesado || '') + ' '; textoCompleto += (c.estado || '') + ' '; try { const cp = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); Object.values(cp).forEach(v => textoCompleto += (v || '') + ' '); } catch (e) {} return textoCompleto.toLowerCase().includes(termino); }); } renderizarCuerpoTabla(citasFiltradas); }
 
-        async function cargarCitasDelServidor() { try { const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`); if (!res.ok) throw new Error(`HTTP error ${res.status}`); const text = await res.text(); let citas = []; if (text && text.trim() !== '') { try { const data = JSON.parse(text); citas = data.citas || (Array.isArray(data) ? data : []); } catch (parseError) { console.warn('Error al parsear JSON:', parseError); citas = []; } } else { citas = []; } actualizarEstadoConexion(true); const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col)); let htmlCabecera = `<tr>`; columnasMostradas.forEach(colKey => { const label = NOMBRES_COLUMNAS_SISTEMA[colKey] || colKey; htmlCabecera += `<th class="px-6 py-4 text-slate-600 font-extrabold text-xs uppercase tracking-widest">${label}</th>`; }); htmlCabecera += `<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`; document.getElementById('tabla-cabecera').innerHTML = htmlCabecera; document.getElementById('stat-total').innerText = citas.length; document.getElementById('stat-confirmadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length; document.getElementById('stat-canceladas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length; document.getElementById('stat-reprogramadas').innerText = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length; if (citasAnteriores.length > 0) { citas.forEach(nuevaCita => { const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id); if (citaVieja && citaVieja.estado !== nuevaCita.estado) { let nombrePaciente = ""; try { let jsonParseado = typeof nuevaCita.campos_personalizados === 'string' ? JSON.parse(nuevaCita.campos_personalizados) : nuevaCita.campos_personalizados; nombrePaciente = jsonParseado['Nombres'] || `Cita #${nuevaCita.id}`; } catch (e) { nombrePaciente = `Cita #${nuevaCita.id}`; } mostrarNotificacion('Actualización', `${nombrePaciente} ha cambiado a: ${nuevaCita.estado.toUpperCase()}`, nuevaCita.estado.toLowerCase()); } }); } const nuevoHash = JSON.stringify(citas) + JSON.stringify(ordenColumnas) + JSON.stringify(columnasOcultas) + terminoBusqueda; if (nuevoHash === hashTablaActual && citasOriginales.length === citas.length && !terminoBusqueda) return; hashTablaActual = nuevoHash; citasOriginales = citas; citasAnteriores = JSON.parse(JSON.stringify(citas)); aplicarFiltroYRenderizar(); } catch (e) { console.error("Error al cargar:", e); actualizarEstadoConexion(false); const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col)); const colspan = columnasMostradas.length + 1; document.getElementById('tabla-cuerpo').innerHTML = `<tr><td colspan="${colspan}" class="px-6 py-12 text-center text-red-400"><div class="flex flex-col items-center gap-2"><svg class="w-12 h-12 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg><span>Error al cargar las citas</span></div></td></tr>`; } }
+        async function cargarCitasDelServidor() { try { const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`); if (!res.ok) throw new Error(`HTTP error ${res.status}`); const text = await res.text(); let citas = []; if (text && text.trim() !== '') { try { const data = JSON.parse(text); citas = data.citas || (Array.isArray(data) ? data : []); } catch (parseError) { console.warn('Error al parsear JSON:', parseError); citas = []; } } else { citas = []; } actualizarEstadoConexion(true); const total = citas.length; const confirmadas = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length; const canceladas = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length; const reprogramadas = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length; document.getElementById('stat-total').innerText = total; document.getElementById('stat-confirmadas').innerText = confirmadas; document.getElementById('stat-canceladas').innerText = canceladas; document.getElementById('stat-reprogramadas').innerText = reprogramadas; actualizarGrafico(total, confirmadas, canceladas, reprogramadas); const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col)); let htmlCabecera = `<tr>`; columnasMostradas.forEach(colKey => { const label = NOMBRES_COLUMNAS_SISTEMA[colKey] || colKey; htmlCabecera += `<th class="px-6 py-4 text-slate-600 font-extrabold text-xs uppercase tracking-widest">${label}</th>`; }); htmlCabecera += `<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`; document.getElementById('tabla-cabecera').innerHTML = htmlCabecera; if (citasAnteriores.length > 0) { citas.forEach(nuevaCita => { const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id); if (citaVieja && citaVieja.estado !== nuevaCita.estado) { let nombrePaciente = ""; try { let jsonParseado = typeof nuevaCita.campos_personalizados === 'string' ? JSON.parse(nuevaCita.campos_personalizados) : nuevaCita.campos_personalizados; nombrePaciente = jsonParseado['Nombres'] || `Cita #${nuevaCita.id}`; } catch (e) { nombrePaciente = `Cita #${nuevaCita.id}`; } mostrarNotificacion('Actualización', `${nombrePaciente} ha cambiado a: ${nuevaCita.estado.toUpperCase()}`, nuevaCita.estado.toLowerCase()); } }); } const nuevoHash = JSON.stringify(citas) + JSON.stringify(ordenColumnas) + JSON.stringify(columnasOcultas) + terminoBusqueda; if (nuevoHash === hashTablaActual && citasOriginales.length === citas.length && !terminoBusqueda) return; hashTablaActual = nuevoHash; citasOriginales = citas; citasAnteriores = JSON.parse(JSON.stringify(citas)); aplicarFiltroYRenderizar(); } catch (e) { console.error("Error al cargar:", e); actualizarEstadoConexion(false); const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col)); const colspan = columnasMostradas.length + 1; document.getElementById('tabla-cuerpo').innerHTML = `<tr><td colspan="${colspan}" class="px-6 py-12 text-center text-red-400"><div class="flex flex-col items-center gap-2"><svg class="w-12 h-12 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg><span>Error al cargar las citas</span></div></td></tr>`; } }
         window.prepararEdicion = (citaString) => { const c = JSON.parse(decodeURIComponent(citaString)); idCitaEnEdicion = c.id; document.getElementById('titulo-modal').innerText = "Editando Cita #" + c.id; const datos = { procesado: c.procesado || '', estado: c.estado || 'Esperando respuesta', ...c.camposParseados }; renderizarCamposModal(datos); modal.classList.remove('hidden'); modal.classList.add('flex'); };
         document.getElementById('form-cita').addEventListener('submit', async (e) => { e.preventDefault(); const camposFijos = {}; document.querySelectorAll('.input-fijo').forEach(i => { camposFijos[i.getAttribute('data-key')] = i.value; }); const camposDinamicos = {}; document.querySelectorAll('.input-dinamico').forEach(i => { if (i.value) camposDinamicos[i.getAttribute('data-key')] = i.value; }); const payload = { ...(idCitaEnEdicion && { id: idCitaEnEdicion }), procesado: camposFijos.procesado || '', estado: camposFijos.estado || 'Esperando respuesta', campos_personalizados: camposDinamicos }; const btnSubmit = e.target.querySelector('button[type="submit"]'); btnSubmit.innerText = "Guardando..."; btnSubmit.disabled = true; try { await fetch(N8N_POST_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } }); cerrarModal(); resetearFormulario(); mostrarNotificacion("Éxito", "Guardado correctamente.", "success"); hashTablaActual = ""; await cargarCitasDelServidor(); } catch (error) { mostrarNotificacion("Error", "No se pudo guardar.", "error"); } finally { btnSubmit.innerText = "Guardar Información"; btnSubmit.disabled = false; } });
 
@@ -811,7 +882,6 @@
 
         document.querySelectorAll('.sidebar-nav a').forEach(enlace => { enlace.addEventListener('click', function(e) { e.preventDefault(); document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active')); this.classList.add('active'); document.querySelectorAll('.seccion').forEach(sec => sec.classList.remove('active')); document.getElementById('seccion-' + this.dataset.section).classList.add('active'); }); });
 
-        // Sidebar toggle
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('sidebar-toggle');
         toggleBtn.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); });
