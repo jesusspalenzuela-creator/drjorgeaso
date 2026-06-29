@@ -15,11 +15,13 @@ let valoresDefault={};
 let citasAnteriores=[];
 let hashTablaActual="";
 let loopSincronizacion=null;
+let todasLasCitas=[]; // para búsqueda
 const modal=document.getElementById('modal-cita');
 const modalColumnas=document.getElementById('modal-columnas');
 const modalNuevoCampo=document.getElementById('modal-nuevo-campo');
 const modalConfirmacion=document.getElementById('modal-confirmacion');
 let pendingDeleteId=null;
+
 window.mostrarNotificacion=(titulo,mensaje,tipo='info')=>{
 const container=document.getElementById('toast-container');
 const toast=document.createElement('div');
@@ -33,10 +35,12 @@ container.appendChild(toast);
 toast.onclick=()=>toast.remove();
 setTimeout(()=>{toast.classList.add('opacity-0','transition-opacity','duration-300');setTimeout(()=>toast.remove(),300);},6000);
 };
+
 async function sincronizarConfiguracionNube(){
 const payload={usuario:clienteLogueado,config:{orden_columnas:ordenColumnas,columnas_ocultas:columnasOcultas,campos_plantilla:camposPlantilla,valores_default:valoresDefault}};
 try{await fetch(N8N_CONFIG_URL,{method:'POST',body:JSON.stringify(payload),headers:{'Content-Type':'application/json'}});}catch(error){console.error("Error guardando preferencias en la nube.");}
 }
+
 function mostrarConfirmacion(mensaje,onConfirm){
 document.getElementById('mensaje-confirmacion').innerText=mensaje;
 modalConfirmacion.classList.remove('hidden');
@@ -56,6 +60,7 @@ pendingDeleteId=null;
 document.getElementById('btn-confirmar-eliminar').onclick=async()=>{
 if(pendingDeleteId){await pendingDeleteId();modalConfirmacion.classList.add('hidden');modalConfirmacion.classList.remove('flex');pendingDeleteId=null;}
 };
+
 window.eliminarCita=(id)=>{
 mostrarConfirmacion(`¿Estás seguro de que quieres eliminar la cita #${id}? Esta acción no se puede deshacer.`,async()=>{
 try{
@@ -67,20 +72,23 @@ else{mostrarNotificacion("Error",result.message||"No se pudo eliminar la cita.",
 }catch(error){console.error("Error al eliminar:",error);mostrarNotificacion("Error","Ocurrió un error al intentar eliminar la cita.","error");}
 });
 };
+
 window.abrirWhatsApp=(telefono)=>{
 if(!telefono)return;
 let numero=telefono.toString().replace(/\s/g,'').replace(/-/g,'');
 if(!numero.startsWith('+'))numero='+'+numero;
 window.open(`https://wa.me/${numero}`,'_blank');
 };
+
 document.getElementById('btn-abrir-modal').onclick=()=>{resetearFormulario();modal.classList.remove('hidden');modal.classList.add('flex');};
 const cerrarModal=()=>{modal.classList.add('hidden');modal.classList.remove('flex');};
 document.getElementById('btn-cerrar-modal').onclick=cerrarModal;
 document.getElementById('btn-cerrar-modal-secundario').onclick=cerrarModal;
 document.getElementById('btn-cerrar-sesion').onclick=()=>location.reload();
-// Sincronizar en ambas secciones
+
 document.getElementById('btn-refrescar').onclick=()=>{mostrarNotificacion("Sincronizando...","Actualizando agenda médica.","info");cargarCitasDelServidor();};
 document.getElementById('btn-refrescar-citas').onclick=()=>{mostrarNotificacion("Sincronizando...","Actualizando agenda médica.","info");cargarCitasDelServidor();};
+
 document.getElementById('btn-agregar-campo').onclick=()=>{
 document.getElementById('campo-nombre').value='';
 document.getElementById('campo-valor-default').value='';
@@ -91,6 +99,7 @@ document.getElementById('btn-cerrar-modal-campo').onclick=()=>{
 modalNuevoCampo.classList.add('hidden');
 modalNuevoCampo.classList.remove('flex');
 };
+
 document.getElementById('form-nuevo-campo').addEventListener('submit',async(e)=>{
 e.preventDefault();
 const nombre=document.getElementById('campo-nombre').value.trim();
@@ -111,6 +120,7 @@ cargarCitasDelServidor();
 mostrarNotificacion("Campo Creado",`Columna '${nombre}' guardada.`,"success");
 if(!modal.classList.contains('hidden'))renderizarCamposModal();
 });
+
 function renderizarModalVistas(){
 const container=document.getElementById('lista-columnas');
 container.innerHTML=ordenColumnas.map((colKey,index)=>{
@@ -129,6 +139,7 @@ return`
 </div>`;
 }).join('');
 }
+
 window.moverColumna=(index,direccion)=>{
 const checkboxes=document.querySelectorAll('.chk-columna');
 let nuevasOcultas=[];
@@ -142,6 +153,7 @@ ordenColumnas[nuevoIndex]=temp;
 renderizarModalVistas();
 }
 };
+
 document.getElementById('btn-configurar-columnas').onclick=()=>{
 renderizarModalVistas();
 modalColumnas.classList.remove('hidden');
@@ -163,6 +175,7 @@ await sincronizarConfiguracionNube();
 cargarCitasDelServidor();
 mostrarNotificacion("Nube Sincronizada","Preferencias guardadas en tu cuenta.","success");
 };
+
 function renderizarCamposModal(datosCita={}){
 const container=document.getElementById('contenedor-campos-dinamicos');
 let html='';
@@ -171,7 +184,7 @@ const valor=datosCita[nombre]||'';
 html+=`
 <div class="relative group">
 <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
-<input type="text" data-key="${nombre}" value="${valor}" class="input-fijo w-full bg-white border border-slate-200 rounded-xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" placeholder="Ingresa ${nombre.toLowerCase()}">
+<input type="text" data-key="${nombre}" value="${valor}" class="input-fijo w-full bg-white border border-slate-200 rounded-xl p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" placeholder="Ingresa ${nombre.toLowerCase()}">
 </div>`;
 });
 camposPlantilla.forEach(nombre=>{
@@ -180,12 +193,13 @@ if(!idCitaEnEdicion&&!valor&&valoresDefault[nombre]){valor=valoresDefault[nombre
 html+=`
 <div class="relative group">
 <label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
-<input type="text" data-key="${nombre}" value="${valor}" class="input-dinamico w-full bg-white border border-slate-200 rounded-xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" placeholder="Ingresa ${nombre.toLowerCase()}">
+<input type="text" data-key="${nombre}" value="${valor}" class="input-dinamico w-full bg-white border border-slate-200 rounded-xl p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" placeholder="Ingresa ${nombre.toLowerCase()}">
 <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-400 hover:text-red-600 text-[10px] font-black p-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-bl-lg">✕</button>
 </div>`;
 });
 container.innerHTML=html;
 }
+
 window.eliminarCampo=async(nombre)=>{
 if(confirm(`¿Eliminar la columna "${nombre}" en todas las vistas?`)){
 camposPlantilla=camposPlantilla.filter(c=>c!==nombre);
@@ -197,11 +211,13 @@ hashTablaActual="";
 cargarCitasDelServidor();
 }
 };
+
 function resetearFormulario(){
 idCitaEnEdicion=null;
 document.getElementById('titulo-modal').innerText="Nueva Cita";
 renderizarCamposModal({procesado:'Pendiente',estado:'Esperando respuesta'});
 }
+
 document.getElementById('form-login').addEventListener('submit',async(e)=>{
 e.preventDefault();
 const u=document.getElementById('login-usuario').value.trim().toLowerCase();
@@ -249,25 +265,98 @@ btnSubmit.innerText="Acceder al panel";
 btnSubmit.disabled=false;
 }
 });
+
 function actualizarEstadoConexion(online){
 const statusCard=document.getElementById('status-card');
 const statusText=document.getElementById('status-text');
 const statusDot=document.getElementById('status-dot');
 const statusIcon=document.getElementById('status-icon');
 if(online){
-statusCard.className='card p-5 flex flex-col items-center justify-center text-center';
+statusCard.className='stat-card flex flex-col items-center justify-center text-center';
 statusText.className='text-sm font-bold text-emerald-600';
 statusText.innerText='En línea';
-statusDot.className='w-4 h-4 rounded-full animate-pulse bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]';
-statusIcon.className='w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mb-2';
+statusDot.className='w-5 h-5 rounded-full animate-pulse bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]';
+statusIcon.className='w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-2';
 }else{
-statusCard.className='card p-5 flex flex-col items-center justify-center text-center border-red-200';
+statusCard.className='stat-card flex flex-col items-center justify-center text-center border-red-200';
 statusText.className='text-sm font-bold text-red-600';
 statusText.innerText='Sin conexión';
-statusDot.className='w-4 h-4 rounded-full animate-pulse bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.5)]';
-statusIcon.className='w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mb-2';
+statusDot.className='w-5 h-5 rounded-full animate-pulse bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.5)]';
+statusIcon.className='w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2';
 }
 }
+
+// Función para renderizar la tabla (usada por cargarCitasDelServidor y búsqueda)
+function renderizarTabla(citas) {
+    const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col));
+    let htmlCabecera = `<tr>`;
+    columnasMostradas.forEach(colKey => {
+        const label = NOMBRES_COLUMNAS_SISTEMA[colKey] || colKey;
+        htmlCabecera += `<th class="px-6 py-4 text-slate-600 font-extrabold text-xs uppercase tracking-widest">${label}</th>`;
+    });
+    htmlCabecera += `<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`;
+    document.getElementById('tabla-cabecera').innerHTML = htmlCabecera;
+
+    if (citas.length === 0) {
+        const colspan = columnasMostradas.length + 1;
+        document.getElementById('tabla-cuerpo').innerHTML = `
+        <tr>
+            <td colspan="${colspan}" class="px-6 py-12 text-center text-slate-400 font-medium">
+                <div class="flex flex-col items-center gap-2">
+                    <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                    <span>No hay citas registradas</span>
+                    <span class="text-sm text-slate-400">Crea una nueva cita con el botón "Nueva Cita"</span>
+                </div>
+            </td>
+        </tr>`;
+        return;
+    }
+
+    document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => {
+        let camposParseados = {};
+        try{ camposParseados = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); } catch(e) {}
+        const citaString = encodeURIComponent(JSON.stringify({...c, camposParseados}));
+        let badgeClass='badge-pendiente';
+        let estadoLower = c.estado?.toLowerCase() || '';
+        if(estadoLower === 'confirmó') badgeClass='badge-confirmada';
+        else if(estadoLower.includes('cancel')) badgeClass='badge-cancelada';
+        else if(estadoLower.includes('reprogram')) badgeClass='badge-reprogramada';
+        else if(estadoLower === 'esperando respuesta') badgeClass='badge-esperando';
+        let row = `<tr class="table-row hover:bg-slate-50">`;
+        columnasMostradas.forEach(colKey => {
+            let valor = '-';
+            if(colKey === 'id'){ valor = `<span class="font-bold text-slate-400">${c.id || '-'}</span>`; }
+            else if(colKey === 'estado'){ valor = `<span class="badge ${badgeClass}">${c.estado || 'pendiente'}</span>`; }
+            else if(colKey === 'procesado'){ valor = `<span class="font-medium text-slate-600">${c.procesado || '-'}</span>`; }
+            else {
+                valor = camposParseados[colKey] || '-';
+                if(colKey.toLowerCase().includes('nombres')){ valor = `<span class="font-bold text-slate-800">${valor}</span>`; }
+                else if(colKey.toLowerCase().includes('profesional')){ valor = `<span class="font-bold text-blue-600">${valor}</span>`; }
+                if(colKey.toLowerCase() === 'telefono' && valor !== '-'){
+                    const telefono = valor;
+                    valor = `
+                    <span class="flex items-center gap-1">
+                        <span>${telefono}</span>
+                        <button onclick="abrirWhatsApp('${telefono}')" class="btn-whatsapp" title="Abrir WhatsApp">
+                            <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        </button>
+                    </span>`;
+                }
+            }
+            row += `<td class="px-6 py-4 text-slate-700">${valor}</td>`;
+        });
+        row += `
+        <td class="px-6 py-4 text-right">
+            <div class="flex items-center justify-end gap-2">
+                <button onclick="prepararEdicion('${citaString}')" class="btn-primary px-4 py-1.5 rounded-lg text-xs font-bold transition">Editar</button>
+                <button onclick="eliminarCita(${c.id})" class="btn-delete px-4 py-1.5 rounded-lg text-xs font-bold transition">Eliminar</button>
+            </div>
+        </td>
+        </tr>`;
+        return row;
+    }).join('');
+}
+
 async function cargarCitasDelServidor(){
 try{
 const res=await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
@@ -277,33 +366,12 @@ let citas=[];
 if(text&&text.trim()!==''){
 try{const data=JSON.parse(text);citas=data.citas||(Array.isArray(data)?data:[]);}catch(parseError){console.warn('Error al parsear JSON:',parseError);citas=[];}
 }else{citas=[];}
+todasLasCitas=citas;
 actualizarEstadoConexion(true);
-const columnasMostradas=ordenColumnas.filter(col=>!columnasOcultas.includes(col));
-let htmlCabecera=`<tr>`;
-columnasMostradas.forEach(colKey=>{
-const label=NOMBRES_COLUMNAS_SISTEMA[colKey]||colKey;
-htmlCabecera+=`<th class="px-6 py-4 text-slate-600 font-extrabold text-xs uppercase tracking-widest">${label}</th>`;
-});
-htmlCabecera+=`<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`;
-document.getElementById('tabla-cabecera').innerHTML=htmlCabecera;
 document.getElementById('stat-total').innerText=citas.length;
 document.getElementById('stat-confirmadas').innerText=citas.filter(c=>c.estado?.toLowerCase()==='confirmó').length;
 document.getElementById('stat-canceladas').innerText=citas.filter(c=>c.estado?.toLowerCase()==='canceló'||c.estado?.toLowerCase()==='cancelada').length;
 document.getElementById('stat-reprogramadas').innerText=citas.filter(c=>c.estado?.toLowerCase()==='reprogramó'||c.estado?.toLowerCase()==='reprogramada').length;
-if(citas.length===0){
-const colspan=columnasMostradas.length+1;
-document.getElementById('tabla-cuerpo').innerHTML=`
-<tr>
-<td colspan="${colspan}" class="px-6 py-12 text-center text-slate-400 font-medium">
-<div class="flex flex-col items-center gap-2">
-<svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-<span>No hay citas registradas</span>
-<span class="text-sm text-slate-400">Crea una nueva cita con el botón "Nueva Cita"</span>
-</div>
-</td>
-</tr>`;
-return;
-}
 if(citasAnteriores.length>0){
 citas.forEach(nuevaCita=>{
 const citaVieja=citasAnteriores.find(c=>c.id===nuevaCita.id);
@@ -318,49 +386,8 @@ const nuevoHash=JSON.stringify(citas)+JSON.stringify(ordenColumnas)+JSON.stringi
 if(nuevoHash===hashTablaActual)return;
 hashTablaActual=nuevoHash;
 citasAnteriores=JSON.parse(JSON.stringify(citas));
-document.getElementById('tabla-cuerpo').innerHTML=citas.map(c=>{
-let camposParseados={};
-try{camposParseados=typeof c.campos_personalizados==='string'?JSON.parse(c.campos_personalizados):(c.campos_personalizados||{});}catch(e){}
-const citaString=encodeURIComponent(JSON.stringify({...c,camposParseados}));
-let badgeClass='badge-pendiente';
-let estadoLower=c.estado?.toLowerCase()||'';
-if(estadoLower==='confirmó')badgeClass='badge-confirmada';
-else if(estadoLower.includes('cancel'))badgeClass='badge-cancelada';
-else if(estadoLower.includes('reprogram'))badgeClass='badge-reprogramada';
-else if(estadoLower==='esperando respuesta')badgeClass='badge-esperando';
-let row=`<tr class="table-row hover:bg-slate-50">`;
-columnasMostradas.forEach(colKey=>{
-let valor='-';
-if(colKey==='id'){valor=`<span class="font-bold text-slate-400">${c.id||'-'}</span>`;}
-else if(colKey==='estado'){valor=`<span class="badge ${badgeClass}">${c.estado||'pendiente'}</span>`;}
-else if(colKey==='procesado'){valor=`<span class="font-medium text-slate-600">${c.procesado||'-'}</span>`;}
-else{
-valor=camposParseados[colKey]||'-';
-if(colKey.toLowerCase().includes('nombres')){valor=`<span class="font-bold text-slate-800">${valor}</span>`;}
-else if(colKey.toLowerCase().includes('profesional')){valor=`<span class="font-bold text-blue-600">${valor}</span>`;}
-if(colKey.toLowerCase()==='telefono'&&valor!=='-'){
-const telefono=valor;
-valor=`
-<span class="flex items-center gap-1">
-<span>${telefono}</span>
-<button onclick="abrirWhatsApp('${telefono}')" class="btn-whatsapp" title="Abrir WhatsApp">
-<svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-</button>
-</span>`;
-}
-}
-row+=`<td class="px-6 py-4 text-slate-700">${valor}</td>`;
-});
-row+=`
-<td class="px-6 py-4 text-right">
-<div class="flex items-center justify-end gap-2">
-<button onclick="prepararEdicion('${citaString}')" class="btn-primary px-4 py-1.5 rounded-lg text-xs font-bold transition">Editar</button>
-<button onclick="eliminarCita(${c.id})" class="btn-delete px-4 py-1.5 rounded-lg text-xs font-bold transition">Eliminar</button>
-</div>
-</td>
-</tr>`;
-return row;
-}).join('');
+// Renderizar tabla
+renderizarTabla(citas);
 }catch(e){
 console.error("Error al cargar:",e);
 actualizarEstadoConexion(false);
@@ -378,6 +405,33 @@ document.getElementById('tabla-cuerpo').innerHTML=`
 </tr>`;
 }
 }
+
+// Función de búsqueda
+function buscarCitas() {
+    const termino = document.getElementById('buscar-citas').value.toLowerCase().trim();
+    if (!termino) {
+        renderizarTabla(todasLasCitas);
+        return;
+    }
+    const filtradas = todasLasCitas.filter(c => {
+        let campos = {};
+        try{ campos = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); } catch(e) {}
+        const nombre = (campos.Nombres || '').toLowerCase();
+        const apellido = (campos.Apellidos || '').toLowerCase();
+        const telefono = (campos.Telefono || '').toString().toLowerCase();
+        const profesional = (campos.Profesional || '').toLowerCase();
+        const id = c.id.toString();
+        return nombre.includes(termino) || apellido.includes(termino) || telefono.includes(termino) || profesional.includes(termino) || id.includes(termino);
+    });
+    renderizarTabla(filtradas);
+}
+
+// Eventos de búsqueda
+document.getElementById('btn-buscar').addEventListener('click', buscarCitas);
+document.getElementById('buscar-citas').addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') buscarCitas();
+});
+
 window.prepararEdicion=(citaString)=>{
 const c=JSON.parse(decodeURIComponent(citaString));
 idCitaEnEdicion=c.id;
@@ -387,6 +441,7 @@ renderizarCamposModal(datos);
 modal.classList.remove('hidden');
 modal.classList.add('flex');
 };
+
 document.getElementById('form-cita').addEventListener('submit',async(e)=>{
 e.preventDefault();
 const camposFijos={};
@@ -417,5 +472,9 @@ document.querySelectorAll('.sidebar-nav a').forEach(enlace => {
         document.querySelectorAll('.seccion').forEach(sec => sec.classList.remove('active'));
         const seccionId = 'seccion-' + this.dataset.section;
         document.getElementById(seccionId).classList.add('active');
+        // Si cambiamos a la sección de citas, refrescamos la tabla (por si hay cambios)
+        if (seccionId === 'seccion-citas') {
+            cargarCitasDelServidor();
+        }
     });
 });
