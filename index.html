@@ -215,7 +215,7 @@
         }
 
         .table-container {
-            max-height: 576px; /* exactamente 12 filas (48px por fila) */
+            max-height: 620px; /* altura suficiente para el encabezado + 12 filas (48px c/u) sin scroll */
             min-height: 320px;
             overflow-y: auto;
             border-radius: 0 0 1rem 1rem;
@@ -321,7 +321,7 @@
             border-radius: 0.7rem;
         }
 
-        /* El icono activo en colapsado conserva el fondo azul */
+        /* Icono activo en colapsado mantiene el fondo azul */
         .sidebar.collapsed .sidebar-nav a.active {
             background: #2563eb;
             color: white;
@@ -450,7 +450,7 @@
             display: block;
         }
 
-        /* Los botones de configuración solo se ven en su sección */
+        /* Botones de configuración */
         .config-btn {
             display: flex;
             align-items: center;
@@ -574,7 +574,7 @@
         </button>
 
         <div id="contenido-principal">
-            <!-- SECCIÓN INICIO (sin botones de configuración) -->
+            <!-- SECCIÓN INICIO (limpia, sin botones de configuración) -->
             <section id="seccion-inicio" class="seccion active">
                 <div class="flex justify-end mb-6">
                     <button id="btn-refrescar" class="btn-secondary flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm">
@@ -582,7 +582,6 @@
                         Sincronizar
                     </button>
                 </div>
-                <!-- Tarjetas -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
                     <div class="stat-card">
                         <div class="stat-icon bg-blue-100 text-blue-600">
@@ -621,7 +620,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Gráfico -->
                 <div class="card p-5">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-bold text-slate-800">Distribución de citas</h3>
@@ -677,7 +675,7 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CONFIGURACIÓN (ÚNICO LUGAR DONDE ESTÁN LOS BOTONES) -->
+            <!-- SECCIÓN CONFIGURACIÓN (únicos botones) -->
             <section id="seccion-configuracion" class="seccion flex flex-col items-center justify-center min-h-[60vh]">
                 <div class="flex flex-wrap gap-5 justify-center">
                     <button id="btn-configurar-columnas" class="config-btn">
