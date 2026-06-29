@@ -215,7 +215,7 @@
         }
 
         .table-container {
-            max-height: 540px;
+            max-height: 500px;
             min-height: 320px;
             overflow-y: auto;
             border-radius: 0 0 1rem 1rem;
@@ -318,13 +318,14 @@
             justify-content: center;
             padding: 0.8rem 0;
             margin: 0.2rem 0;
+            border-radius: 0.7rem;
         }
 
         .sidebar.collapsed .sidebar-nav a.active {
             background: transparent;
-            border-left: 4px solid #2563eb;
-            border-radius: 0;
+            border-left: none;
             box-shadow: none;
+            color: #94a3b8;
         }
 
         .sidebar.collapsed .sidebar-footer .btn-logout {
@@ -480,7 +481,6 @@
             font-size: 1.4rem;
         }
 
-        /* Gráfico de barras */
         .chart-bar {
             transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 8px 8px 0 0;
@@ -676,7 +676,7 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CONFIGURACIÓN -->
+            <!-- SECCIÓN CONFIGURACIÓN (los botones solo están aquí) -->
             <section id="seccion-configuracion" class="seccion flex flex-col items-center justify-center min-h-[60vh]">
                 <div class="flex flex-wrap gap-5 justify-center">
                     <button id="btn-configurar-columnas" class="config-btn">
@@ -775,7 +775,6 @@
     </div>
 
     <script>
-        // Código JavaScript exactamente igual, incluyendo actualización del gráfico con datos reales
         const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
         const N8N_POST_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/crearcita';
         const N8N_LOGIN_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/login';
