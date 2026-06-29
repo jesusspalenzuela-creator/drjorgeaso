@@ -15,6 +15,8 @@ let valoresDefault={};
 let citasAnteriores=[];
 let hashTablaActual="";
 let loopSincronizacion=null;
+let citasCompletas=[]; // Almacena todas las citas para búsqueda
+let filtroBusqueda="";
 const modal=document.getElementById('modal-cita');
 const modalColumnas=document.getElementById('modal-columnas');
 const modalNuevoCampo=document.getElementById('modal-nuevo-campo');
@@ -73,40 +75,20 @@ let numero=telefono.toString().replace(/\s/g,'').replace(/-/g,'');
 if(!numero.startsWith('+'))numero='+'+numero;
 window.open(`https://wa.me/${numero}`,'_blank');
 };
-// Asignación de eventos con verificación de existencia
-const btnAbrirModal = document.getElementById('btn-abrir-modal');
-if (btnAbrirModal) btnAbrirModal.onclick = ()=>{resetearFormulario();modal.classList.remove('hidden');modal.classList.add('flex');};
-const btnAbrirModalCard = document.getElementById('btn-abrir-modal-card');
-if (btnAbrirModalCard) btnAbrirModalCard.onclick = ()=>{resetearFormulario();modal.classList.remove('hidden');modal.classList.add('flex');};
+document.getElementById('btn-abrir-modal').onclick=()=>{resetearFormulario();modal.classList.remove('hidden');modal.classList.add('flex');};
 const cerrarModal=()=>{modal.classList.add('hidden');modal.classList.remove('flex');};
-const btnCerrarModal = document.getElementById('btn-cerrar-modal');
-if (btnCerrarModal) btnCerrarModal.onclick = cerrarModal;
-const btnCerrarModalSec = document.getElementById('btn-cerrar-modal-secundario');
-if (btnCerrarModalSec) btnCerrarModalSec.onclick = cerrarModal;
-const btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
-if (btnCerrarSesion) btnCerrarSesion.onclick = ()=>location.reload();
-const btnCerrarSesionSidebar = document.getElementById('btn-cerrar-sesion-sidebar');
-if (btnCerrarSesionSidebar) btnCerrarSesionSidebar.onclick = ()=>location.reload();
-const btnRefrescar = document.getElementById('btn-refrescar');
-if (btnRefrescar) btnRefrescar.onclick = ()=>{mostrarNotificacion("Sincronizando...","Actualizando agenda médica.","info");cargarCitasDelServidor();};
-const btnRefrescarCitas = document.getElementById('btn-refrescar-citas');
-if (btnRefrescarCitas) btnRefrescarCitas.onclick = ()=>{mostrarNotificacion("Sincronizando...","Actualizando agenda médica.","info");cargarCitasDelServidor();};
-const btnAgregarCampo = document.getElementById('btn-agregar-campo');
-if (btnAgregarCampo) btnAgregarCampo.onclick = ()=>{
+document.getElementById('btn-cerrar-modal').onclick=cerrarModal;
+document.getElementById('btn-cerrar-modal-secundario').onclick=cerrarModal;
+document.getElementById('btn-cerrar-sesion-sidebar').onclick=()=>location.reload();
+document.getElementById('btn-refrescar').onclick=()=>{mostrarNotificacion("Sincronizando...","Actualizando agenda médica.","info");cargarCitasDelServidor();};
+document.getElementById('btn-refrescar-citas').onclick=()=>{mostrarNotificacion("Sincronizando...","Actualizando agenda médica.","info");cargarCitasDelServidor();};
+document.getElementById('btn-agregar-campo').onclick=()=>{
 document.getElementById('campo-nombre').value='';
 document.getElementById('campo-valor-default').value='';
 modalNuevoCampo.classList.remove('hidden');
 modalNuevoCampo.classList.add('flex');
 };
-const btnAgregarCampoCard = document.getElementById('btn-agregar-campo-card');
-if (btnAgregarCampoCard) btnAgregarCampoCard.onclick = ()=>{
-document.getElementById('campo-nombre').value='';
-document.getElementById('campo-valor-default').value='';
-modalNuevoCampo.classList.remove('hidden');
-modalNuevoCampo.classList.add('flex');
-};
-const btnCerrarModalCampo = document.getElementById('btn-cerrar-modal-campo');
-if (btnCerrarModalCampo) btnCerrarModalCampo.onclick = ()=>{
+document.getElementById('btn-cerrar-modal-campo').onclick=()=>{
 modalNuevoCampo.classList.add('hidden');
 modalNuevoCampo.classList.remove('flex');
 };
@@ -161,25 +143,16 @@ ordenColumnas[nuevoIndex]=temp;
 renderizarModalVistas();
 }
 };
-const btnConfigurarColumnas = document.getElementById('btn-configurar-columnas');
-if (btnConfigurarColumnas) btnConfigurarColumnas.onclick = ()=>{
+document.getElementById('btn-configurar-columnas').onclick=()=>{
 renderizarModalVistas();
 modalColumnas.classList.remove('hidden');
 modalColumnas.classList.add('flex');
 };
-const btnConfigurarColumnasCard = document.getElementById('btn-configurar-columnas-card');
-if (btnConfigurarColumnasCard) btnConfigurarColumnasCard.onclick = ()=>{
-renderizarModalVistas();
-modalColumnas.classList.remove('hidden');
-modalColumnas.classList.add('flex');
-};
-const btnCerrarModalColumnas = document.getElementById('btn-cerrar-modal-columnas');
-if (btnCerrarModalColumnas) btnCerrarModalColumnas.onclick = ()=>{
+document.getElementById('btn-cerrar-modal-columnas').onclick=()=>{
 modalColumnas.classList.add('hidden');
 modalColumnas.classList.remove('flex');
 };
-const btnGuardarColumnas = document.getElementById('btn-guardar-columnas');
-if (btnGuardarColumnas) btnGuardarColumnas.onclick = async()=>{
+document.getElementById('btn-guardar-columnas').onclick=async()=>{
 const checkboxes=document.querySelectorAll('.chk-columna');
 let nuevasOcultas=[];
 checkboxes.forEach((cb,idx)=>{if(!cb.checked)nuevasOcultas.push(ordenColumnas[idx]);});
@@ -197,8 +170,8 @@ let html='';
 CAMPOS_FIJOS_FORMULARIO.forEach(nombre=>{
 const valor=datosCita[nombre]||'';
 html+=`
-<div>
-<label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">${nombre}</label>
+<div class="relative group">
+<label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
 <input type="text" data-key="${nombre}" value="${valor}" class="input-fijo w-full bg-white border border-slate-200 rounded-xl p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" placeholder="Ingresa ${nombre.toLowerCase()}">
 </div>`;
 });
@@ -207,7 +180,7 @@ let valor=datosCita[nombre]||'';
 if(!idCitaEnEdicion&&!valor&&valoresDefault[nombre]){valor=valoresDefault[nombre];}
 html+=`
 <div class="relative group">
-<label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">${nombre}</label>
+<label class="text-[11px] font-bold text-slate-500 uppercase ml-1 mb-1 block">${nombre}</label>
 <input type="text" data-key="${nombre}" value="${valor}" class="input-dinamico w-full bg-white border border-slate-200 rounded-xl p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" placeholder="Ingresa ${nombre.toLowerCase()}">
 <button type="button" onclick="eliminarCampo('${nombre}')" class="absolute top-0 right-0 text-red-400 hover:text-red-600 text-[10px] font-black p-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-bl-lg">✕</button>
 </div>`;
@@ -242,10 +215,6 @@ const res=await fetch(N8N_LOGIN_URL,{method:'POST',body:JSON.stringify({usuario:
 const data=await res.json();
 if(data.success){
 clienteLogueado=u;
-const usuarioSidebar=document.getElementById('usuario-sidebar');
-if(usuarioSidebar) usuarioSidebar.textContent=u;
-const usuarioNombre=document.getElementById('usuario-nombre');
-if(usuarioNombre) usuarioNombre.textContent=u;
 let dbConfig={};
 if(typeof data.config==='string'){try{dbConfig=JSON.parse(data.config);}catch(err){}}
 else if(typeof data.config==='object'){dbConfig=data.config;}
@@ -266,6 +235,8 @@ try{await fetch(N8N_CONFIG_URL,{method:'POST',body:JSON.stringify({usuario:clien
 }
 document.getElementById('seccion-login').classList.add('hidden');
 document.getElementById('seccion-panel').classList.remove('hidden');
+document.getElementById('usuario-nombre').textContent=u;
+document.getElementById('usuario-sidebar').textContent=u;
 cargarCitasDelServidor();
 loopSincronizacion=setInterval(cargarCitasDelServidor,10000);
 mostrarNotificacion("Acceso Aprobado","Entorno personalizado cargado.","success");
@@ -286,29 +257,18 @@ const statusText=document.getElementById('status-text');
 const statusDot=document.getElementById('status-dot');
 const statusIcon=document.getElementById('status-icon');
 if(online){
-if(statusCard) statusCard.className='stat-card flex flex-col items-center justify-center text-center';
-if(statusText){statusText.className='text-sm font-bold text-emerald-600';statusText.innerText='En línea';}
-if(statusDot){statusDot.className='w-5 h-5 rounded-full animate-pulse bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]';}
-if(statusIcon) statusIcon.className='w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-2';
+statusCard.querySelector('.stat-icon').className='stat-icon';
+statusText.className='stat-number text-sm font-bold text-emerald-600';
+statusText.innerText='En línea';
+statusDot.className='w-4 h-4 rounded-full animate-pulse bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]';
 }else{
-if(statusCard) statusCard.className='stat-card flex flex-col items-center justify-center text-center border-red-200';
-if(statusText){statusText.className='text-sm font-bold text-red-600';statusText.innerText='Sin conexión';}
-if(statusDot){statusDot.className='w-5 h-5 rounded-full animate-pulse bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.5)]';}
-if(statusIcon) statusIcon.className='w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2';
+statusCard.querySelector('.stat-icon').className='stat-icon';
+statusText.className='stat-number text-sm font-bold text-red-600';
+statusText.innerText='Sin conexión';
+statusDot.className='w-4 h-4 rounded-full animate-pulse bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.5)]';
 }
 }
-let todasLasCitas=[];
-async function cargarCitasDelServidor(){
-try{
-const res=await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
-if(!res.ok)throw new Error(`HTTP error ${res.status}`);
-const text=await res.text();
-let citas=[];
-if(text&&text.trim()!==''){
-try{const data=JSON.parse(text);citas=data.citas||(Array.isArray(data)?data:[]);}catch(parseError){console.warn('Error al parsear JSON:',parseError);citas=[];}
-}else{citas=[];}
-actualizarEstadoConexion(true);
-todasLasCitas=citas;
+function renderTabla(citas){
 const columnasMostradas=ordenColumnas.filter(col=>!columnasOcultas.includes(col));
 let htmlCabecera=`<tr>`;
 columnasMostradas.forEach(colKey=>{
@@ -316,47 +276,10 @@ const label=NOMBRES_COLUMNAS_SISTEMA[colKey]||colKey;
 htmlCabecera+=`<th class="px-6 py-4 text-slate-600 font-extrabold text-xs uppercase tracking-widest">${label}</th>`;
 });
 htmlCabecera+=`<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`;
-const tablaCabecera=document.getElementById('tabla-cabecera');
-if(tablaCabecera) tablaCabecera.innerHTML=htmlCabecera;
-actualizarEstadisticas(citas);
-renderizarTabla(citas);
-}catch(e){
-console.error("Error al cargar:",e);
-actualizarEstadoConexion(false);
-const columnasMostradas=ordenColumnas.filter(col=>!columnasOcultas.includes(col));
-const colspan=columnasMostradas.length+1;
-const tablaCuerpo=document.getElementById('tabla-cuerpo');
-if(tablaCuerpo){
-tablaCuerpo.innerHTML=`
-<tr>
-<td colspan="${colspan}" class="px-6 py-12 text-center text-red-400 font-medium">
-<div class="flex flex-col items-center gap-2">
-<svg class="w-12 h-12 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-<span>Error al cargar las citas</span>
-<span class="text-sm text-slate-400">Intenta recargar la página o contacta con soporte</span>
-</div>
-</td>
-</tr>`;
-}
-}
-}
-function actualizarEstadisticas(citas){
-const statTotal=document.getElementById('stat-total');
-const statConfirmadas=document.getElementById('stat-confirmadas');
-const statCanceladas=document.getElementById('stat-canceladas');
-const statReprogramadas=document.getElementById('stat-reprogramadas');
-if(statTotal) statTotal.innerText=citas.length;
-if(statConfirmadas) statConfirmadas.innerText=citas.filter(c=>c.estado?.toLowerCase()==='confirmó').length;
-if(statCanceladas) statCanceladas.innerText=citas.filter(c=>c.estado?.toLowerCase()==='canceló'||c.estado?.toLowerCase()==='cancelada').length;
-if(statReprogramadas) statReprogramadas.innerText=citas.filter(c=>c.estado?.toLowerCase()==='reprogramó'||c.estado?.toLowerCase()==='reprogramada').length;
-}
-function renderizarTabla(citas){
-const columnasMostradas=ordenColumnas.filter(col=>!columnasOcultas.includes(col));
-const tablaCuerpo=document.getElementById('tabla-cuerpo');
-if(!tablaCuerpo) return;
+document.getElementById('tabla-cabecera').innerHTML=htmlCabecera;
 if(citas.length===0){
 const colspan=columnasMostradas.length+1;
-tablaCuerpo.innerHTML=`
+document.getElementById('tabla-cuerpo').innerHTML=`
 <tr>
 <td colspan="${colspan}" class="px-6 py-12 text-center text-slate-400 font-medium">
 <div class="flex flex-col items-center gap-2">
@@ -368,21 +291,7 @@ tablaCuerpo.innerHTML=`
 </tr>`;
 return;
 }
-if(citasAnteriores.length>0){
-citas.forEach(nuevaCita=>{
-const citaVieja=citasAnteriores.find(c=>c.id===nuevaCita.id);
-if(citaVieja&&citaVieja.estado!==nuevaCita.estado){
-let nombrePaciente="";
-try{let jsonParseado=typeof nuevaCita.campos_personalizados==='string'?JSON.parse(nuevaCita.campos_personalizados):nuevaCita.campos_personalizados;nombrePaciente=jsonParseado['Nombres']||`Cita #${nuevaCita.id}`;}catch(e){nombrePaciente=`Cita #${nuevaCita.id}`;}
-mostrarNotificacion('Actualización',`${nombrePaciente} ha cambiado a: ${nuevaCita.estado.toUpperCase()}`,nuevaCita.estado.toLowerCase());
-}
-});
-}
-const nuevoHash=JSON.stringify(citas)+JSON.stringify(ordenColumnas)+JSON.stringify(columnasOcultas);
-if(nuevoHash===hashTablaActual)return;
-hashTablaActual=nuevoHash;
-citasAnteriores=JSON.parse(JSON.stringify(citas));
-tablaCuerpo.innerHTML=citas.map(c=>{
+document.getElementById('tabla-cuerpo').innerHTML=citas.map(c=>{
 let camposParseados={};
 try{camposParseados=typeof c.campos_personalizados==='string'?JSON.parse(c.campos_personalizados):(c.campos_personalizados||{});}catch(e){}
 const citaString=encodeURIComponent(JSON.stringify({...c,camposParseados}));
@@ -426,6 +335,59 @@ row+=`
 return row;
 }).join('');
 }
+async function cargarCitasDelServidor(){
+try{
+const res=await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
+if(!res.ok)throw new Error(`HTTP error ${res.status}`);
+const text=await res.text();
+let citas=[];
+if(text&&text.trim()!==''){
+try{const data=JSON.parse(text);citas=data.citas||(Array.isArray(data)?data:[]);}catch(parseError){console.warn('Error al parsear JSON:',parseError);citas=[];}
+}else{citas=[];}
+citasCompletas=citas;
+actualizarEstadoConexion(true);
+document.getElementById('stat-total').innerText=citas.length;
+document.getElementById('stat-confirmadas').innerText=citas.filter(c=>c.estado?.toLowerCase()==='confirmó').length;
+document.getElementById('stat-canceladas').innerText=citas.filter(c=>c.estado?.toLowerCase()==='canceló'||c.estado?.toLowerCase()==='cancelada').length;
+document.getElementById('stat-reprogramadas').innerText=citas.filter(c=>c.estado?.toLowerCase()==='reprogramó'||c.estado?.toLowerCase()==='reprogramada').length;
+const citasFiltradas = filtroBusqueda ? citas.filter(c=>{
+const campos=typeof c.campos_personalizados==='string'?JSON.parse(c.campos_personalizados):(c.campos_personalizados||{});
+const texto = `${c.id} ${c.estado||''} ${c.procesado||''} ${campos.Nombres||''} ${campos.Apellidos||''} ${campos.Telefono||''} ${campos.Profesional||''}`.toLowerCase();
+return texto.includes(filtroBusqueda.toLowerCase());
+}) : citas;
+renderTabla(citasFiltradas);
+if(citasAnteriores.length>0){
+citas.forEach(nuevaCita=>{
+const citaVieja=citasAnteriores.find(c=>c.id===nuevaCita.id);
+if(citaVieja&&citaVieja.estado!==nuevaCita.estado){
+let nombrePaciente="";
+try{let jsonParseado=typeof nuevaCita.campos_personalizados==='string'?JSON.parse(nuevaCita.campos_personalizados):nuevaCita.campos_personalizados;nombrePaciente=jsonParseado['Nombres']||`Cita #${nuevaCita.id}`;}catch(e){nombrePaciente=`Cita #${nuevaCita.id}`;}
+mostrarNotificacion('Actualización',`${nombrePaciente} ha cambiado a: ${nuevaCita.estado.toUpperCase()}`,nuevaCita.estado.toLowerCase());
+}
+});
+}
+const nuevoHash=JSON.stringify(citas)+JSON.stringify(ordenColumnas)+JSON.stringify(columnasOcultas);
+if(nuevoHash!==hashTablaActual){
+hashTablaActual=nuevoHash;
+citasAnteriores=JSON.parse(JSON.stringify(citas));
+}
+}catch(e){
+console.error("Error al cargar:",e);
+actualizarEstadoConexion(false);
+const columnasMostradas=ordenColumnas.filter(col=>!columnasOcultas.includes(col));
+const colspan=columnasMostradas.length+1;
+document.getElementById('tabla-cuerpo').innerHTML=`
+<tr>
+<td colspan="${colspan}" class="px-6 py-12 text-center text-red-400 font-medium">
+<div class="flex flex-col items-center gap-2">
+<svg class="w-12 h-12 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+<span>Error al cargar las citas</span>
+<span class="text-sm text-slate-400">Intenta recargar la página o contacta con soporte</span>
+</div>
+</td>
+</tr>`;
+}
+}
 window.prepararEdicion=(citaString)=>{
 const c=JSON.parse(decodeURIComponent(citaString));
 idCitaEnEdicion=c.id;
@@ -455,7 +417,6 @@ await cargarCitasDelServidor();
 }catch(error){mostrarNotificacion("Error","No se pudo guardar.","error");}
 finally{btnSubmit.innerText="Guardar Información";btnSubmit.disabled=false;}
 });
-// Navegación entre secciones
 document.querySelectorAll('.sidebar-nav a').forEach(enlace=>{
 enlace.addEventListener('click',function(e){
 e.preventDefault();
@@ -463,22 +424,17 @@ document.querySelectorAll('.sidebar-nav a').forEach(a=>a.classList.remove('activ
 this.classList.add('active');
 document.querySelectorAll('.seccion').forEach(sec=>sec.classList.remove('active'));
 const seccionId='seccion-'+this.dataset.section;
-const seccionElement=document.getElementById(seccionId);
-if(seccionElement) seccionElement.classList.add('active');
+document.getElementById(seccionId).classList.add('active');
 });
 });
-// Búsqueda en tiempo real
-const buscador = document.getElementById('buscador-citas');
-if (buscador) {
-buscador.addEventListener('input',function(){
-const texto=this.value.toLowerCase().trim();
-if(texto===''){renderizarTabla(todasLasCitas);return;}
-const citasFiltradas=todasLasCitas.filter(c=>{
-let camposParseados={};
-try{camposParseados=typeof c.campos_personalizados==='string'?JSON.parse(c.campos_personalizados):(c.campos_personalizados||{});}catch(e){}
-const valores=[c.id?.toString()||'',c.procesado||'',c.estado||'',camposParseados.Nombres||'',camposParseados.Apellidos||'',camposParseados.Telefono||'',camposParseados.Profesional||'',camposParseados.Fecha||'',camposParseados.Hora||''];
-return valores.some(v=>v.toLowerCase().includes(texto));
+document.getElementById('btn-buscar').addEventListener('click',()=>{
+const input=document.getElementById('buscar-citas');
+filtroBusqueda=input.value.trim();
+cargarCitasDelServidor();
 });
-renderizarTabla(citasFiltradas);
-});
+document.getElementById('buscar-citas').addEventListener('keyup',(e)=>{
+if(e.key==='Enter'){
+filtroBusqueda=e.target.value.trim();
+cargarCitasDelServidor();
 }
+});
