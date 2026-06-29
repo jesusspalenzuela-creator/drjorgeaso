@@ -9,11 +9,115 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, sans-serif; background: #f0f4f8; color: #1e293b; }
-        .navbar-blue { background: #0b1a33; border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100vh;
+            background: #0b1a33;
+            color: white;
+            padding: 1.5rem 1rem;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+        }
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-header .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        .sidebar-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+        }
+        .sidebar-header h2 span { color: #60a5fa; }
+        .sidebar-nav ul { list-style: none; padding: 0; }
+        .sidebar-nav li { margin-bottom: 0.25rem; }
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .sidebar-nav a:hover { background: rgba(255,255,255,0.08); color: white; }
+        .sidebar-nav a.active { background: #2563eb; color: white; }
+        .sidebar-nav a .icon { font-size: 1.2rem; width: 24px; text-align: center; }
+        .sidebar-footer {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 0;
+            width: 100%;
+            padding: 0 1rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 1rem;
+        }
+        .sidebar-footer .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+        .sidebar-footer .user-info .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .sidebar-footer .user-info .name {
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Contenido principal */
+        #contenido-principal {
+            margin-left: 250px;
+            padding: 1rem;
+            min-height: 100vh;
+        }
+
+        /* Secciones */
+        .seccion { display: none; }
+        .seccion.active { display: block; }
+
+        /* Ajustes para el navbar original (ahora dentro de la sección citas) */
+        .navbar-blue { background: #0b1a33; border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 10; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
         .navbar-blue .text-white { color: white; }
         .navbar-blue .logo-x { color: #2563eb; }
         .usuario-resaltado { color: #60a5fa; font-weight: 700; text-shadow: 0 0 12px rgba(96, 165, 250, 0.4); }
         .login-x { color: #2563eb; }
+
         .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); }
         .card { background: white; border-radius: 1.5rem; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06); transition: all 0.3s ease; border: 1px solid rgba(0, 0, 0, 0.04); }
         .card:hover { box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1); transform: translateY(-2px); }
@@ -45,7 +149,7 @@
         input::placeholder, textarea::placeholder { font-size: 0.85rem; color: #94a3b8; }
         input, textarea, select { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.9rem 1.2rem; font-size: 0.95rem; color: #0f172a; transition: all 0.2s; width: 100%; outline: none; }
         input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
-        .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+        .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 200; }
         .modal-content { background: white; border-radius: 1.5rem; box-shadow: 0 24px 64px rgba(0,0,0,0.2); }
         .confirm-modal { max-width: 420px; }
         .confirm-modal .btn-confirm-danger { background: #dc2626; color: white; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 700; transition: all 0.2s; border: none; cursor: pointer; }
@@ -64,10 +168,52 @@
         .status-dot { width: 0.75rem; height: 0.75rem; border-radius: 50%; display: inline-block; }
         .status-dot.online { background: #16a34a; box-shadow: 0 0 12px rgba(22,163,74,0.5); }
         .status-dot.offline { background: #dc2626; box-shadow: 0 0 12px rgba(220,38,38,0.5); }
+
+        /* Ajustes para el contenido de la sección citas */
+        #seccion-citas .navbar-blue {
+            margin: -1rem -1rem 0 -1rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        #seccion-citas main {
+            padding-top: 1.5rem;
+        }
+
+        /* Responsive: ocultar sidebar en móviles */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); width: 280px; }
+            .sidebar.open { transform: translateX(0); }
+            #contenido-principal { margin-left: 0; }
+            .sidebar-toggle {
+                display: flex !important;
+                position: fixed;
+                top: 0.75rem;
+                left: 0.75rem;
+                z-index: 150;
+                background: #0b1a33;
+                color: white;
+                border: none;
+                padding: 0.5rem 0.75rem;
+                border-radius: 0.5rem;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+        }
+        .sidebar-toggle { display: none; }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 90;
+        }
+        .sidebar-overlay.active { display: block; }
     </style>
 </head>
 <body class="min-h-screen font-sans antialiased bg-gradient-to-br from-blue-50 via-white to-blue-50/50">
-    <div id="toast-container" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none w-80"></div>
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[300] flex flex-col gap-3 pointer-events-none w-80"></div>
+
+    <!-- LOGIN -->
     <div id="seccion-login" class="flex items-center justify-center min-h-screen p-4 relative z-20">
         <div class="w-full max-w-md modal-content p-8 md:p-10">
             <div class="text-center mb-8">
@@ -100,82 +246,167 @@
             </form>
         </div>
     </div>
+
+    <!-- PANEL PRINCIPAL (oculto hasta login) -->
     <div id="seccion-panel" class="hidden relative min-h-screen">
-        <nav class="navbar-blue">
-            <div class="max-w-full mx-auto px-6 py-4 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">C</div>
+                <h2>Clinovi<span>x</span></h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="#" data-section="inicio" class="active"><span class="icon">📊</span> Inicio</a></li>
+                    <li><a href="#" data-section="citas"><span class="icon">📅</span> Citas</a></li>
+                    <li><a href="#" data-section="configuracion"><span class="icon">⚙️</span> Configuración</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="avatar" id="avatar-inicial">U</div>
+                    <div>
+                        <div class="name" id="nombre-usuario-sidebar">drjorgeaso</div>
+                        <div style="font-size:0.7rem;color:#64748b;">Usuario</div>
                     </div>
-                    <h1 class="text-xl font-black tracking-tight text-white">Clinovi<span class="logo-x">x</span> · Panel</h1>
-                </div>
-                <div class="flex items-center gap-4">
-                    <span id="nombre-cliente-titulo" class="text-sm font-semibold bg-white/10 px-4 py-2 rounded-full border border-white/20 whitespace-nowrap">
-                        <span class="text-white">Usuario:</span>
-                        <span id="usuario-nombre" class="usuario-resaltado">drjorgeaso</span>
-                    </span>
-                    <button id="btn-cerrar-sesion" class="flex items-center gap-2 text-sm btn-danger px-4 py-2 rounded-xl font-bold shadow-md shadow-red-900/20">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                        Salir
-                    </button>
                 </div>
             </div>
-        </nav>
-        <main class="relative z-10 max-w-full mx-auto px-6 py-8">
-            <div class="flex flex-wrap gap-3 mb-6 justify-end">
-                <button id="btn-configurar-columnas" class="btn-secondary flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-                    Vistas
-                </button>
-                <button id="btn-agregar-campo" class="btn-secondary flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                    Nuevo Campo
-                </button>
-                <button id="btn-refrescar" class="btn-secondary flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                    Sincronizar
-                </button>
-                <button id="btn-abrir-modal" class="btn-primary flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                    Nueva Cita
-                </button>
-            </div>
-            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-                <div class="card p-5"><p class="stat-label">Total Citas</p><p id="stat-total" class="stat-number">0</p></div>
-                <div class="card p-5 relative overflow-hidden">
-                    <div class="absolute -right-8 -top-8 w-24 h-24 bg-emerald-100 rounded-full blur-2xl opacity-60"></div>
-                    <p class="stat-label text-emerald-600">Confirmadas</p>
-                    <p id="stat-confirmadas" class="stat-number text-emerald-600">0</p>
-                </div>
-                <div class="card p-5 relative overflow-hidden">
-                    <div class="absolute -right-8 -top-8 w-24 h-24 bg-red-100 rounded-full blur-2xl opacity-60"></div>
-                    <p class="stat-label text-red-600">Canceladas</p>
-                    <p id="stat-canceladas" class="stat-number text-red-600">0</p>
-                </div>
-                <div class="card p-5 relative overflow-hidden">
-                    <div class="absolute -right-8 -top-8 w-24 h-24 bg-purple-100 rounded-full blur-2xl opacity-60"></div>
-                    <p class="stat-label text-purple-600">Reprogramadas</p>
-                    <p id="stat-reprogramadas" class="stat-number text-purple-600">0</p>
-                </div>
-                <div class="card p-5 flex flex-col items-center justify-center text-center" id="status-card">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center mb-2" id="status-icon">
-                        <div class="w-4 h-4 rounded-full animate-pulse" id="status-dot"></div>
+        </aside>
+
+        <!-- Overlay para móvil -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Botón para abrir sidebar en móvil -->
+        <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+
+        <!-- Contenido principal -->
+        <div id="contenido-principal">
+            <!-- SECCIÓN INICIO -->
+            <section id="seccion-inicio" class="seccion active">
+                <div class="max-w-7xl mx-auto py-8 px-4">
+                    <h2 class="text-3xl font-black text-slate-900">Bienvenido, <span id="nombre-usuario-inicio" class="text-blue-600">drjorgeaso</span></h2>
+                    <p class="text-slate-500 mt-2">Este es tu panel de control. Selecciona una opción del menú para empezar.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                        <div class="card p-6 text-center">
+                            <div class="text-4xl mb-2">📅</div>
+                            <h3 class="font-bold text-lg">Citas</h3>
+                            <p class="text-slate-500 text-sm">Gestiona todas tus citas médicas</p>
+                        </div>
+                        <div class="card p-6 text-center">
+                            <div class="text-4xl mb-2">👤</div>
+                            <h3 class="font-bold text-lg">Pacientes</h3>
+                            <p class="text-slate-500 text-sm">Administra tus pacientes</p>
+                        </div>
+                        <div class="card p-6 text-center">
+                            <div class="text-4xl mb-2">⚙️</div>
+                            <h3 class="font-bold text-lg">Configuración</h3>
+                            <p class="text-slate-500 text-sm">Personaliza tu sistema</p>
+                        </div>
                     </div>
-                    <p class="stat-label">Estado</p>
-                    <p class="text-sm font-bold" id="status-text">En línea</p>
                 </div>
-            </div>
-            <div class="card overflow-hidden">
-                <div class="table-container">
-                    <table class="w-full min-w-max text-left">
-                        <thead id="tabla-cabecera" class="table-header text-xs uppercase tracking-widest font-extrabold"></thead>
-                        <tbody id="tabla-cuerpo" class="divide-y divide-slate-100"></tbody>
-                    </table>
+            </section>
+
+            <!-- SECCIÓN CITAS (tu contenido actual completo) -->
+            <section id="seccion-citas" class="seccion">
+                <!-- Navbar original (ahora dentro de la sección) -->
+                <nav class="navbar-blue">
+                    <div class="max-w-full mx-auto px-6 py-4 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                            </div>
+                            <h1 class="text-xl font-black tracking-tight text-white">Clinovi<span class="logo-x">x</span> · Panel</h1>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm font-semibold bg-white/10 px-4 py-2 rounded-full border border-white/20 whitespace-nowrap hidden sm:inline-block">
+                                <span class="text-white">Usuario:</span>
+                                <span id="usuario-nombre" class="usuario-resaltado">drjorgeaso</span>
+                            </span>
+                            <button id="btn-cerrar-sesion" class="flex items-center gap-2 text-sm btn-danger px-4 py-2 rounded-xl font-bold shadow-md shadow-red-900/20">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                                Salir
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Contenido principal de citas -->
+                <main class="relative z-10 max-w-full mx-auto px-6 py-8">
+                    <div class="flex flex-wrap gap-3 mb-6 justify-end">
+                        <button id="btn-configurar-columnas" class="btn-secondary flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                            Vistas
+                        </button>
+                        <button id="btn-agregar-campo" class="btn-secondary flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                            Nuevo Campo
+                        </button>
+                        <button id="btn-refrescar" class="btn-secondary flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                            Sincronizar
+                        </button>
+                        <button id="btn-abrir-modal" class="btn-primary flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                            Nueva Cita
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                        <div class="card p-5"><p class="stat-label">Total Citas</p><p id="stat-total" class="stat-number">0</p></div>
+                        <div class="card p-5 relative overflow-hidden">
+                            <div class="absolute -right-8 -top-8 w-24 h-24 bg-emerald-100 rounded-full blur-2xl opacity-60"></div>
+                            <p class="stat-label text-emerald-600">Confirmadas</p>
+                            <p id="stat-confirmadas" class="stat-number text-emerald-600">0</p>
+                        </div>
+                        <div class="card p-5 relative overflow-hidden">
+                            <div class="absolute -right-8 -top-8 w-24 h-24 bg-red-100 rounded-full blur-2xl opacity-60"></div>
+                            <p class="stat-label text-red-600">Canceladas</p>
+                            <p id="stat-canceladas" class="stat-number text-red-600">0</p>
+                        </div>
+                        <div class="card p-5 relative overflow-hidden">
+                            <div class="absolute -right-8 -top-8 w-24 h-24 bg-purple-100 rounded-full blur-2xl opacity-60"></div>
+                            <p class="stat-label text-purple-600">Reprogramadas</p>
+                            <p id="stat-reprogramadas" class="stat-number text-purple-600">0</p>
+                        </div>
+                        <div class="card p-5 flex flex-col items-center justify-center text-center" id="status-card">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center mb-2" id="status-icon">
+                                <div class="w-4 h-4 rounded-full animate-pulse" id="status-dot"></div>
+                            </div>
+                            <p class="stat-label">Estado</p>
+                            <p class="text-sm font-bold" id="status-text">En línea</p>
+                        </div>
+                    </div>
+                    <div class="card overflow-hidden">
+                        <div class="table-container">
+                            <table class="w-full min-w-max text-left">
+                                <thead id="tabla-cabecera" class="table-header text-xs uppercase tracking-widest font-extrabold"></thead>
+                                <tbody id="tabla-cuerpo" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </main>
+            </section>
+
+            <!-- SECCIÓN CONFIGURACIÓN -->
+            <section id="seccion-configuracion" class="seccion">
+                <div class="max-w-7xl mx-auto py-8 px-4">
+                    <h2 class="text-3xl font-black text-slate-900">Configuración</h2>
+                    <p class="text-slate-500 mt-2">Aquí puedes gestionar los campos personalizados y otras opciones.</p>
+                    <div class="mt-6 card p-6">
+                        <h3 class="font-bold text-lg">Campos personalizados</h3>
+                        <p class="text-slate-500 text-sm">Los campos que crees aparecerán en las citas.</p>
+                        <button id="btn-agregar-campo-config" class="btn-secondary mt-4 flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                            Nuevo Campo
+                        </button>
+                        <div id="lista-campos-config" class="mt-4 space-y-2"></div>
+                    </div>
                 </div>
-            </div>
-        </main>
+            </section>
+        </div>
     </div>
-    <div id="modal-columnas" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[60]">
+
+    <!-- MODALES (fuera del contenido principal para que siempre estén encima) -->
+    <div id="modal-columnas" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[200]">
         <div class="modal-content w-full max-w-md p-8 overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
                 <div><h2 class="text-2xl font-black text-slate-900 tracking-tight">Ocultar Columnas</h2><p class="text-sm text-slate-500 font-medium mt-1">Selecciona qué datos quieres ver</p></div>
@@ -185,7 +416,8 @@
             <button id="btn-guardar-columnas" class="w-full btn-primary py-4 rounded-xl font-bold text-lg">Aplicar Cambios</button>
         </div>
     </div>
-    <div id="modal-cita" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-50">
+
+    <div id="modal-cita" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[200]">
         <div class="modal-content w-full max-w-4xl p-8 overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-8 border-b border-slate-200 pb-4">
                 <h2 id="titulo-modal" class="text-3xl font-black text-slate-900 tracking-tight">Nueva Cita</h2>
@@ -200,7 +432,8 @@
             </form>
         </div>
     </div>
-    <div id="modal-nuevo-campo" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[70]">
+
+    <div id="modal-nuevo-campo" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[200]">
         <div class="modal-content w-full max-w-md p-8">
             <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
                 <h2 class="text-2xl font-black text-slate-900 tracking-tight">Nuevo Campo</h2>
@@ -213,7 +446,8 @@
             </form>
         </div>
     </div>
-    <div id="modal-confirmacion" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[80]">
+
+    <div id="modal-confirmacion" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[200]">
         <div class="modal-content confirm-modal w-full p-6">
             <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-3">
                 <h3 class="text-xl font-black text-slate-900">Confirmar eliminación</h3>
@@ -226,6 +460,7 @@
             </div>
         </div>
     </div>
+
     <script src="app.js"></script>
 </body>
 </html>
