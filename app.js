@@ -73,28 +73,40 @@ let numero=telefono.toString().replace(/\s/g,'').replace(/-/g,'');
 if(!numero.startsWith('+'))numero='+'+numero;
 window.open(`https://wa.me/${numero}`,'_blank');
 };
-document.getElementById('btn-abrir-modal').onclick=()=>{resetearFormulario();modal.classList.remove('hidden');modal.classList.add('flex');};
-document.getElementById('btn-abrir-modal-card').onclick=()=>{resetearFormulario();modal.classList.remove('hidden');modal.classList.add('flex');};
+// Asignación de eventos con verificación de existencia
+const btnAbrirModal = document.getElementById('btn-abrir-modal');
+if (btnAbrirModal) btnAbrirModal.onclick = ()=>{resetearFormulario();modal.classList.remove('hidden');modal.classList.add('flex');};
+const btnAbrirModalCard = document.getElementById('btn-abrir-modal-card');
+if (btnAbrirModalCard) btnAbrirModalCard.onclick = ()=>{resetearFormulario();modal.classList.remove('hidden');modal.classList.add('flex');};
 const cerrarModal=()=>{modal.classList.add('hidden');modal.classList.remove('flex');};
-document.getElementById('btn-cerrar-modal').onclick=cerrarModal;
-document.getElementById('btn-cerrar-modal-secundario').onclick=cerrarModal;
-document.getElementById('btn-cerrar-sesion').onclick=()=>location.reload();
-document.getElementById('btn-cerrar-sesion-sidebar').onclick=()=>location.reload();
-document.getElementById('btn-refrescar').onclick=()=>{mostrarNotificacion("Sincronizando...","Actualizando agenda médica.","info");cargarCitasDelServidor();};
-document.getElementById('btn-refrescar-citas').onclick=()=>{mostrarNotificacion("Sincronizando...","Actualizando agenda médica.","info");cargarCitasDelServidor();};
-document.getElementById('btn-agregar-campo').onclick=()=>{
+const btnCerrarModal = document.getElementById('btn-cerrar-modal');
+if (btnCerrarModal) btnCerrarModal.onclick = cerrarModal;
+const btnCerrarModalSec = document.getElementById('btn-cerrar-modal-secundario');
+if (btnCerrarModalSec) btnCerrarModalSec.onclick = cerrarModal;
+const btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
+if (btnCerrarSesion) btnCerrarSesion.onclick = ()=>location.reload();
+const btnCerrarSesionSidebar = document.getElementById('btn-cerrar-sesion-sidebar');
+if (btnCerrarSesionSidebar) btnCerrarSesionSidebar.onclick = ()=>location.reload();
+const btnRefrescar = document.getElementById('btn-refrescar');
+if (btnRefrescar) btnRefrescar.onclick = ()=>{mostrarNotificacion("Sincronizando...","Actualizando agenda médica.","info");cargarCitasDelServidor();};
+const btnRefrescarCitas = document.getElementById('btn-refrescar-citas');
+if (btnRefrescarCitas) btnRefrescarCitas.onclick = ()=>{mostrarNotificacion("Sincronizando...","Actualizando agenda médica.","info");cargarCitasDelServidor();};
+const btnAgregarCampo = document.getElementById('btn-agregar-campo');
+if (btnAgregarCampo) btnAgregarCampo.onclick = ()=>{
 document.getElementById('campo-nombre').value='';
 document.getElementById('campo-valor-default').value='';
 modalNuevoCampo.classList.remove('hidden');
 modalNuevoCampo.classList.add('flex');
 };
-document.getElementById('btn-agregar-campo-card').onclick=()=>{
+const btnAgregarCampoCard = document.getElementById('btn-agregar-campo-card');
+if (btnAgregarCampoCard) btnAgregarCampoCard.onclick = ()=>{
 document.getElementById('campo-nombre').value='';
 document.getElementById('campo-valor-default').value='';
 modalNuevoCampo.classList.remove('hidden');
 modalNuevoCampo.classList.add('flex');
 };
-document.getElementById('btn-cerrar-modal-campo').onclick=()=>{
+const btnCerrarModalCampo = document.getElementById('btn-cerrar-modal-campo');
+if (btnCerrarModalCampo) btnCerrarModalCampo.onclick = ()=>{
 modalNuevoCampo.classList.add('hidden');
 modalNuevoCampo.classList.remove('flex');
 };
@@ -149,21 +161,25 @@ ordenColumnas[nuevoIndex]=temp;
 renderizarModalVistas();
 }
 };
-document.getElementById('btn-configurar-columnas').onclick=()=>{
+const btnConfigurarColumnas = document.getElementById('btn-configurar-columnas');
+if (btnConfigurarColumnas) btnConfigurarColumnas.onclick = ()=>{
 renderizarModalVistas();
 modalColumnas.classList.remove('hidden');
 modalColumnas.classList.add('flex');
 };
-document.getElementById('btn-configurar-columnas-card').onclick=()=>{
+const btnConfigurarColumnasCard = document.getElementById('btn-configurar-columnas-card');
+if (btnConfigurarColumnasCard) btnConfigurarColumnasCard.onclick = ()=>{
 renderizarModalVistas();
 modalColumnas.classList.remove('hidden');
 modalColumnas.classList.add('flex');
 };
-document.getElementById('btn-cerrar-modal-columnas').onclick=()=>{
+const btnCerrarModalColumnas = document.getElementById('btn-cerrar-modal-columnas');
+if (btnCerrarModalColumnas) btnCerrarModalColumnas.onclick = ()=>{
 modalColumnas.classList.add('hidden');
 modalColumnas.classList.remove('flex');
 };
-document.getElementById('btn-guardar-columnas').onclick=async()=>{
+const btnGuardarColumnas = document.getElementById('btn-guardar-columnas');
+if (btnGuardarColumnas) btnGuardarColumnas.onclick = async()=>{
 const checkboxes=document.querySelectorAll('.chk-columna');
 let nuevasOcultas=[];
 checkboxes.forEach((cb,idx)=>{if(!cb.checked)nuevasOcultas.push(ordenColumnas[idx]);});
@@ -226,8 +242,10 @@ const res=await fetch(N8N_LOGIN_URL,{method:'POST',body:JSON.stringify({usuario:
 const data=await res.json();
 if(data.success){
 clienteLogueado=u;
-document.getElementById('usuario-sidebar').textContent=u;
-document.getElementById('usuario-nombre').textContent=u;
+const usuarioSidebar=document.getElementById('usuario-sidebar');
+if(usuarioSidebar) usuarioSidebar.textContent=u;
+const usuarioNombre=document.getElementById('usuario-nombre');
+if(usuarioNombre) usuarioNombre.textContent=u;
 let dbConfig={};
 if(typeof data.config==='string'){try{dbConfig=JSON.parse(data.config);}catch(err){}}
 else if(typeof data.config==='object'){dbConfig=data.config;}
@@ -268,20 +286,18 @@ const statusText=document.getElementById('status-text');
 const statusDot=document.getElementById('status-dot');
 const statusIcon=document.getElementById('status-icon');
 if(online){
-statusCard.className='stat-card flex flex-col items-center justify-center text-center';
-statusText.className='text-sm font-bold text-emerald-600';
-statusText.innerText='En línea';
-statusDot.className='w-5 h-5 rounded-full animate-pulse bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]';
-statusIcon.className='w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-2';
+if(statusCard) statusCard.className='stat-card flex flex-col items-center justify-center text-center';
+if(statusText){statusText.className='text-sm font-bold text-emerald-600';statusText.innerText='En línea';}
+if(statusDot){statusDot.className='w-5 h-5 rounded-full animate-pulse bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]';}
+if(statusIcon) statusIcon.className='w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-2';
 }else{
-statusCard.className='stat-card flex flex-col items-center justify-center text-center border-red-200';
-statusText.className='text-sm font-bold text-red-600';
-statusText.innerText='Sin conexión';
-statusDot.className='w-5 h-5 rounded-full animate-pulse bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.5)]';
-statusIcon.className='w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2';
+if(statusCard) statusCard.className='stat-card flex flex-col items-center justify-center text-center border-red-200';
+if(statusText){statusText.className='text-sm font-bold text-red-600';statusText.innerText='Sin conexión';}
+if(statusDot){statusDot.className='w-5 h-5 rounded-full animate-pulse bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.5)]';}
+if(statusIcon) statusIcon.className='w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2';
 }
 }
-let todasLasCitas=[]; // Guardamos las citas para filtrar sin recargar
+let todasLasCitas=[];
 async function cargarCitasDelServidor(){
 try{
 const res=await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`);
@@ -300,7 +316,8 @@ const label=NOMBRES_COLUMNAS_SISTEMA[colKey]||colKey;
 htmlCabecera+=`<th class="px-6 py-4 text-slate-600 font-extrabold text-xs uppercase tracking-widest">${label}</th>`;
 });
 htmlCabecera+=`<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`;
-document.getElementById('tabla-cabecera').innerHTML=htmlCabecera;
+const tablaCabecera=document.getElementById('tabla-cabecera');
+if(tablaCabecera) tablaCabecera.innerHTML=htmlCabecera;
 actualizarEstadisticas(citas);
 renderizarTabla(citas);
 }catch(e){
@@ -308,7 +325,9 @@ console.error("Error al cargar:",e);
 actualizarEstadoConexion(false);
 const columnasMostradas=ordenColumnas.filter(col=>!columnasOcultas.includes(col));
 const colspan=columnasMostradas.length+1;
-document.getElementById('tabla-cuerpo').innerHTML=`
+const tablaCuerpo=document.getElementById('tabla-cuerpo');
+if(tablaCuerpo){
+tablaCuerpo.innerHTML=`
 <tr>
 <td colspan="${colspan}" class="px-6 py-12 text-center text-red-400 font-medium">
 <div class="flex flex-col items-center gap-2">
@@ -320,17 +339,24 @@ document.getElementById('tabla-cuerpo').innerHTML=`
 </tr>`;
 }
 }
+}
 function actualizarEstadisticas(citas){
-document.getElementById('stat-total').innerText=citas.length;
-document.getElementById('stat-confirmadas').innerText=citas.filter(c=>c.estado?.toLowerCase()==='confirmó').length;
-document.getElementById('stat-canceladas').innerText=citas.filter(c=>c.estado?.toLowerCase()==='canceló'||c.estado?.toLowerCase()==='cancelada').length;
-document.getElementById('stat-reprogramadas').innerText=citas.filter(c=>c.estado?.toLowerCase()==='reprogramó'||c.estado?.toLowerCase()==='reprogramada').length;
+const statTotal=document.getElementById('stat-total');
+const statConfirmadas=document.getElementById('stat-confirmadas');
+const statCanceladas=document.getElementById('stat-canceladas');
+const statReprogramadas=document.getElementById('stat-reprogramadas');
+if(statTotal) statTotal.innerText=citas.length;
+if(statConfirmadas) statConfirmadas.innerText=citas.filter(c=>c.estado?.toLowerCase()==='confirmó').length;
+if(statCanceladas) statCanceladas.innerText=citas.filter(c=>c.estado?.toLowerCase()==='canceló'||c.estado?.toLowerCase()==='cancelada').length;
+if(statReprogramadas) statReprogramadas.innerText=citas.filter(c=>c.estado?.toLowerCase()==='reprogramó'||c.estado?.toLowerCase()==='reprogramada').length;
 }
 function renderizarTabla(citas){
 const columnasMostradas=ordenColumnas.filter(col=>!columnasOcultas.includes(col));
+const tablaCuerpo=document.getElementById('tabla-cuerpo');
+if(!tablaCuerpo) return;
 if(citas.length===0){
 const colspan=columnasMostradas.length+1;
-document.getElementById('tabla-cuerpo').innerHTML=`
+tablaCuerpo.innerHTML=`
 <tr>
 <td colspan="${colspan}" class="px-6 py-12 text-center text-slate-400 font-medium">
 <div class="flex flex-col items-center gap-2">
@@ -356,7 +382,7 @@ const nuevoHash=JSON.stringify(citas)+JSON.stringify(ordenColumnas)+JSON.stringi
 if(nuevoHash===hashTablaActual)return;
 hashTablaActual=nuevoHash;
 citasAnteriores=JSON.parse(JSON.stringify(citas));
-document.getElementById('tabla-cuerpo').innerHTML=citas.map(c=>{
+tablaCuerpo.innerHTML=citas.map(c=>{
 let camposParseados={};
 try{camposParseados=typeof c.campos_personalizados==='string'?JSON.parse(c.campos_personalizados):(c.campos_personalizados||{});}catch(e){}
 const citaString=encodeURIComponent(JSON.stringify({...c,camposParseados}));
@@ -437,11 +463,14 @@ document.querySelectorAll('.sidebar-nav a').forEach(a=>a.classList.remove('activ
 this.classList.add('active');
 document.querySelectorAll('.seccion').forEach(sec=>sec.classList.remove('active'));
 const seccionId='seccion-'+this.dataset.section;
-document.getElementById(seccionId).classList.add('active');
+const seccionElement=document.getElementById(seccionId);
+if(seccionElement) seccionElement.classList.add('active');
 });
 });
 // Búsqueda en tiempo real
-document.getElementById('buscador-citas').addEventListener('input',function(){
+const buscador = document.getElementById('buscador-citas');
+if (buscador) {
+buscador.addEventListener('input',function(){
 const texto=this.value.toLowerCase().trim();
 if(texto===''){renderizarTabla(todasLasCitas);return;}
 const citasFiltradas=todasLasCitas.filter(c=>{
@@ -452,3 +481,4 @@ return valores.some(v=>v.toLowerCase().includes(texto));
 });
 renderizarTabla(citasFiltradas);
 });
+}
