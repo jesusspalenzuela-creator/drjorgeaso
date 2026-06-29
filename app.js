@@ -1,7 +1,3 @@
-// ============================================
-// app.js - CON SIDEBAR Y NAVEGACIÓN
-// ============================================
-
 const N8N_GET_URL='https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
 const N8N_POST_URL='https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/crearcita';
 const N8N_LOGIN_URL='https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/login';
@@ -82,19 +78,15 @@ const cerrarModal=()=>{modal.classList.add('hidden');modal.classList.remove('fle
 document.getElementById('btn-cerrar-modal').onclick=cerrarModal;
 document.getElementById('btn-cerrar-modal-secundario').onclick=cerrarModal;
 document.getElementById('btn-cerrar-sesion').onclick=()=>location.reload();
+// Sincronizar en ambas secciones
 document.getElementById('btn-refrescar').onclick=()=>{mostrarNotificacion("Sincronizando...","Actualizando agenda médica.","info");cargarCitasDelServidor();};
+document.getElementById('btn-refrescar-citas').onclick=()=>{mostrarNotificacion("Sincronizando...","Actualizando agenda médica.","info");cargarCitasDelServidor();};
 document.getElementById('btn-agregar-campo').onclick=()=>{
 document.getElementById('campo-nombre').value='';
 document.getElementById('campo-valor-default').value='';
 modalNuevoCampo.classList.remove('hidden');
 modalNuevoCampo.classList.add('flex');
 };
-document.getElementById('btn-agregar-campo-config')?.addEventListener('click',()=>{
-document.getElementById('campo-nombre').value='';
-document.getElementById('campo-valor-default').value='';
-modalNuevoCampo.classList.remove('hidden');
-modalNuevoCampo.classList.add('flex');
-});
 document.getElementById('btn-cerrar-modal-campo').onclick=()=>{
 modalNuevoCampo.classList.add('hidden');
 modalNuevoCampo.classList.remove('flex');
@@ -118,7 +110,6 @@ hashTablaActual="";
 cargarCitasDelServidor();
 mostrarNotificacion("Campo Creado",`Columna '${nombre}' guardada.`,"success");
 if(!modal.classList.contains('hidden'))renderizarCamposModal();
-actualizarListaCamposConfig();
 });
 function renderizarModalVistas(){
 const container=document.getElementById('lista-columnas');
@@ -204,7 +195,6 @@ await sincronizarConfiguracionNube();
 renderizarCamposModal();
 hashTablaActual="";
 cargarCitasDelServidor();
-actualizarListaCamposConfig();
 }
 };
 function resetearFormulario(){
@@ -244,21 +234,10 @@ try{await fetch(N8N_CONFIG_URL,{method:'POST',body:JSON.stringify({usuario:clien
 }
 document.getElementById('seccion-login').classList.add('hidden');
 document.getElementById('seccion-panel').classList.remove('hidden');
-// Actualizar todos los lugares donde aparece el nombre de usuario
 document.getElementById('usuario-nombre').textContent=u;
-document.getElementById('nombre-usuario-sidebar').textContent=u;
-document.getElementById('nombre-usuario-inicio').textContent=u;
-const avatar=document.getElementById('avatar-inicial');
-if(avatar)avatar.textContent=u.charAt(0).toUpperCase();
 cargarCitasDelServidor();
 loopSincronizacion=setInterval(cargarCitasDelServidor,10000);
 mostrarNotificacion("Acceso Aprobado","Entorno personalizado cargado.","success");
-// Mostrar la sección de inicio por defecto
-document.querySelectorAll('.sidebar-nav a').forEach(a=>a.classList.remove('active'));
-document.querySelector('.sidebar-nav a[data-section="inicio"]')?.classList.add('active');
-document.querySelectorAll('.seccion').forEach(s=>s.classList.remove('active'));
-document.getElementById('seccion-inicio')?.classList.add('active');
-actualizarListaCamposConfig();
 }else{
 mostrarNotificacion("Error","Usuario o contraseña incorrectos.","error");
 }
@@ -429,72 +408,14 @@ await cargarCitasDelServidor();
 finally{btnSubmit.innerText="Guardar Información";btnSubmit.disabled=false;}
 });
 
-// ============================================
-// NAVEGACIÓN CON SIDEBAR
-// ============================================
-
-// Toggle sidebar en móvil
-const sidebarToggle = document.getElementById('sidebar-toggle');
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('sidebar-overlay');
-
-if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('open');
-        overlay.classList.toggle('active');
-    });
-}
-if (overlay) {
-    overlay.addEventListener('click', () => {
-        sidebar.classList.remove('open');
-        overlay.classList.remove('active');
-    });
-}
-
-// Navegación por secciones
+// Navegación entre secciones
 document.querySelectorAll('.sidebar-nav a').forEach(enlace => {
     enlace.addEventListener('click', function(e) {
         e.preventDefault();
-        // Quitar active de todos los enlaces
         document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
         this.classList.add('active');
-        // Ocultar todas las secciones
         document.querySelectorAll('.seccion').forEach(sec => sec.classList.remove('active'));
-        // Mostrar la sección correspondiente
         const seccionId = 'seccion-' + this.dataset.section;
-        const seccion = document.getElementById(seccionId);
-        if (seccion) seccion.classList.add('active');
-        // Cerrar sidebar en móvil
-        if (sidebar.classList.contains('open')) {
-            sidebar.classList.remove('open');
-            overlay.classList.remove('active');
-        }
+        document.getElementById(seccionId).classList.add('active');
     });
-});
-
-// Actualizar lista de campos en la sección de configuración
-function actualizarListaCamposConfig() {
-    const container = document.getElementById('lista-campos-config');
-    if (!container) return;
-    if (camposPlantilla.length === 0) {
-        container.innerHTML = '<p class="text-slate-400 text-sm">No hay campos personalizados creados.</p>';
-        return;
-    }
-    container.innerHTML = camposPlantilla.map(nombre => `
-        <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-            <span class="font-medium text-slate-700">${nombre}</span>
-            <button onclick="eliminarCampo('${nombre}')" class="text-red-400 hover:text-red-600 text-xs font-bold">✕</button>
-        </div>
-    `).join('');
-}
-
-// Llamar a actualizarListaCamposConfig al inicio (si ya hay campos)
-// Se llamará también después de crear/eliminar campos.
-
-// Agregar el evento para el botón "Nuevo Campo" en la sección de configuración
-document.getElementById('btn-agregar-campo-config')?.addEventListener('click', function() {
-    document.getElementById('campo-nombre').value = '';
-    document.getElementById('campo-valor-default').value = '';
-    modalNuevoCampo.classList.remove('hidden');
-    modalNuevoCampo.classList.add('flex');
 });
