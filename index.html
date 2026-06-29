@@ -215,7 +215,7 @@
         }
 
         .table-container {
-            max-height: calc(100vh - 240px);
+            max-height: 540px;
             min-height: 320px;
             overflow-y: auto;
             border-radius: 0 0 1rem 1rem;
@@ -317,6 +317,14 @@
         .sidebar.collapsed .sidebar-nav a {
             justify-content: center;
             padding: 0.8rem 0;
+            margin: 0.2rem 0;
+        }
+
+        .sidebar.collapsed .sidebar-nav a.active {
+            background: transparent;
+            border-left: 4px solid #2563eb;
+            border-radius: 0;
+            box-shadow: none;
         }
 
         .sidebar.collapsed .sidebar-footer .btn-logout {
@@ -472,7 +480,7 @@
             font-size: 1.4rem;
         }
 
-        /* Gráfico de barras real */
+        /* Gráfico de barras */
         .chart-bar {
             transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 8px 8px 0 0;
@@ -573,7 +581,7 @@
                         Sincronizar
                     </button>
                 </div>
-                <!-- Tarjetas de estadísticas en grid 2x2 -->
+                <!-- Tarjetas de estadísticas -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
                     <div class="stat-card">
                         <div class="stat-icon bg-blue-100 text-blue-600">
@@ -612,7 +620,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Gráfico real conectado a datos -->
+                <!-- Gráfico conectado a datos -->
                 <div class="card p-5">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-bold text-slate-800">Distribución de citas</h3>
@@ -658,8 +666,8 @@
                         Sincronizar
                     </button>
                 </div>
-                <div class="card overflow-hidden flex flex-col" style="min-height: 75vh;">
-                    <div class="table-container flex-1">
+                <div class="card overflow-hidden flex flex-col">
+                    <div class="table-container">
                         <table class="w-full min-w-max text-left">
                             <thead id="tabla-cabecera" class="table-header text-xs uppercase tracking-widest font-extrabold"></thead>
                             <tbody id="tabla-cuerpo" class="divide-y divide-slate-100"></tbody>
@@ -694,15 +702,15 @@
         </div>
     </div>
 
-    <!-- MODALES (amplios, cuadrados, sin scroll) -->
+    <!-- MODALES -->
     <div id="modal-columnas" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[60]">
-        <div class="modal-content w-full max-w-lg p-8 flex flex-col" style="min-height: 500px;">
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
+        <div class="modal-content w-full max-w-lg p-6 flex flex-col" style="max-height: 70vh;">
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
                 <div><h2 class="text-xl font-black text-slate-900">Ocultar Columnas</h2><p class="text-sm text-slate-500">Selecciona los datos visibles</p></div>
                 <button id="btn-cerrar-modal-columnas" class="text-slate-400 hover:text-red-500 p-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
-            <div id="lista-columnas" class="flex-1 space-y-2 overflow-y-auto"></div>
-            <button id="btn-guardar-columnas" class="w-full btn-primary py-4 rounded-xl font-bold mt-6">Aplicar Cambios</button>
+            <div id="lista-columnas" class="flex-1 space-y-2 overflow-y-auto" style="max-height: 40vh;"></div>
+            <button id="btn-guardar-columnas" class="w-full btn-primary py-3 rounded-xl font-bold mt-4">Aplicar Cambios</button>
         </div>
     </div>
 
@@ -767,6 +775,7 @@
     </div>
 
     <script>
+        // Código JavaScript exactamente igual, incluyendo actualización del gráfico con datos reales
         const N8N_GET_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/consultasql';
         const N8N_POST_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/crearcita';
         const N8N_LOGIN_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/login';
