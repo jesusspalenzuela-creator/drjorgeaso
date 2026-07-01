@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clinovix · Panel de Gestión</title>
+    <link rel="icon" href="icono.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -209,6 +210,10 @@
         .sidebar.collapsed .sidebar-footer .user-info div,
         .sidebar.collapsed .sidebar-footer .btn-logout span { display: none; }
 
+        .sidebar.collapsed .sidebar-header .logo-img {
+            margin: 0 auto;
+        }
+
         .sidebar.collapsed .sidebar-nav a {
             justify-content: center; padding: 0.8rem 0; margin: 0.2rem 0;
             border-radius: 0.7rem;
@@ -355,8 +360,8 @@
     <div id="seccion-login" class="flex items-center justify-center min-h-screen p-4 relative z-20">
         <div class="w-full max-w-md modal-content p-8 md:p-10">
             <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl shadow-lg shadow-blue-900/20 mb-5">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                <div class="inline-flex items-center justify-center mb-5">
+                    <img src="icono.png" alt="Clinovix" class="w-16 h-16 rounded-2xl shadow-lg shadow-blue-900/20 object-cover">
                 </div>
                 <h1 class="text-4xl font-black tracking-tight text-slate-900">Clinovix · Panel</h1>
                 <p class="text-slate-500 font-medium mt-1 text-sm">Gestión profesional de citas</p>
@@ -389,7 +394,10 @@
     <div id="seccion-panel" class="hidden relative min-h-screen">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <div class="brand">Clinovi<span>x</span></div>
+                <div class="flex items-center gap-3 mb-1">
+                    <img src="icono.png" alt="Clinovix" class="w-10 h-10 rounded-xl object-cover logo-img">
+                    <div class="brand">Clinovi<span>x</span></div>
+                </div>
                 <p class="subtitle">Panel de gestión médica</p>
             </div>
             <nav class="sidebar-nav flex-1 mt-6">
@@ -474,7 +482,7 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CITAS (con botón Enviar recordatorios mejorado) -->
+            <!-- SECCIÓN CITAS -->
             <section id="seccion-citas" class="seccion">
                 <div class="flex flex-wrap items-center gap-4 mb-5 animate-in">
                     <div class="relative flex-1 max-w-md search-box">
@@ -683,7 +691,7 @@
         document.getElementById('btn-agregar-campo').onclick = () => { document.getElementById('campo-nombre').value = ''; document.getElementById('campo-valor-default').value = ''; modalNuevoCampo.classList.remove('hidden'); modalNuevoCampo.classList.add('flex'); };
         document.getElementById('btn-cerrar-modal-campo').onclick = () => { modalNuevoCampo.classList.add('hidden'); modalNuevoCampo.classList.remove('flex'); };
 
-        // Lógica para Enviar recordatorios (notificaciones en español, botón verde sólido)
+        // Lógica para Enviar recordatorios
         document.getElementById('btn-enviar-recordatorios').addEventListener('click', async () => {
             if (!clienteLogueado) {
                 mostrarNotificacion("Error", "No hay sesión activa.", "error");
