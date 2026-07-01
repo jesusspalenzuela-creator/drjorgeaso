@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clinovix · Panel de Gestión</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -115,12 +115,14 @@
         }
 
         .table-row {
-            transition: background 0.15s;
+            transition: background 0.2s, transform 0.2s;
             border-bottom: 1px solid #f1f5f9;
         }
 
         .table-row:hover {
-            background: #f8fafc;
+            background: #f1f5ff;
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
 
         .badge {
@@ -132,30 +134,11 @@
             letter-spacing: 0.04em;
         }
 
-        .badge-confirmada {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-
-        .badge-cancelada {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-
-        .badge-reprogramada {
-            background: #f3e8ff;
-            color: #7e22ce;
-        }
-
-        .badge-esperando {
-            background: #dbeafe;
-            color: #2563eb;
-        }
-
-        .badge-pendiente {
-            background: #f1f5f9;
-            color: #64748b;
-        }
+        .badge-confirmada { background: #dcfce7; color: #16a34a; }
+        .badge-cancelada { background: #fee2e2; color: #dc2626; }
+        .badge-reprogramada { background: #f3e8ff; color: #7e22ce; }
+        .badge-esperando { background: #dbeafe; color: #2563eb; }
+        .badge-pendiente { background: #f1f5f9; color: #64748b; }
 
         .table-container {
             max-height: 620px;
@@ -197,297 +180,154 @@
             width: 6px;
             height: 6px;
         }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
-
         .toast-enter {
             animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         /* Sidebar */
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 260px;
-            height: 100vh;
-            background: #0b1a33;
-            color: white;
-            padding: 1.8rem 1.2rem;
-            overflow-y: auto;
-            z-index: 100;
-            box-shadow: 4px 0 28px rgba(0, 0, 0, 0.4);
+            position: fixed; top: 0; left: 0; width: 260px; height: 100vh;
+            background: #0b1a33; color: white; padding: 1.8rem 1.2rem;
+            overflow-y: auto; z-index: 100;
+            box-shadow: 4px 0 28px rgba(0,0,0,0.4);
             transition: width 0.3s ease, padding 0.3s ease;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
         }
-
-        .sidebar.collapsed {
-            width: 72px;
-            padding: 1.8rem 0.5rem;
-        }
+        .sidebar.collapsed { width: 72px; padding: 1.8rem 0.5rem; }
 
         .sidebar.collapsed .sidebar-header .brand,
         .sidebar.collapsed .sidebar-header .subtitle,
         .sidebar.collapsed .sidebar-nav a .nav-label,
         .sidebar.collapsed .sidebar-footer .user-info div,
-        .sidebar.collapsed .sidebar-footer .btn-logout span {
-            display: none;
-        }
+        .sidebar.collapsed .sidebar-footer .btn-logout span { display: none; }
 
         .sidebar.collapsed .sidebar-nav a {
-            justify-content: center;
-            padding: 0.8rem 0;
-            margin: 0.2rem 0;
+            justify-content: center; padding: 0.8rem 0; margin: 0.2rem 0;
             border-radius: 0.7rem;
         }
-
         .sidebar.collapsed .sidebar-nav a.active {
-            background: #2563eb;
-            color: white;
-            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5);
+            background: #2563eb; color: white;
+            box-shadow: 0 6px 18px rgba(37,99,235,0.5);
         }
-
         .sidebar.collapsed .sidebar-footer .btn-logout {
-            justify-content: center;
-            padding: 0.7rem 0;
+            justify-content: center; padding: 0.7rem 0;
         }
 
         .sidebar-header .brand {
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 1px;
             color: white;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.4);
         }
-
-        .sidebar-header .brand span {
-            color: #2563eb;
-        }
+        .sidebar-header .brand span { color: #2563eb; }
 
         .sidebar-header .subtitle {
-            font-size: 0.7rem;
-            color: #94a3b8;
-            font-weight: 500;
-            margin-top: 0.2rem;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
+            font-size: 0.7rem; color: #94a3b8; font-weight: 500;
+            margin-top: 0.2rem; letter-spacing: 0.04em; text-transform: uppercase;
         }
 
         .sidebar-nav a {
-            display: flex;
-            align-items: center;
-            gap: 0.9rem;
-            padding: 0.8rem 1rem;
-            border-radius: 0.7rem;
-            color: #94a3b8;
-            text-decoration: none;
-            transition: all 0.2s;
-            font-size: 0.95rem;
-            font-weight: 600;
+            display: flex; align-items: center; gap: 0.9rem;
+            padding: 0.8rem 1rem; border-radius: 0.7rem;
+            color: #94a3b8; text-decoration: none;
+            transition: all 0.2s; font-size: 0.95rem; font-weight: 600;
         }
-
-        .sidebar-nav a:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: #e2e8f0;
-        }
-
+        .sidebar-nav a:hover { background: rgba(255,255,255,0.08); color: #e2e8f0; }
         .sidebar-nav a.active {
-            background: #2563eb;
-            color: white;
-            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5);
+            background: #2563eb; color: white;
+            box-shadow: 0 6px 18px rgba(37,99,235,0.5);
         }
 
         .sidebar-footer .btn-logout {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.7rem 1rem;
-            border-radius: 0.7rem;
-            font-size: 0.85rem;
-            font-weight: 700;
-            transition: all 0.25s;
-            background: #dc2626;
-            color: white;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+            width: 100%; display: flex; align-items: center; justify-content: center;
+            gap: 0.5rem; padding: 0.7rem 1rem; border-radius: 0.7rem;
+            font-size: 0.85rem; font-weight: 700; transition: all 0.25s;
+            background: #dc2626; color: white; border: none; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(220,38,38,0.35);
         }
-
         .sidebar-footer .btn-logout:hover {
             background: #b91c1c;
-            box-shadow: 0 6px 18px rgba(220, 38, 38, 0.5);
+            box-shadow: 0 6px 18px rgba(220,38,38,0.5);
         }
 
         .sidebar-toggle {
-            position: fixed;
-            top: 1rem;
-            left: 260px;
-            z-index: 110;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 0 0.5rem 0.5rem 0;
-            width: 28px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+            position: fixed; top: 1rem; left: 260px; z-index: 110;
+            background: white; border: 1px solid #e2e8f0;
+            border-radius: 0 0.5rem 0.5rem 0; width: 28px; height: 60px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 2px 0 12px rgba(0,0,0,0.08);
             transition: left 0.3s ease;
         }
-
-        .sidebar.collapsed ~ .sidebar-toggle {
-            left: 72px;
-        }
-
-        .sidebar-toggle svg {
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar.collapsed ~ .sidebar-toggle svg {
-            transform: rotate(180deg);
-        }
+        .sidebar.collapsed ~ .sidebar-toggle { left: 72px; }
+        .sidebar-toggle svg { transition: transform 0.3s ease; }
+        .sidebar.collapsed ~ .sidebar-toggle svg { transform: rotate(180deg); }
 
         #contenido-principal {
-            margin-left: 260px;
-            padding: 2rem 2.5rem;
-            min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            margin-left: 260px; padding: 2rem 2.5rem;
+            min-height: 100vh; transition: margin-left 0.3s ease;
         }
+        .sidebar.collapsed ~ #contenido-principal { margin-left: 72px; }
 
-        .sidebar.collapsed ~ #contenido-principal {
-            margin-left: 72px;
-        }
-
-        .seccion {
-            display: none;
-        }
-
-        .seccion.active {
-            display: block;
-        }
+        .seccion { display: none; }
+        .seccion.active { display: block; }
 
         /* Botones de configuración */
         .config-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            gap: 1rem;
-            padding: 2rem 1.5rem;
-            border-radius: 1.5rem;
-            font-weight: 700;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            background: white;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            cursor: pointer;
-            min-width: 180px;
-            flex: 1;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            gap: 1rem; padding: 2rem 1.5rem; border-radius: 1.5rem;
+            font-weight: 700; font-size: 0.95rem; transition: all 0.3s ease;
+            background: white; border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer;
+            min-width: 180px; flex: 1;
         }
-
         .config-btn:hover {
             transform: translateY(-6px);
             box-shadow: 0 20px 40px rgba(37,99,235,0.2);
-            border-color: #93c5fd;
-            background: #f8faff;
+            border-color: #93c5fd; background: #f8faff;
         }
-
         .config-btn .icon-circle {
-            width: 4rem;
-            height: 4rem;
-            border-radius: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
+            width: 4rem; height: 4rem; border-radius: 1.2rem;
+            display: flex; align-items: center; justify-content: center; font-size: 2rem;
             background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transition: transform 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.3s;
         }
+        .config-btn:hover .icon-circle { transform: scale(1.1); }
+        .config-btn .btn-title { font-weight: 800; font-size: 1.1rem; color: #0f172a; }
+        .config-btn .btn-desc { font-size: 0.8rem; color: #64748b; font-weight: 500; }
 
-        .config-btn:hover .icon-circle {
-            transform: scale(1.1);
-        }
-
-        .config-btn .btn-title {
-            font-weight: 800;
-            font-size: 1.1rem;
-            color: #0f172a;
-        }
-
-        .config-btn .btn-desc {
-            font-size: 0.8rem;
-            color: #64748b;
-            font-weight: 500;
-        }
-
+        /* Gráfico de barras */
         .chart-bar {
-            transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 12px 12px 4px 4px;
-            min-height: 4px;
+            transition: height 0.8s cubic-bezier(0.4,0,0.2,1);
+            border-radius: 12px 12px 4px 4px; min-height: 4px;
             box-shadow: 0 0 8px rgba(0,0,0,0.1);
         }
-
         .chart-bar.total { background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%); }
         .chart-bar.conf  { background: linear-gradient(180deg, #10b981 0%, #059669 100%); }
         .chart-bar.canc  { background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%); }
         .chart-bar.rep   { background: linear-gradient(180deg, #a855f7 0%, #7e22ce 100%); }
 
-        .chart-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #64748b;
-            margin-top: 0.3rem;
-        }
-
-        .chart-value {
-            font-size: 0.85rem;
-            font-weight: 800;
-            color: #0f172a;
-            margin-bottom: 0.3rem;
-        }
+        .chart-label { font-size: 0.7rem; font-weight: 600; color: #64748b; margin-top: 0.3rem; }
+        .chart-value { font-size: 0.85rem; font-weight: 800; color: #0f172a; margin-bottom: 0.3rem; }
 
         .greeting-card {
             background: linear-gradient(135deg, #0b1a33 0%, #1e3a5f 100%);
-            border-radius: 1.5rem;
-            padding: 2rem 2rem;
-            color: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            margin-bottom: 1.5rem;
+            border-radius: 1.5rem; padding: 2rem 2rem; color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin-bottom: 1.5rem;
         }
 
         .config-card {
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(12px);
-            border-radius: 2rem;
-            padding: 2.5rem;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(12px);
+            border-radius: 2rem; padding: 2.5rem;
             box-shadow: 0 20px 50px rgba(0,0,0,0.1);
             border: 1px solid rgba(255,255,255,0.8);
         }
@@ -496,9 +336,17 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .animate-in { animation: fadeInUp 0.6s ease forwards; }
 
-        .animate-in {
-            animation: fadeInUp 0.6s ease forwards;
+        /* Buscador premium */
+        .search-box {
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 1rem; transition: all 0.3s;
+        }
+        .search-box:focus-within {
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.3);
+            border-color: #2563eb;
         }
     </style>
 </head>
@@ -573,7 +421,7 @@
         </button>
 
         <div id="contenido-principal">
-            <!-- SECCIÓN INICIO (solo tarjeta grande) -->
+            <!-- SECCIÓN INICIO (solo tarjeta grande + bienvenida) -->
             <section id="seccion-inicio" class="seccion active">
                 <div class="greeting-card animate-in">
                     <div class="flex items-center justify-between">
@@ -582,27 +430,28 @@
                             <h1 class="text-3xl font-black">¡Hola, <span id="nombre-usuario-inicio">Doctor</span>!</h1>
                             <p class="text-blue-300 mt-2 text-sm">Panel de control · Resumen del día</p>
                         </div>
-                        <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl" id="avatar-inicio">🩺</div>
+                        <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl" id="avatar-inicio">👨‍⚕️</div>
                     </div>
                 </div>
-                <div class="flex justify-end mb-6">
-                    <button id="btn-refrescar" class="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-transform">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                        Sincronizar
-                    </button>
-                </div>
-                <div class="card p-6 animate-in" style="animation-delay: 0.2s">
-                    <div class="flex items-center justify-between mb-6">
+
+                <div class="card p-6 lg:p-8 animate-in" style="animation-delay: 0.2s; min-height: 420px; transition: all 0.3s ease;">
+                    <div class="flex flex-wrap items-center justify-between mb-6">
                         <div>
-                            <h3 class="text-xl font-black text-slate-800">Distribución de citas</h3>
+                            <h3 class="text-xl lg:text-2xl font-black text-slate-800">Distribución de citas</h3>
                             <p class="text-sm text-slate-500 mt-1">Resumen de los últimos registros</p>
                         </div>
-                        <div class="flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-xl">
-                            <span class="w-3 h-3 rounded-full bg-emerald-500" id="status-dot"></span>
-                            <span class="text-sm font-bold text-emerald-700" id="status-text">En línea</span>
+                        <div class="flex items-center gap-3 mt-3 sm:mt-0">
+                            <div class="flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-xl">
+                                <span class="w-3 h-3 rounded-full bg-emerald-500" id="status-dot"></span>
+                                <span class="text-sm font-bold text-emerald-700" id="status-text">En línea</span>
+                            </div>
+                            <button id="btn-refrescar" class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-transform">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                Sincronizar
+                            </button>
                         </div>
                     </div>
-                    <div class="flex items-end justify-around gap-4 h-52 px-4">
+                    <div class="flex items-end justify-around gap-4 h-56 lg:h-64 px-2">
                         <div class="flex flex-col items-center flex-1 max-w-[80px]">
                             <span class="chart-value" id="chart-val-total">0</span>
                             <div class="w-full chart-bar total" id="chart-bar-total" style="height: 10px;"></div>
@@ -627,19 +476,19 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CITAS -->
+            <!-- SECCIÓN CITAS (mejorada) -->
             <section id="seccion-citas" class="seccion">
                 <div class="flex flex-wrap items-center gap-4 mb-5">
-                    <div class="relative flex-1 max-w-md">
+                    <div class="relative flex-1 max-w-md search-box">
                         <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                        <input type="text" id="busqueda-citas" placeholder="Buscar por nombre, teléfono, doctor..." class="pl-12 pr-4 py-3 w-full rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                        <input type="text" id="busqueda-citas" placeholder="Buscar por nombre, teléfono, doctor..." class="pl-12 pr-4 py-3.5 w-full bg-transparent rounded-xl focus:outline-none text-slate-700 placeholder:text-slate-400 font-medium">
                     </div>
                     <button id="btn-refrescar-citas" class="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-transform ml-auto">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         Sincronizar
                     </button>
                 </div>
-                <div class="card overflow-hidden flex flex-col">
+                <div class="card overflow-hidden flex flex-col shadow-lg rounded-2xl border-0">
                     <div class="table-container">
                         <table class="w-full min-w-max text-left">
                             <thead id="tabla-cabecera" class="table-header text-xs uppercase tracking-widest font-extrabold"></thead>
@@ -684,7 +533,7 @@
         </div>
     </div>
 
-    <!-- MODALES -->
+    <!-- MODALES (sin cambios) -->
     <div id="modal-columnas" class="fixed inset-0 modal-overlay hidden items-center justify-center p-4 z-[60]">
         <div class="modal-content w-full max-w-lg p-6 flex flex-col" style="max-height: 70vh;">
             <div class="flex justify-between items-center mb-4 border-b pb-3">
@@ -782,10 +631,9 @@
         const modalConfirmacion = document.getElementById('modal-confirmacion');
         let pendingDeleteId = null;
 
-        // Interfaz premium: saludo, fecha y avatar (solo emoji)
         function actualizarInterfazPremium(usuario) {
             document.getElementById('nombre-usuario-inicio').textContent = usuario;
-            document.getElementById('avatar-inicio').textContent = '🩺';
+            document.getElementById('avatar-inicio').textContent = '👨‍⚕️';
             const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('fecha-actual').textContent = new Date().toLocaleDateString('es-ES', opciones);
         }
@@ -857,7 +705,7 @@
 
         function actualizarGrafico(total, confirmadas, canceladas, reprogramadas) {
             const maxVal = Math.max(total, confirmadas, canceladas, reprogramadas, 1);
-            const scale = (val) => Math.max(8, (val / maxVal) * 140);
+            const scale = (val) => Math.max(8, (val / maxVal) * 150);
             document.getElementById('chart-bar-total').style.height = scale(total) + 'px';
             document.getElementById('chart-bar-conf').style.height = scale(confirmadas) + 'px';
             document.getElementById('chart-bar-canc').style.height = scale(canceladas) + 'px';
@@ -868,7 +716,7 @@
             document.getElementById('chart-val-rep').innerText = reprogramadas;
         }
 
-        function renderizarCuerpoTabla(citas) { const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col)); if (citas.length === 0) { const colspan = columnasMostradas.length + 1; document.getElementById('tabla-cuerpo').innerHTML = `<tr><td colspan="${colspan}" class="px-6 py-12 text-center text-slate-400"><div class="flex flex-col items-center gap-2"><svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg><span>No hay citas registradas</span></div></td></tr>`; return; } document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => { let camposParseados = {}; try { camposParseados = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); } catch (e) {} const citaString = encodeURIComponent(JSON.stringify({ ...c, camposParseados })); let badgeClass = 'badge-pendiente'; let estadoLower = c.estado?.toLowerCase() || ''; if (estadoLower === 'confirmó') badgeClass = 'badge-confirmada'; else if (estadoLower.includes('cancel')) badgeClass = 'badge-cancelada'; else if (estadoLower.includes('reprogram')) badgeClass = 'badge-reprogramada'; else if (estadoLower === 'esperando respuesta') badgeClass = 'badge-esperando'; let row = `<tr class="table-row hover:bg-slate-50">`; columnasMostradas.forEach(colKey => { let valor = '-'; if (colKey === 'id') { valor = `<span class="font-bold text-slate-400">${c.id||'-'}</span>`; } else if (colKey === 'estado') { valor = `<span class="badge ${badgeClass}">${c.estado||'pendiente'}</span>`; } else if (colKey === 'procesado') { valor = `<span class="font-medium text-slate-600">${c.procesado||'-'}</span>`; } else { valor = camposParseados[colKey] || '-'; if (colKey.toLowerCase().includes('nombres')) { valor = `<span class="font-bold text-slate-800">${valor}</span>`; } else if (colKey.toLowerCase().includes('profesional')) { valor = `<span class="font-bold text-blue-600">${valor}</span>`; } if (colKey.toLowerCase() === 'telefono' && valor !== '-') { const telefono = valor; valor = `<span class="flex items-center gap-1"><span>${telefono}</span><button onclick="abrirWhatsApp('${telefono}')" class="btn-whatsapp"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></button></span>`; } } row += `<td class="px-6 py-4 text-slate-700">${valor}</td>`; }); row += `<td class="px-6 py-4 text-right"><div class="flex items-center justify-end gap-2"><button onclick="prepararEdicion('${citaString}')" class="btn-primary px-4 py-1.5 rounded-lg text-xs font-bold">Editar</button><button onclick="eliminarCita(${c.id})" class="btn-delete px-4 py-1.5 rounded-lg text-xs font-bold">Eliminar</button></div></td></tr>`; return row; }).join(''); }
+        function renderizarCuerpoTabla(citas) { const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col)); if (citas.length === 0) { const colspan = columnasMostradas.length + 1; document.getElementById('tabla-cuerpo').innerHTML = `<tr><td colspan="${colspan}" class="px-6 py-12 text-center text-slate-400"><div class="flex flex-col items-center gap-2"><svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg><span>No hay citas registradas</span></div></td></tr>`; return; } document.getElementById('tabla-cuerpo').innerHTML = citas.map(c => { let camposParseados = {}; try { camposParseados = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); } catch (e) {} const citaString = encodeURIComponent(JSON.stringify({ ...c, camposParseados })); let badgeClass = 'badge-pendiente'; let estadoLower = c.estado?.toLowerCase() || ''; if (estadoLower === 'confirmó') badgeClass = 'badge-confirmada'; else if (estadoLower.includes('cancel')) badgeClass = 'badge-cancelada'; else if (estadoLower.includes('reprogram')) badgeClass = 'badge-reprogramada'; else if (estadoLower === 'esperando respuesta') badgeClass = 'badge-esperando'; let row = `<tr class="table-row">`; columnasMostradas.forEach(colKey => { let valor = '-'; if (colKey === 'id') { valor = `<span class="font-bold text-slate-400">${c.id||'-'}</span>`; } else if (colKey === 'estado') { valor = `<span class="badge ${badgeClass}">${c.estado||'pendiente'}</span>`; } else if (colKey === 'procesado') { valor = `<span class="font-medium text-slate-600">${c.procesado||'-'}</span>`; } else { valor = camposParseados[colKey] || '-'; if (colKey.toLowerCase().includes('nombres')) { valor = `<span class="font-bold text-slate-800">${valor}</span>`; } else if (colKey.toLowerCase().includes('profesional')) { valor = `<span class="font-bold text-blue-600">${valor}</span>`; } if (colKey.toLowerCase() === 'telefono' && valor !== '-') { const telefono = valor; valor = `<span class="flex items-center gap-1"><span>${telefono}</span><button onclick="abrirWhatsApp('${telefono}')" class="btn-whatsapp"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></button></span>`; } } row += `<td class="px-6 py-4 text-slate-700">${valor}</td>`; }); row += `<td class="px-6 py-4 text-right"><div class="flex items-center justify-end gap-2"><button onclick="prepararEdicion('${citaString}')" class="btn-primary px-4 py-1.5 rounded-lg text-xs font-bold">Editar</button><button onclick="eliminarCita(${c.id})" class="btn-delete px-4 py-1.5 rounded-lg text-xs font-bold">Eliminar</button></div></td></tr>`; return row; }).join(''); }
 
         function aplicarFiltroYRenderizar() { const termino = terminoBusqueda.toLowerCase().trim(); let citasFiltradas = citasOriginales; if (termino) { citasFiltradas = citasOriginales.filter(c => { let textoCompleto = ''; textoCompleto += (c.id || '') + ' '; textoCompleto += (c.procesado || '') + ' '; textoCompleto += (c.estado || '') + ' '; try { const cp = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); Object.values(cp).forEach(v => textoCompleto += (v || '') + ' '); } catch (e) {} return textoCompleto.toLowerCase().includes(termino); }); } renderizarCuerpoTabla(citasFiltradas); }
 
