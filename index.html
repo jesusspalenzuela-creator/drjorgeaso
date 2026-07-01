@@ -432,7 +432,7 @@
                     </div>
                 </div>
 
-                <div class="card p-6 lg:p-8 animate-in" style="animation-delay: 0.2s; min-height: 420px; transition: all 0.3s ease;">
+                <div class="card p-6 lg:p-8 animate-in" style="min-height: 420px;">
                     <div class="flex flex-wrap items-center justify-between mb-6">
                         <div>
                             <h3 class="text-xl lg:text-2xl font-black text-slate-800">Distribución de citas</h3>
@@ -474,7 +474,7 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CITAS (con animación de entrada) -->
+            <!-- SECCIÓN CITAS (con animación sincronizada) -->
             <section id="seccion-citas" class="seccion">
                 <div class="flex flex-wrap items-center gap-4 mb-5 animate-in">
                     <div class="relative flex-1 max-w-md search-box">
@@ -486,7 +486,7 @@
                         Sincronizar
                     </button>
                 </div>
-                <div class="card overflow-hidden flex flex-col shadow-lg rounded-2xl border-0 animate-in" style="animation-delay: 0.15s;">
+                <div class="card overflow-hidden flex flex-col shadow-lg rounded-2xl border-0 animate-in">
                     <div class="table-container">
                         <table class="w-full min-w-max text-left">
                             <thead id="tabla-cabecera" class="table-header text-xs uppercase tracking-widest font-extrabold"></thead>
@@ -496,7 +496,7 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CONFIGURACIÓN (con animación de entrada) -->
+            <!-- SECCIÓN CONFIGURACIÓN (con animación sincronizada) -->
             <section id="seccion-configuracion" class="seccion">
                 <div class="flex flex-col items-center justify-center min-h-[60vh] animate-in">
                     <div class="config-card w-full max-w-3xl">
@@ -724,7 +724,27 @@
 
         document.getElementById('busqueda-citas').addEventListener('input', function(e) { terminoBusqueda = e.target.value; hashTablaActual = ''; aplicarFiltroYRenderizar(); });
 
-        document.querySelectorAll('.sidebar-nav a').forEach(enlace => { enlace.addEventListener('click', function(e) { e.preventDefault(); document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active')); this.classList.add('active'); document.querySelectorAll('.seccion').forEach(sec => sec.classList.remove('active')); document.getElementById('seccion-' + this.dataset.section).classList.add('active'); }); });
+        // Función para reiniciar animaciones al cambiar de sección
+        function reiniciarAnimaciones(seccion) {
+            const elementos = seccion.querySelectorAll('.animate-in');
+            elementos.forEach(el => {
+                el.classList.remove('animate-in');
+                void el.offsetWidth; // fuerza reflow
+                el.classList.add('animate-in');
+            });
+        }
+
+        document.querySelectorAll('.sidebar-nav a').forEach(enlace => {
+            enlace.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.seccion').forEach(sec => sec.classList.remove('active'));
+                const seccionActiva = document.getElementById('seccion-' + this.dataset.section);
+                seccionActiva.classList.add('active');
+                reiniciarAnimaciones(seccionActiva);
+            });
+        });
 
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('sidebar-toggle');
