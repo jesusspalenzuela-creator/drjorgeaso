@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clinovix · Panel de Gestión</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,7 +14,7 @@
         }
 
         body {
-            font-family: 'Inter', system-ui, sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background: #f0f4f8;
             color: #1e293b;
         }
@@ -34,77 +34,6 @@
             border-color: rgba(37, 99, 235, 0.2);
         }
 
-        .stat-card {
-            background: white;
-            border-radius: 1.5rem;
-            padding: 1.5rem 1.5rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0, 0, 0, 0.04);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-        }
-
-        .stat-card:hover::after {
-            opacity: 1;
-        }
-
-        .stat-card .stat-icon {
-            width: 3.5rem;
-            height: 3.5rem;
-            border-radius: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            flex-shrink: 0;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transition: transform 0.3s;
-        }
-
-        .stat-card:hover .stat-icon {
-            transform: scale(1.1);
-        }
-
-        .stat-card .stat-info .value {
-            font-size: 2.4rem;
-            font-weight: 900;
-            line-height: 1;
-            color: #0f172a;
-            letter-spacing: -0.5px;
-        }
-
-        .stat-card .stat-info .label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-top: 0.2rem;
-        }
-
         .btn-primary {
             background: #2563eb;
             color: white;
@@ -118,21 +47,6 @@
             background: #1d4ed8;
             box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
             transform: scale(1.02);
-        }
-
-        .btn-secondary {
-            background: #f8fafc;
-            color: #1e293b;
-            border: 1px solid #e2e8f0;
-            transition: all 0.3s;
-            border-radius: 0.85rem;
-            font-weight: 600;
-        }
-
-        .btn-secondary:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
         }
 
         .btn-danger {
@@ -659,7 +573,7 @@
         </button>
 
         <div id="contenido-principal">
-            <!-- SECCIÓN INICIO (premium) -->
+            <!-- SECCIÓN INICIO (solo tarjeta grande) -->
             <section id="seccion-inicio" class="seccion active">
                 <div class="greeting-card animate-in">
                     <div class="flex items-center justify-between">
@@ -668,52 +582,14 @@
                             <h1 class="text-3xl font-black">¡Hola, <span id="nombre-usuario-inicio">Doctor</span>!</h1>
                             <p class="text-blue-300 mt-2 text-sm">Panel de control · Resumen del día</p>
                         </div>
-                        <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl" id="avatar-inicio">👨‍⚕️</div>
+                        <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl" id="avatar-inicio">🩺</div>
                     </div>
                 </div>
                 <div class="flex justify-end mb-6">
-                    <button id="btn-refrescar" class="btn-secondary flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm">
+                    <button id="btn-refrescar" class="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-transform">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         Sincronizar
                     </button>
-                </div>
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6 animate-in" style="animation-delay: 0.1s">
-                    <div class="stat-card">
-                        <div class="stat-icon bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-blue-200">
-                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                        </div>
-                        <div class="stat-info">
-                            <div class="value" id="stat-total">0</div>
-                            <div class="label">Total Citas</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-emerald-200">
-                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                        </div>
-                        <div class="stat-info">
-                            <div class="value" id="stat-confirmadas">0</div>
-                            <div class="label">Confirmadas</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon bg-gradient-to-br from-red-400 to-red-600 text-white shadow-red-200">
-                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </div>
-                        <div class="stat-info">
-                            <div class="value" id="stat-canceladas">0</div>
-                            <div class="label">Canceladas</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-purple-200">
-                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                        </div>
-                        <div class="stat-info">
-                            <div class="value" id="stat-reprogramadas">0</div>
-                            <div class="label">Reprogramadas</div>
-                        </div>
-                    </div>
                 </div>
                 <div class="card p-6 animate-in" style="animation-delay: 0.2s">
                     <div class="flex items-center justify-between mb-6">
@@ -751,14 +627,14 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CITAS (sin cambios funcionales) -->
+            <!-- SECCIÓN CITAS -->
             <section id="seccion-citas" class="seccion">
                 <div class="flex flex-wrap items-center gap-4 mb-5">
                     <div class="relative flex-1 max-w-md">
                         <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         <input type="text" id="busqueda-citas" placeholder="Buscar por nombre, teléfono, doctor..." class="pl-12 pr-4 py-3 w-full rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
                     </div>
-                    <button id="btn-refrescar-citas" class="btn-secondary flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm ml-auto">
+                    <button id="btn-refrescar-citas" class="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-transform ml-auto">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         Sincronizar
                     </button>
@@ -773,7 +649,7 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CONFIGURACIÓN (botones solo aquí) -->
+            <!-- SECCIÓN CONFIGURACIÓN -->
             <section id="seccion-configuracion" class="seccion">
                 <div class="flex flex-col items-center justify-center min-h-[60vh]">
                     <div class="config-card w-full max-w-3xl">
@@ -906,10 +782,10 @@
         const modalConfirmacion = document.getElementById('modal-confirmacion');
         let pendingDeleteId = null;
 
-        // Actualizar saludo y fecha al cargar
+        // Interfaz premium: saludo, fecha y avatar (solo emoji)
         function actualizarInterfazPremium(usuario) {
             document.getElementById('nombre-usuario-inicio').textContent = usuario;
-            document.getElementById('avatar-inicio').textContent = usuario.charAt(0).toUpperCase() + '👨‍⚕️';
+            document.getElementById('avatar-inicio').textContent = '🩺';
             const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('fecha-actual').textContent = new Date().toLocaleDateString('es-ES', opciones);
         }
@@ -996,7 +872,7 @@
 
         function aplicarFiltroYRenderizar() { const termino = terminoBusqueda.toLowerCase().trim(); let citasFiltradas = citasOriginales; if (termino) { citasFiltradas = citasOriginales.filter(c => { let textoCompleto = ''; textoCompleto += (c.id || '') + ' '; textoCompleto += (c.procesado || '') + ' '; textoCompleto += (c.estado || '') + ' '; try { const cp = typeof c.campos_personalizados === 'string' ? JSON.parse(c.campos_personalizados) : (c.campos_personalizados || {}); Object.values(cp).forEach(v => textoCompleto += (v || '') + ' '); } catch (e) {} return textoCompleto.toLowerCase().includes(termino); }); } renderizarCuerpoTabla(citasFiltradas); }
 
-        async function cargarCitasDelServidor() { try { const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`); if (!res.ok) throw new Error(`HTTP error ${res.status}`); const text = await res.text(); let citas = []; if (text && text.trim() !== '') { try { const data = JSON.parse(text); citas = data.citas || (Array.isArray(data) ? data : []); } catch (parseError) { console.warn('Error al parsear JSON:', parseError); citas = []; } } else { citas = []; } actualizarEstadoConexion(true); const total = citas.length; const confirmadas = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length; const canceladas = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length; const reprogramadas = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length; document.getElementById('stat-total').innerText = total; document.getElementById('stat-confirmadas').innerText = confirmadas; document.getElementById('stat-canceladas').innerText = canceladas; document.getElementById('stat-reprogramadas').innerText = reprogramadas; actualizarGrafico(total, confirmadas, canceladas, reprogramadas); const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col)); let htmlCabecera = `<tr>`; columnasMostradas.forEach(colKey => { const label = NOMBRES_COLUMNAS_SISTEMA[colKey] || colKey; htmlCabecera += `<th class="px-6 py-4 text-slate-600 font-extrabold text-xs uppercase tracking-widest">${label}</th>`; }); htmlCabecera += `<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`; document.getElementById('tabla-cabecera').innerHTML = htmlCabecera; if (citasAnteriores.length > 0) { citas.forEach(nuevaCita => { const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id); if (citaVieja && citaVieja.estado !== nuevaCita.estado) { let nombrePaciente = ""; try { let jsonParseado = typeof nuevaCita.campos_personalizados === 'string' ? JSON.parse(nuevaCita.campos_personalizados) : nuevaCita.campos_personalizados; nombrePaciente = jsonParseado['Nombres'] || `Cita #${nuevaCita.id}`; } catch (e) { nombrePaciente = `Cita #${nuevaCita.id}`; } mostrarNotificacion('Actualización', `${nombrePaciente} ha cambiado a: ${nuevaCita.estado.toUpperCase()}`, nuevaCita.estado.toLowerCase()); } }); } const nuevoHash = JSON.stringify(citas) + JSON.stringify(ordenColumnas) + JSON.stringify(columnasOcultas) + terminoBusqueda; if (nuevoHash === hashTablaActual && citasOriginales.length === citas.length && !terminoBusqueda) return; hashTablaActual = nuevoHash; citasOriginales = citas; citasAnteriores = JSON.parse(JSON.stringify(citas)); aplicarFiltroYRenderizar(); } catch (e) { console.error("Error al cargar:", e); actualizarEstadoConexion(false); const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col)); const colspan = columnasMostradas.length + 1; document.getElementById('tabla-cuerpo').innerHTML = `<tr><td colspan="${colspan}" class="px-6 py-12 text-center text-red-400"><div class="flex flex-col items-center gap-2"><svg class="w-12 h-12 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg><span>Error al cargar las citas</span></div></td></tr>`; } }
+        async function cargarCitasDelServidor() { try { const res = await fetch(`${N8N_GET_URL}?cliente=${clienteLogueado}`); if (!res.ok) throw new Error(`HTTP error ${res.status}`); const text = await res.text(); let citas = []; if (text && text.trim() !== '') { try { const data = JSON.parse(text); citas = data.citas || (Array.isArray(data) ? data : []); } catch (parseError) { console.warn('Error al parsear JSON:', parseError); citas = []; } } else { citas = []; } actualizarEstadoConexion(true); const total = citas.length; const confirmadas = citas.filter(c => c.estado?.toLowerCase() === 'confirmó').length; const canceladas = citas.filter(c => c.estado?.toLowerCase() === 'canceló' || c.estado?.toLowerCase() === 'cancelada').length; const reprogramadas = citas.filter(c => c.estado?.toLowerCase() === 'reprogramó' || c.estado?.toLowerCase() === 'reprogramada').length; actualizarGrafico(total, confirmadas, canceladas, reprogramadas); const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col)); let htmlCabecera = `<tr>`; columnasMostradas.forEach(colKey => { const label = NOMBRES_COLUMNAS_SISTEMA[colKey] || colKey; htmlCabecera += `<th class="px-6 py-4 text-slate-600 font-extrabold text-xs uppercase tracking-widest">${label}</th>`; }); htmlCabecera += `<th class="px-6 py-4 text-right text-slate-600 font-extrabold text-xs uppercase tracking-widest">Acciones</th></tr>`; document.getElementById('tabla-cabecera').innerHTML = htmlCabecera; if (citasAnteriores.length > 0) { citas.forEach(nuevaCita => { const citaVieja = citasAnteriores.find(c => c.id === nuevaCita.id); if (citaVieja && citaVieja.estado !== nuevaCita.estado) { let nombrePaciente = ""; try { let jsonParseado = typeof nuevaCita.campos_personalizados === 'string' ? JSON.parse(nuevaCita.campos_personalizados) : nuevaCita.campos_personalizados; nombrePaciente = jsonParseado['Nombres'] || `Cita #${nuevaCita.id}`; } catch (e) { nombrePaciente = `Cita #${nuevaCita.id}`; } mostrarNotificacion('Actualización', `${nombrePaciente} ha cambiado a: ${nuevaCita.estado.toUpperCase()}`, nuevaCita.estado.toLowerCase()); } }); } const nuevoHash = JSON.stringify(citas) + JSON.stringify(ordenColumnas) + JSON.stringify(columnasOcultas) + terminoBusqueda; if (nuevoHash === hashTablaActual && citasOriginales.length === citas.length && !terminoBusqueda) return; hashTablaActual = nuevoHash; citasOriginales = citas; citasAnteriores = JSON.parse(JSON.stringify(citas)); aplicarFiltroYRenderizar(); } catch (e) { console.error("Error al cargar:", e); actualizarEstadoConexion(false); const columnasMostradas = ordenColumnas.filter(col => !columnasOcultas.includes(col)); const colspan = columnasMostradas.length + 1; document.getElementById('tabla-cuerpo').innerHTML = `<tr><td colspan="${colspan}" class="px-6 py-12 text-center text-red-400"><div class="flex flex-col items-center gap-2"><svg class="w-12 h-12 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg><span>Error al cargar las citas</span></div></td></tr>`; } }
         window.prepararEdicion = (citaString) => { const c = JSON.parse(decodeURIComponent(citaString)); idCitaEnEdicion = c.id; document.getElementById('titulo-modal').innerText = "Editando Cita #" + c.id; const datos = { procesado: c.procesado || '', estado: c.estado || 'Esperando respuesta', ...c.camposParseados }; renderizarCamposModal(datos); modal.classList.remove('hidden'); modal.classList.add('flex'); };
         document.getElementById('form-cita').addEventListener('submit', async (e) => { e.preventDefault(); const camposFijos = {}; document.querySelectorAll('.input-fijo').forEach(i => { camposFijos[i.getAttribute('data-key')] = i.value; }); const camposDinamicos = {}; document.querySelectorAll('.input-dinamico').forEach(i => { if (i.value) camposDinamicos[i.getAttribute('data-key')] = i.value; }); const payload = { ...(idCitaEnEdicion && { id: idCitaEnEdicion }), procesado: camposFijos.procesado || '', estado: camposFijos.estado || 'Esperando respuesta', campos_personalizados: camposDinamicos }; const btnSubmit = e.target.querySelector('button[type="submit"]'); btnSubmit.innerText = "Guardando..."; btnSubmit.disabled = true; try { await fetch(N8N_POST_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } }); cerrarModal(); resetearFormulario(); mostrarNotificacion("Éxito", "Guardado correctamente.", "success"); hashTablaActual = ""; await cargarCitasDelServidor(); } catch (error) { mostrarNotificacion("Error", "No se pudo guardar.", "error"); } finally { btnSubmit.innerText = "Guardar Información"; btnSubmit.disabled = false; } });
 
