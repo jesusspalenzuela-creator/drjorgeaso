@@ -339,7 +339,7 @@
 
         .search-box {
             background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.5);
+            border: 1px solid #9ca3af; /* borde gris oscuro visible */
             border-radius: 1rem; transition: all 0.3s;
         }
         .search-box:focus-within {
@@ -474,20 +474,23 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CITAS (con botón Enviar recordatorios) -->
+            <!-- SECCIÓN CITAS (con botón Enviar recordatorios a la izquierda) -->
             <section id="seccion-citas" class="seccion">
                 <div class="flex flex-wrap items-center gap-4 mb-5 animate-in">
+                    <!-- Botón Enviar recordatorios (izquierda) -->
+                    <button id="btn-enviar-recordatorios" class="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-[#25D366] text-white shadow-md hover:bg-[#1da851] hover:scale-105 transition-transform">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                        Enviar recordatorios
+                    </button>
+                    <!-- Buscador -->
                     <div class="relative flex-1 max-w-md search-box">
                         <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         <input type="text" id="busqueda-citas" placeholder="Buscar por nombre, teléfono, doctor..." class="pl-12 pr-4 py-3.5 w-full bg-transparent rounded-xl focus:outline-none text-slate-700 placeholder:text-slate-400 font-medium">
                     </div>
-                    <button id="btn-refrescar-citas" class="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-transform">
+                    <!-- Botón Sincronizar (derecha) -->
+                    <button id="btn-refrescar-citas" class="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-transform ml-auto">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         Sincronizar
-                    </button>
-                    <button id="btn-enviar-recordatorios" class="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-transform">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                        Enviar recordatorios
                     </button>
                 </div>
                 <div class="card overflow-hidden flex flex-col shadow-lg rounded-2xl border-0 animate-in">
@@ -681,7 +684,7 @@
         document.getElementById('btn-agregar-campo').onclick = () => { document.getElementById('campo-nombre').value = ''; document.getElementById('campo-valor-default').value = ''; modalNuevoCampo.classList.remove('hidden'); modalNuevoCampo.classList.add('flex'); };
         document.getElementById('btn-cerrar-modal-campo').onclick = () => { modalNuevoCampo.classList.add('hidden'); modalNuevoCampo.classList.remove('flex'); };
 
-        // Lógica para Enviar recordatorios
+        // Lógica para Enviar recordatorios (notificaciones en español)
         document.getElementById('btn-enviar-recordatorios').addEventListener('click', async () => {
             if (!clienteLogueado) {
                 mostrarNotificacion("Error", "No hay sesión activa.", "error");
@@ -699,7 +702,7 @@
                 if (!response.ok) throw new Error(`Error ${response.status}`);
                 const result = await response.json();
                 if (result.success) {
-                    mostrarNotificacion("Recordatorios enviados", "Se ha iniciado el envío de recordatorios.", "success");
+                    mostrarNotificacion("Recordatorios enviados", "Se ha iniciado el envío de recordatorios correctamente.", "success");
                 } else {
                     mostrarNotificacion("Atención", result.message || "El webhook respondió pero sin éxito.", "warning");
                 }
