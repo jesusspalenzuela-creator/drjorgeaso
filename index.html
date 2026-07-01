@@ -331,6 +331,12 @@
             border: 1px solid rgba(255,255,255,0.8);
         }
 
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: fadeInUp 0.6s ease forwards; }
+
         .search-box {
             background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);
             border: 1px solid rgba(255,255,255,0.5);
@@ -415,7 +421,7 @@
         <div id="contenido-principal">
             <!-- SECCIÓN INICIO -->
             <section id="seccion-inicio" class="seccion active">
-                <div class="greeting-card">
+                <div class="greeting-card animate-in">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-blue-200 text-sm font-medium mb-1" id="fecha-actual"></p>
@@ -426,7 +432,7 @@
                     </div>
                 </div>
 
-                <div class="card p-6 lg:p-8" style="min-height: 420px;">
+                <div class="card p-6 lg:p-8 animate-in" style="min-height: 420px;">
                     <div class="flex flex-wrap items-center justify-between mb-6">
                         <div>
                             <h3 class="text-xl lg:text-2xl font-black text-slate-800">Distribución de citas</h3>
@@ -468,19 +474,23 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CITAS -->
+            <!-- SECCIÓN CITAS (con botón Enviar recordatorios) -->
             <section id="seccion-citas" class="seccion">
-                <div class="flex flex-wrap items-center gap-4 mb-5">
+                <div class="flex flex-wrap items-center gap-4 mb-5 animate-in">
                     <div class="relative flex-1 max-w-md search-box">
                         <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         <input type="text" id="busqueda-citas" placeholder="Buscar por nombre, teléfono, doctor..." class="pl-12 pr-4 py-3.5 w-full bg-transparent rounded-xl focus:outline-none text-slate-700 placeholder:text-slate-400 font-medium">
                     </div>
-                    <button id="btn-refrescar-citas" class="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-transform ml-auto">
+                    <button id="btn-refrescar-citas" class="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-transform">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         Sincronizar
                     </button>
+                    <button id="btn-enviar-recordatorios" class="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-transform">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                        Enviar recordatorios
+                    </button>
                 </div>
-                <div class="card overflow-hidden flex flex-col shadow-lg rounded-2xl border-0">
+                <div class="card overflow-hidden flex flex-col shadow-lg rounded-2xl border-0 animate-in">
                     <div class="table-container">
                         <table class="w-full min-w-max text-left">
                             <thead id="tabla-cabecera" class="table-header text-xs uppercase tracking-widest font-extrabold"></thead>
@@ -490,9 +500,9 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CONFIGURACIÓN -->
+            <!-- SECCIÓN CONFIGURACIÓN (con animación sincronizada) -->
             <section id="seccion-configuracion" class="seccion">
-                <div class="flex flex-col items-center justify-center min-h-[60vh]">
+                <div class="flex flex-col items-center justify-center min-h-[60vh] animate-in">
                     <div class="config-card w-full max-w-3xl">
                         <h2 class="text-2xl font-black text-slate-900 mb-2 text-center">Centro de Configuración</h2>
                         <p class="text-slate-500 text-center mb-8">Personaliza tu panel de gestión según tus necesidades</p>
@@ -603,6 +613,7 @@
         const N8N_LOGIN_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/login';
         const N8N_CONFIG_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/guardarconfig';
         const N8N_DELETE_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/eliminar';
+        const N8N_ENVIAR_RECORDATORIOS_URL = 'https://dr-jorge-aso-n8n.pmsak1.easypanel.host/webhook/enviarmanualmente';
         let clienteLogueado = "";
         let idCitaEnEdicion = null;
         const COLUMNAS_FIJAS = ['id', 'procesado', 'estado'];
@@ -669,6 +680,38 @@
         document.getElementById('btn-refrescar-citas').onclick = () => { mostrarNotificacion("Sincronizando...", "Actualizando agenda médica.", "info"); cargarCitasDelServidor(); };
         document.getElementById('btn-agregar-campo').onclick = () => { document.getElementById('campo-nombre').value = ''; document.getElementById('campo-valor-default').value = ''; modalNuevoCampo.classList.remove('hidden'); modalNuevoCampo.classList.add('flex'); };
         document.getElementById('btn-cerrar-modal-campo').onclick = () => { modalNuevoCampo.classList.add('hidden'); modalNuevoCampo.classList.remove('flex'); };
+
+        // Lógica para Enviar recordatorios
+        document.getElementById('btn-enviar-recordatorios').addEventListener('click', async () => {
+            if (!clienteLogueado) {
+                mostrarNotificacion("Error", "No hay sesión activa.", "error");
+                return;
+            }
+            const btn = document.getElementById('btn-enviar-recordatorios');
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg> Enviando...`;
+            try {
+                const response = await fetch(N8N_ENVIAR_RECORDATORIOS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario: clienteLogueado })
+                });
+                if (!response.ok) throw new Error(`Error ${response.status}`);
+                const result = await response.json();
+                if (result.success) {
+                    mostrarNotificacion("Recordatorios enviados", "Se ha iniciado el envío de recordatorios.", "success");
+                } else {
+                    mostrarNotificacion("Atención", result.message || "El webhook respondió pero sin éxito.", "warning");
+                }
+            } catch (error) {
+                console.error("Error al enviar recordatorios:", error);
+                mostrarNotificacion("Error", "No se pudo conectar con el servicio de recordatorios.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> Enviar recordatorios`;
+            }
+        });
+
         document.getElementById('form-nuevo-campo').addEventListener('submit', async (e) => { e.preventDefault(); const nombre = document.getElementById('campo-nombre').value.trim(); const valorDefault = document.getElementById('campo-valor-default').value.trim(); if (!nombre) { alert("El nombre del campo es obligatorio."); return; } if (COLUMNAS_FIJAS.includes(nombre.toLowerCase())) { alert(`El campo '${nombre}' está reservado por el sistema.`); return; } if (camposPlantilla.includes(nombre)) { alert("Este campo ya existe."); return; } camposPlantilla.push(nombre); if (valorDefault) { valoresDefault[nombre] = valorDefault; } const idxProcesado = ordenColumnas.indexOf('procesado'); if (idxProcesado !== -1) { ordenColumnas.splice(idxProcesado, 0, nombre); } else { const idxEstado = ordenColumnas.indexOf('estado'); if (idxEstado !== -1) ordenColumnas.splice(idxEstado, 0, nombre); else ordenColumnas.push(nombre); } await sincronizarConfiguracionNube(); modalNuevoCampo.classList.add('hidden'); modalNuevoCampo.classList.remove('flex'); hashTablaActual = ""; cargarCitasDelServidor(); mostrarNotificacion("Campo Creado", `Columna '${nombre}' guardada.`, "success"); if (!modal.classList.contains('hidden')) renderizarCamposModal(); });
 
         function renderizarModalVistas() { const container = document.getElementById('lista-columnas'); container.innerHTML = ordenColumnas.map((colKey, index) => { const isChecked = !columnasOcultas.includes(colKey) ? 'checked' : ''; const label = NOMBRES_COLUMNAS_SISTEMA[colKey] || `${colKey}`; return `<div class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50"><label class="flex items-center gap-3 cursor-pointer flex-1"><input type="checkbox" value="${colKey}" class="chk-columna w-5 h-5 rounded text-blue-600" ${isChecked}><span class="font-semibold text-slate-700">${label}</span></label><div class="flex gap-1"><button type="button" onclick="moverColumna(${index}, -1)" class="p-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg" ${index===0?'disabled':''}><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg></button><button type="button" onclick="moverColumna(${index}, 1)" class="p-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg" ${index===ordenColumnas.length-1?'disabled':''}><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button></div></div>`; }).join(''); }
@@ -718,13 +761,25 @@
 
         document.getElementById('busqueda-citas').addEventListener('input', function(e) { terminoBusqueda = e.target.value; hashTablaActual = ''; aplicarFiltroYRenderizar(); });
 
+        // Función para reiniciar animaciones al cambiar de sección
+        function reiniciarAnimaciones(seccion) {
+            const elementos = seccion.querySelectorAll('.animate-in');
+            elementos.forEach(el => {
+                el.classList.remove('animate-in');
+                void el.offsetWidth; // fuerza reflow
+                el.classList.add('animate-in');
+            });
+        }
+
         document.querySelectorAll('.sidebar-nav a').forEach(enlace => {
             enlace.addEventListener('click', function(e) {
                 e.preventDefault();
                 document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
                 this.classList.add('active');
                 document.querySelectorAll('.seccion').forEach(sec => sec.classList.remove('active'));
-                document.getElementById('seccion-' + this.dataset.section).classList.add('active');
+                const seccionActiva = document.getElementById('seccion-' + this.dataset.section);
+                seccionActiva.classList.add('active');
+                reiniciarAnimaciones(seccionActiva);
             });
         });
 
