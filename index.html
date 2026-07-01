@@ -331,12 +331,6 @@
             border: 1px solid rgba(255,255,255,0.8);
         }
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-in { animation: fadeInUp 0.6s ease forwards; }
-
         .search-box {
             background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);
             border: 1px solid rgba(255,255,255,0.5);
@@ -421,7 +415,7 @@
         <div id="contenido-principal">
             <!-- SECCIÓN INICIO -->
             <section id="seccion-inicio" class="seccion active">
-                <div class="greeting-card animate-in">
+                <div class="greeting-card">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-blue-200 text-sm font-medium mb-1" id="fecha-actual"></p>
@@ -432,7 +426,7 @@
                     </div>
                 </div>
 
-                <div class="card p-6 lg:p-8 animate-in" style="min-height: 420px;">
+                <div class="card p-6 lg:p-8" style="min-height: 420px;">
                     <div class="flex flex-wrap items-center justify-between mb-6">
                         <div>
                             <h3 class="text-xl lg:text-2xl font-black text-slate-800">Distribución de citas</h3>
@@ -474,9 +468,9 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CITAS (con animación sincronizada) -->
+            <!-- SECCIÓN CITAS -->
             <section id="seccion-citas" class="seccion">
-                <div class="flex flex-wrap items-center gap-4 mb-5 animate-in">
+                <div class="flex flex-wrap items-center gap-4 mb-5">
                     <div class="relative flex-1 max-w-md search-box">
                         <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         <input type="text" id="busqueda-citas" placeholder="Buscar por nombre, teléfono, doctor..." class="pl-12 pr-4 py-3.5 w-full bg-transparent rounded-xl focus:outline-none text-slate-700 placeholder:text-slate-400 font-medium">
@@ -486,7 +480,7 @@
                         Sincronizar
                     </button>
                 </div>
-                <div class="card overflow-hidden flex flex-col shadow-lg rounded-2xl border-0 animate-in">
+                <div class="card overflow-hidden flex flex-col shadow-lg rounded-2xl border-0">
                     <div class="table-container">
                         <table class="w-full min-w-max text-left">
                             <thead id="tabla-cabecera" class="table-header text-xs uppercase tracking-widest font-extrabold"></thead>
@@ -496,9 +490,9 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CONFIGURACIÓN (con animación sincronizada) -->
+            <!-- SECCIÓN CONFIGURACIÓN -->
             <section id="seccion-configuracion" class="seccion">
-                <div class="flex flex-col items-center justify-center min-h-[60vh] animate-in">
+                <div class="flex flex-col items-center justify-center min-h-[60vh]">
                     <div class="config-card w-full max-w-3xl">
                         <h2 class="text-2xl font-black text-slate-900 mb-2 text-center">Centro de Configuración</h2>
                         <p class="text-slate-500 text-center mb-8">Personaliza tu panel de gestión según tus necesidades</p>
@@ -724,25 +718,13 @@
 
         document.getElementById('busqueda-citas').addEventListener('input', function(e) { terminoBusqueda = e.target.value; hashTablaActual = ''; aplicarFiltroYRenderizar(); });
 
-        // Función para reiniciar animaciones al cambiar de sección
-        function reiniciarAnimaciones(seccion) {
-            const elementos = seccion.querySelectorAll('.animate-in');
-            elementos.forEach(el => {
-                el.classList.remove('animate-in');
-                void el.offsetWidth; // fuerza reflow
-                el.classList.add('animate-in');
-            });
-        }
-
         document.querySelectorAll('.sidebar-nav a').forEach(enlace => {
             enlace.addEventListener('click', function(e) {
                 e.preventDefault();
                 document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
                 this.classList.add('active');
                 document.querySelectorAll('.seccion').forEach(sec => sec.classList.remove('active'));
-                const seccionActiva = document.getElementById('seccion-' + this.dataset.section);
-                seccionActiva.classList.add('active');
-                reiniciarAnimaciones(seccionActiva);
+                document.getElementById('seccion-' + this.dataset.section).classList.add('active');
             });
         });
 
