@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clinovix · Panel de Gestión</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -20,59 +20,89 @@
         }
 
         .card {
-            background: white;
-            border-radius: 1.25rem;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
             transition: all 0.3s ease;
-            border: 1px solid rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.6);
         }
 
         .card:hover {
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+            transform: translateY(-3px);
+            border-color: rgba(37, 99, 235, 0.2);
         }
 
         .stat-card {
             background: white;
-            border-radius: 1.25rem;
+            border-radius: 1.5rem;
             padding: 1.5rem 1.5rem;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(0, 0, 0, 0.04);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
         }
 
         .stat-card:hover {
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.1);
-            transform: translateY(-4px);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card:hover::after {
+            opacity: 1;
         }
 
         .stat-card .stat-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 1rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 1.2rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             flex-shrink: 0;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1);
         }
 
         .stat-card .stat-info .value {
-            font-size: 2rem;
-            font-weight: 800;
+            font-size: 2.4rem;
+            font-weight: 900;
             line-height: 1;
             color: #0f172a;
+            letter-spacing: -0.5px;
         }
 
         .stat-card .stat-info .label {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 700;
             color: #64748b;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            margin-top: 0.2rem;
         }
 
         .btn-primary {
@@ -451,40 +481,70 @@
         /* Botones de configuración */
         .config-btn {
             display: flex;
+            flex-direction: column;
             align-items: center;
+            text-align: center;
             gap: 1rem;
-            padding: 1.2rem 1.8rem;
-            border-radius: 1rem;
+            padding: 2rem 1.5rem;
+            border-radius: 1.5rem;
             font-weight: 700;
             font-size: 0.95rem;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             background: white;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             cursor: pointer;
+            min-width: 180px;
+            flex: 1;
         }
 
         .config-btn:hover {
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.1);
-            transform: translateY(-3px);
-            border-color: #cbd5e1;
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(37,99,235,0.2);
+            border-color: #93c5fd;
+            background: #f8faff;
         }
 
         .config-btn .icon-circle {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 0.9rem;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 1.2rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .config-btn:hover .icon-circle {
+            transform: scale(1.1);
+        }
+
+        .config-btn .btn-title {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: #0f172a;
+        }
+
+        .config-btn .btn-desc {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 500;
         }
 
         .chart-bar {
-            transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 8px 8px 0 0;
+            transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px 12px 4px 4px;
             min-height: 4px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
         }
+
+        .chart-bar.total { background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%); }
+        .chart-bar.conf  { background: linear-gradient(180deg, #10b981 0%, #059669 100%); }
+        .chart-bar.canc  { background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%); }
+        .chart-bar.rep   { background: linear-gradient(180deg, #a855f7 0%, #7e22ce 100%); }
 
         .chart-label {
             font-size: 0.7rem;
@@ -494,10 +554,37 @@
         }
 
         .chart-value {
-            font-size: 0.75rem;
-            font-weight: 700;
+            font-size: 0.85rem;
+            font-weight: 800;
             color: #0f172a;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .greeting-card {
+            background: linear-gradient(135deg, #0b1a33 0%, #1e3a5f 100%);
+            border-radius: 1.5rem;
+            padding: 2rem 2rem;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            margin-bottom: 1.5rem;
+        }
+
+        .config-card {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 2.5rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease forwards;
         }
     </style>
 </head>
@@ -572,18 +659,28 @@
         </button>
 
         <div id="contenido-principal">
-            <!-- SECCIÓN INICIO (limpia, sin botones de configuración) -->
+            <!-- SECCIÓN INICIO (premium) -->
             <section id="seccion-inicio" class="seccion active">
+                <div class="greeting-card animate-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-blue-200 text-sm font-medium mb-1" id="fecha-actual"></p>
+                            <h1 class="text-3xl font-black">¡Hola, <span id="nombre-usuario-inicio">Doctor</span>!</h1>
+                            <p class="text-blue-300 mt-2 text-sm">Panel de control · Resumen del día</p>
+                        </div>
+                        <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl" id="avatar-inicio">👨‍⚕️</div>
+                    </div>
+                </div>
                 <div class="flex justify-end mb-6">
                     <button id="btn-refrescar" class="btn-secondary flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         Sincronizar
                     </button>
                 </div>
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6 animate-in" style="animation-delay: 0.1s">
                     <div class="stat-card">
-                        <div class="stat-icon bg-blue-100 text-blue-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                        <div class="stat-icon bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-blue-200">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                         </div>
                         <div class="stat-info">
                             <div class="value" id="stat-total">0</div>
@@ -591,8 +688,8 @@
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon bg-emerald-100 text-emerald-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                        <div class="stat-icon bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-emerald-200">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                         </div>
                         <div class="stat-info">
                             <div class="value" id="stat-confirmadas">0</div>
@@ -600,8 +697,8 @@
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon bg-red-100 text-red-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        <div class="stat-icon bg-gradient-to-br from-red-400 to-red-600 text-white shadow-red-200">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                         </div>
                         <div class="stat-info">
                             <div class="value" id="stat-canceladas">0</div>
@@ -609,8 +706,8 @@
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon bg-purple-100 text-purple-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        <div class="stat-icon bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-purple-200">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         </div>
                         <div class="stat-info">
                             <div class="value" id="stat-reprogramadas">0</div>
@@ -618,40 +715,43 @@
                         </div>
                     </div>
                 </div>
-                <div class="card p-5">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-bold text-slate-800">Distribución de citas</h3>
-                        <div class="flex items-center gap-2" id="status-indicator">
+                <div class="card p-6 animate-in" style="animation-delay: 0.2s">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-xl font-black text-slate-800">Distribución de citas</h3>
+                            <p class="text-sm text-slate-500 mt-1">Resumen de los últimos registros</p>
+                        </div>
+                        <div class="flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-xl">
                             <span class="w-3 h-3 rounded-full bg-emerald-500" id="status-dot"></span>
-                            <span class="text-sm font-semibold text-slate-600" id="status-text">En línea</span>
+                            <span class="text-sm font-bold text-emerald-700" id="status-text">En línea</span>
                         </div>
                     </div>
-                    <div class="flex items-end justify-around gap-4 h-48 px-4">
+                    <div class="flex items-end justify-around gap-4 h-52 px-4">
                         <div class="flex flex-col items-center flex-1 max-w-[80px]">
                             <span class="chart-value" id="chart-val-total">0</span>
-                            <div class="w-full bg-blue-500 chart-bar" id="chart-bar-total" style="height: 10px;"></div>
+                            <div class="w-full chart-bar total" id="chart-bar-total" style="height: 10px;"></div>
                             <span class="chart-label">Total</span>
                         </div>
                         <div class="flex flex-col items-center flex-1 max-w-[80px]">
                             <span class="chart-value" id="chart-val-conf">0</span>
-                            <div class="w-full bg-emerald-500 chart-bar" id="chart-bar-conf" style="height: 10px;"></div>
+                            <div class="w-full chart-bar conf" id="chart-bar-conf" style="height: 10px;"></div>
                             <span class="chart-label">Confirm.</span>
                         </div>
                         <div class="flex flex-col items-center flex-1 max-w-[80px]">
                             <span class="chart-value" id="chart-val-canc">0</span>
-                            <div class="w-full bg-red-500 chart-bar" id="chart-bar-canc" style="height: 10px;"></div>
+                            <div class="w-full chart-bar canc" id="chart-bar-canc" style="height: 10px;"></div>
                             <span class="chart-label">Cancel.</span>
                         </div>
                         <div class="flex flex-col items-center flex-1 max-w-[80px]">
                             <span class="chart-value" id="chart-val-rep">0</span>
-                            <div class="w-full bg-purple-500 chart-bar" id="chart-bar-rep" style="height: 10px;"></div>
+                            <div class="w-full chart-bar rep" id="chart-bar-rep" style="height: 10px;"></div>
                             <span class="chart-label">Reprogr.</span>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- SECCIÓN CITAS -->
+            <!-- SECCIÓN CITAS (sin cambios funcionales) -->
             <section id="seccion-citas" class="seccion">
                 <div class="flex flex-wrap items-center gap-4 mb-5">
                     <div class="relative flex-1 max-w-md">
@@ -676,25 +776,32 @@
             <!-- SECCIÓN CONFIGURACIÓN (botones solo aquí) -->
             <section id="seccion-configuracion" class="seccion">
                 <div class="flex flex-col items-center justify-center min-h-[60vh]">
-                    <div class="flex flex-wrap gap-5 justify-center">
-                        <button id="btn-configurar-columnas" class="config-btn">
-                            <span class="icon-circle bg-blue-100 text-blue-600">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-                            </span>
-                            <span>Gestionar Vistas</span>
-                        </button>
-                        <button id="btn-agregar-campo" class="config-btn">
-                            <span class="icon-circle bg-emerald-100 text-emerald-600">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                            </span>
-                            <span>Nuevo Campo</span>
-                        </button>
-                        <button id="btn-abrir-modal" class="config-btn">
-                            <span class="icon-circle bg-violet-100 text-violet-600">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                            </span>
-                            <span>Nueva Cita</span>
-                        </button>
+                    <div class="config-card w-full max-w-3xl">
+                        <h2 class="text-2xl font-black text-slate-900 mb-2 text-center">Centro de Configuración</h2>
+                        <p class="text-slate-500 text-center mb-8">Personaliza tu panel de gestión según tus necesidades</p>
+                        <div class="flex flex-wrap gap-6 justify-center">
+                            <button id="btn-configurar-columnas" class="config-btn">
+                                <span class="icon-circle bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                                </span>
+                                <span class="btn-title">Gestionar Vistas</span>
+                                <span class="btn-desc">Mostrar / ocultar columnas</span>
+                            </button>
+                            <button id="btn-agregar-campo" class="config-btn">
+                                <span class="icon-circle bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-700">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                                </span>
+                                <span class="btn-title">Nuevo Campo</span>
+                                <span class="btn-desc">Agregar campos personalizados</span>
+                            </button>
+                            <button id="btn-abrir-modal" class="config-btn">
+                                <span class="icon-circle bg-gradient-to-br from-violet-100 to-violet-200 text-violet-700">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                </span>
+                                <span class="btn-title">Nueva Cita</span>
+                                <span class="btn-desc">Registrar una cita médica</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -799,6 +906,14 @@
         const modalConfirmacion = document.getElementById('modal-confirmacion');
         let pendingDeleteId = null;
 
+        // Actualizar saludo y fecha al cargar
+        function actualizarInterfazPremium(usuario) {
+            document.getElementById('nombre-usuario-inicio').textContent = usuario;
+            document.getElementById('avatar-inicio').textContent = usuario.charAt(0).toUpperCase() + '👨‍⚕️';
+            const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('fecha-actual').textContent = new Date().toLocaleDateString('es-ES', opciones);
+        }
+
         window.mostrarNotificacion = (titulo, mensaje, tipo = 'info') => {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -850,7 +965,7 @@
         window.eliminarCampo = async (nombre) => { if (confirm(`¿Eliminar la columna "${nombre}" en todas las vistas?`)) { camposPlantilla = camposPlantilla.filter(c => c !== nombre); ordenColumnas = ordenColumnas.filter(c => c !== nombre); delete valoresDefault[nombre]; await sincronizarConfiguracionNube(); renderizarCamposModal(); hashTablaActual = ""; cargarCitasDelServidor(); } };
 
         function resetearFormulario() { idCitaEnEdicion = null; document.getElementById('titulo-modal').innerText = "Nueva Cita"; renderizarCamposModal({ procesado: 'Pendiente', estado: 'Esperando respuesta' }); }
-        document.getElementById('form-login').addEventListener('submit', async (e) => { e.preventDefault(); const u = document.getElementById('login-usuario').value.trim().toLowerCase(); const p = document.getElementById('login-password').value; const btnSubmit = e.target.querySelector('button[type="submit"]'); btnSubmit.innerText = "Autenticando..."; btnSubmit.disabled = true; try { const res = await fetch(N8N_LOGIN_URL, { method: 'POST', body: JSON.stringify({ usuario: u, password: p }), headers: { 'Content-Type': 'application/json' } }); const data = await res.json(); if (data.success) { clienteLogueado = u; let dbConfig = {}; if (typeof data.config === 'string') { try { dbConfig = JSON.parse(data.config); } catch (err) {} } else if (typeof data.config === 'object') { dbConfig = data.config; } camposPlantilla = dbConfig.campos_plantilla || []; camposPlantilla = camposPlantilla.filter(c => !COLUMNAS_FIJAS.includes(c.toLowerCase())); valoresDefault = dbConfig.valores_default || {}; let ordenGuardado = dbConfig.orden_columnas || []; let personalizadosEnOrden = ordenGuardado.filter(c => camposPlantilla.includes(c) && !COLUMNAS_FIJAS.includes(c)); let personalizadosFaltantes = camposPlantilla.filter(c => !personalizadosEnOrden.includes(c)); let personalizadosOrdenados = [...personalizadosEnOrden, ...personalizadosFaltantes]; let nuevoOrden = ['id', ...personalizadosOrdenados, 'procesado', 'estado']; ordenColumnas = [...new Set(nuevoOrden)]; columnasOcultas = dbConfig.columnas_ocultas || []; const configNueva = { orden_columnas: ordenColumnas, columnas_ocultas: columnasOcultas, campos_plantilla: camposPlantilla, valores_default: valoresDefault }; const configOriginal = { orden_columnas: dbConfig.orden_columnas || [], columnas_ocultas: dbConfig.columnas_ocultas || [], campos_plantilla: dbConfig.campos_plantilla || [], valores_default: dbConfig.valores_default || {} }; if (JSON.stringify(configNueva) !== JSON.stringify(configOriginal)) { try { await fetch(N8N_CONFIG_URL, { method: 'POST', body: JSON.stringify({ usuario: clienteLogueado, config: configNueva }), headers: { 'Content-Type': 'application/json' } }); } catch (e) { console.warn('No se pudo guardar la configuración:', e); } } document.getElementById('seccion-login').classList.add('hidden'); document.getElementById('seccion-panel').classList.remove('hidden'); document.getElementById('usuario-nombre').textContent = u; document.getElementById('usuario-inicial').textContent = u.charAt(0).toUpperCase(); cargarCitasDelServidor(); loopSincronizacion = setInterval(cargarCitasDelServidor, 10000); mostrarNotificacion("Acceso Aprobado", "Entorno personalizado cargado.", "success"); } else { mostrarNotificacion("Error", "Usuario o contraseña incorrectos.", "error"); } } catch (err) { console.error(err); mostrarNotificacion("Error", "Error de conexión con el servidor.", "error"); } finally { btnSubmit.innerText = "Acceder al panel"; btnSubmit.disabled = false; } });
+        document.getElementById('form-login').addEventListener('submit', async (e) => { e.preventDefault(); const u = document.getElementById('login-usuario').value.trim().toLowerCase(); const p = document.getElementById('login-password').value; const btnSubmit = e.target.querySelector('button[type="submit"]'); btnSubmit.innerText = "Autenticando..."; btnSubmit.disabled = true; try { const res = await fetch(N8N_LOGIN_URL, { method: 'POST', body: JSON.stringify({ usuario: u, password: p }), headers: { 'Content-Type': 'application/json' } }); const data = await res.json(); if (data.success) { clienteLogueado = u; let dbConfig = {}; if (typeof data.config === 'string') { try { dbConfig = JSON.parse(data.config); } catch (err) {} } else if (typeof data.config === 'object') { dbConfig = data.config; } camposPlantilla = dbConfig.campos_plantilla || []; camposPlantilla = camposPlantilla.filter(c => !COLUMNAS_FIJAS.includes(c.toLowerCase())); valoresDefault = dbConfig.valores_default || {}; let ordenGuardado = dbConfig.orden_columnas || []; let personalizadosEnOrden = ordenGuardado.filter(c => camposPlantilla.includes(c) && !COLUMNAS_FIJAS.includes(c)); let personalizadosFaltantes = camposPlantilla.filter(c => !personalizadosEnOrden.includes(c)); let personalizadosOrdenados = [...personalizadosEnOrden, ...personalizadosFaltantes]; let nuevoOrden = ['id', ...personalizadosOrdenados, 'procesado', 'estado']; ordenColumnas = [...new Set(nuevoOrden)]; columnasOcultas = dbConfig.columnas_ocultas || []; const configNueva = { orden_columnas: ordenColumnas, columnas_ocultas: columnasOcultas, campos_plantilla: camposPlantilla, valores_default: valoresDefault }; const configOriginal = { orden_columnas: dbConfig.orden_columnas || [], columnas_ocultas: dbConfig.columnas_ocultas || [], campos_plantilla: dbConfig.campos_plantilla || [], valores_default: dbConfig.valores_default || {} }; if (JSON.stringify(configNueva) !== JSON.stringify(configOriginal)) { try { await fetch(N8N_CONFIG_URL, { method: 'POST', body: JSON.stringify({ usuario: clienteLogueado, config: configNueva }), headers: { 'Content-Type': 'application/json' } }); } catch (e) { console.warn('No se pudo guardar la configuración:', e); } } document.getElementById('seccion-login').classList.add('hidden'); document.getElementById('seccion-panel').classList.remove('hidden'); document.getElementById('usuario-nombre').textContent = u; document.getElementById('usuario-inicial').textContent = u.charAt(0).toUpperCase(); actualizarInterfazPremium(u.charAt(0).toUpperCase() + u.slice(1)); cargarCitasDelServidor(); loopSincronizacion = setInterval(cargarCitasDelServidor, 10000); mostrarNotificacion("Acceso Aprobado", "Entorno personalizado cargado.", "success"); } else { mostrarNotificacion("Error", "Usuario o contraseña incorrectos.", "error"); } } catch (err) { console.error(err); mostrarNotificacion("Error", "Error de conexión con el servidor.", "error"); } finally { btnSubmit.innerText = "Acceder al panel"; btnSubmit.disabled = false; } });
 
         function actualizarEstadoConexion(online) {
             const dot = document.getElementById('status-dot');
@@ -866,7 +981,7 @@
 
         function actualizarGrafico(total, confirmadas, canceladas, reprogramadas) {
             const maxVal = Math.max(total, confirmadas, canceladas, reprogramadas, 1);
-            const scale = (val) => Math.max(8, (val / maxVal) * 120);
+            const scale = (val) => Math.max(8, (val / maxVal) * 140);
             document.getElementById('chart-bar-total').style.height = scale(total) + 'px';
             document.getElementById('chart-bar-conf').style.height = scale(confirmadas) + 'px';
             document.getElementById('chart-bar-canc').style.height = scale(canceladas) + 'px';
