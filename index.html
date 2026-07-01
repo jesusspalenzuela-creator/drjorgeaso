@@ -320,7 +320,6 @@
             border-radius: 0.7rem;
         }
 
-        /* Icono activo en colapsado mantiene el fondo azul */
         .sidebar.collapsed .sidebar-nav a.active {
             background: #2563eb;
             color: white;
@@ -479,11 +478,6 @@
             align-items: center;
             justify-content: center;
             font-size: 1.4rem;
-        }
-
-        /* Protección para que los botones de configuración nunca se muestren en Inicio */
-        #seccion-inicio .config-btn {
-            display: none !important;
         }
 
         .chart-bar {
@@ -679,27 +673,29 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CONFIGURACIÓN (únicos botones) -->
-            <section id="seccion-configuracion" class="seccion flex flex-col items-center justify-center min-h-[60vh]">
-                <div class="flex flex-wrap gap-5 justify-center">
-                    <button id="btn-configurar-columnas" class="config-btn">
-                        <span class="icon-circle bg-blue-100 text-blue-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-                        </span>
-                        <span>Gestionar Vistas</span>
-                    </button>
-                    <button id="btn-agregar-campo" class="config-btn">
-                        <span class="icon-circle bg-emerald-100 text-emerald-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                        </span>
-                        <span>Nuevo Campo</span>
-                    </button>
-                    <button id="btn-abrir-modal" class="config-btn">
-                        <span class="icon-circle bg-violet-100 text-violet-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                        </span>
-                        <span>Nueva Cita</span>
-                    </button>
+            <!-- SECCIÓN CONFIGURACIÓN (botones solo aquí) -->
+            <section id="seccion-configuracion" class="seccion">
+                <div class="flex flex-col items-center justify-center min-h-[60vh]">
+                    <div class="flex flex-wrap gap-5 justify-center">
+                        <button id="btn-configurar-columnas" class="config-btn">
+                            <span class="icon-circle bg-blue-100 text-blue-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                            </span>
+                            <span>Gestionar Vistas</span>
+                        </button>
+                        <button id="btn-agregar-campo" class="config-btn">
+                            <span class="icon-circle bg-emerald-100 text-emerald-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                            </span>
+                            <span>Nuevo Campo</span>
+                        </button>
+                        <button id="btn-abrir-modal" class="config-btn">
+                            <span class="icon-circle bg-violet-100 text-violet-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                            </span>
+                            <span>Nueva Cita</span>
+                        </button>
+                    </div>
                 </div>
             </section>
         </div>
